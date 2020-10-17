@@ -1,0 +1,9 @@
+includes:
+	- phpstan.base.neon
+
+parameters:
+	level: 3
+
+	exceptionRules:
+		methodWhitelist:
+			PHPUnit\Framework\TestCase: '#^(test|(setup|setupbeforeclass|teardown|teardownafterclass)$)#i'
