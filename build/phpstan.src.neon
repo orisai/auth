@@ -3,3 +3,9 @@ includes:
 
 parameters:
 	level: max
+
+	ignoreErrors:
+		# Since php 7.4 there is no chance password_hash would return false
+		# https://github.com/php/php-src/blob/901417f0ae02afc8bef904818edaf2b2db8f6b58/ext/standard/password.c#L655
+		- message: '#^Method (.+)BcryptPasswordEncoder\:\:encode\(\) should return string but returns string\|false\.$#'
+		  path: %currentWorkingDirectory%/src/Passwords/BcryptPasswordEncoder.php
