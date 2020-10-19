@@ -2,6 +2,7 @@
 
 namespace Tests\Orisai\Auth\Unit\Passwords;
 
+use Orisai\Auth\Passwords\BcryptPasswordEncoder;
 use Orisai\Auth\Passwords\UpgradingPasswordEncoder;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\StaticListPasswordEncoder;
@@ -53,6 +54,23 @@ final class UpgradingPasswordEncoderTest extends TestCase
 
 		self::assertTrue($encoder->needsReEncode('random_string'));
 		self::assertFalse($encoder->isValid('random_string', 'encoded_random_string'));
+	}
+
+	public function testNeedsReEncode(): void
+	{
+		$bcryptEncoder = new BcryptPasswordEncoder(4);
+		$encoder = new UpgradingPasswordEncoder($bcryptEncoder);
+
+		// Does not need re-encode, is just invalid
+		self::assertFalse($encoder->isValid('1234', '$2y$04$5x2UkDrfwjoV/690Lr3evOeiSNfCiXdGRaqiYszaqimg.317nWbqO'));
+
+		// Is valid, needs re-encode
+		self::assertTrue(
+			$encoder->isValid(
+				'password',
+				'$argon2id$v=19$m=10,t=3,p=1$aM3h+Sq0LVbxdB/LNrL3hA$pd0VCPIAmMpJH4CbsaFpvzFhK0YMzK2aZYkin+sTR74',
+			),
+		);
 	}
 
 }
