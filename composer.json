@@ -19,9 +19,11 @@
 		}
 	],
 	"require": {
-		"php": ">=7.4.0 <8.2.0"
+		"php": ">=7.4.0 <8.2.0",
+		"orisai/exceptions": "^1.0.0"
 	},
 	"require-dev": {
+		"ext-sodium": "*",
 		"orisai/coding-standard": "^1.0.0",
 		"pepakriz/phpstan-exception-rules": "^0.10.0",
 		"phpstan/extension-installer": "^1.0.0",

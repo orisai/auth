@@ -9,4 +9,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
+Passwords
+- `PasswordEncoder` interface
+- `BcryptPasswordEncoder`
+- `SodiumPasswordEncoder`
+- `UpgradingPasswordEncoder`
+
 [Unreleased]: https://github.com/orisai/auth/compare/...HEAD

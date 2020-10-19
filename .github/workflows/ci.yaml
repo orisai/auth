@@ -14,7 +14,7 @@ on:
     - cron: "0 8 * * 1" # At 08:00 on Monday
 
 env:
-  php-extensions: "json"
+  php-extensions: "json, sodium"
   php-tools: "composer:v2"
 
 jobs:
