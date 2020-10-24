@@ -9,6 +9,9 @@ Authentication and authorization
     - [Bcrypt](#bcrypt-encoder)
     - [Backward compatibility](#backward-compatibility---upgrading-encoder)
     - [Extending](#extending)
+- [Authentication](#authentication)
+    - [Setup](#authentication-setup)
+    - [Usage](#authentication-usage)
 
 ## Setup
 
@@ -162,4 +165,101 @@ final class CustomEncoder implements PasswordEncoder
 	}
 
 }
+```
+
+## Authentication
+
+Log in user into application via a firewall.
+
+### Authentication setup
+
+Extend `BaseFirewall`
+- Only used for autowiring, no code change is required
+
+```php
+use Orisai\Auth\Authentication\BaseFirewall;
+
+final class AdminFirewall extends BaseFirewall
+{
+
+}
+```
+
+Create an identity renewer
+- optional
+- allows you to log out user on each request at which firewall is used - return null
+- renews identity on each request so data in user Identity are always actual
+
+```php
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authentication\IdentityRenewer;
+use Orisai\Auth\Authentication\IntIdentity;
+
+final class AdminIdentityRenewer implements IdentityRenewer
+{
+
+    private UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+    public function renewIdentity(Identity $identity): ?Identity
+    {
+        $user = $this->userRepository->getById($identity->getId());
+
+        if ($user === null) {
+            return null;
+        }
+
+        return new IntIdentity($user->getId(), $user->getRoles());
+    }
+
+}
+```
+
+Create firewall instance
+
+```php
+use Orisai\Auth\Bridge\NetteHttp\NetteSessionIdentityStorage;
+
+$identityRenewer = new AdminIdentityRenewer($userRepository);
+$identityStorage = new NetteSessionIdentityStorage('admin', $session, $identityRenewer);
+$firewall = new AdminFirewall($identityStorage);
+```
+
+### Authentication usage
+
+Log in user
+
+```php
+use Orisai\Auth\Authentication\IntIdentity;
+
+$identity = new IntIdentity($user->getId(), $user->getRoles());
+$firewall->login($identity);
+$firewall->isLoggedIn(); // true
+$firewall->getIdentity(); // $identity
+$firewall->getExpiredIdentity(); // $identity
+```
+
+Set or remove login expiration
+- Expiration is sliding, each request when firewall is used is expiration extended
+- After expiration is user logged out (`$firewall->getLogoutReason()` returns `$firewall::REASON_INACTIVITY`)
+
+```php
+$firewall->setExpiration(new DateTimeImmutable('1 week'));
+$firewall->removeExpiration();
+```
+
+Log out user
+- After manual logout `$firewall->getLogoutReason()` returns `$firewall::REASON_MANUAL`
+- `$firewall->getIdentity()` raises an exception, check with `$firewall->isLoggedIn()` or use `$firewall->getExpiredIdentity` instead
+
+```php
+$firewall->logout();
+$firewall->isLoggedIn(); // false
+$firewall->getIdentity(); // exception
+$firewall->getExpiredIdentity(); // $identity
+$firewall->getLogoutReason(); // $firewall::REASON_* - REASON_MANUAL | REASON_INACTIVITY | REASON_INVALID_IDENTITY
 ```
