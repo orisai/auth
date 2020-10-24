@@ -11,8 +11,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 Passwords
 - `PasswordEncoder` interface
-- `BcryptPasswordEncoder`
-- `SodiumPasswordEncoder`
-- `UpgradingPasswordEncoder`
+    - `BcryptPasswordEncoder`
+    - `SodiumPasswordEncoder`
+    - `UpgradingPasswordEncoder`
+Authentication
+- `Firewall` interface
+    - `BaseFirewall`
+- `Identity` interface
+    - `IntIdentity`
+    - `StringIdentity`
+- `IdentityStorage` interface
+    - `NetteSessionIdentityStorage`
+- `IdentityRenewer` interface
 
 [Unreleased]: https://github.com/orisai/auth/compare/...HEAD
