@@ -22,7 +22,10 @@ interface Firewall
 	 */
 	public function getLogoutReason(): ?int;
 
-	public function getIdentity(): ?Identity;
+	/**
+	 * @throws CannotAccessIdentity When user is not logged id
+	 */
+	public function getIdentity(): Identity;
 
 	public function getExpiredIdentity(): ?Identity;
 
