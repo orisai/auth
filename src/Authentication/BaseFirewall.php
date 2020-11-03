@@ -3,11 +3,6 @@
 namespace Orisai\Auth\Authentication;
 
 use DateTimeInterface;
-use Orisai\Exceptions\Logic\InvalidState;
-use Orisai\Exceptions\Message;
-use function array_pop;
-use function explode;
-use function sprintf;
 
 abstract class BaseFirewall implements Firewall
 {
@@ -39,27 +34,15 @@ abstract class BaseFirewall implements Firewall
 		return $this->storage->getLogoutReason();
 	}
 
+	/**
+	 * @throws CannotAccessIdentity When user is not logged id
+	 */
 	public function getIdentity(): Identity
 	{
 		$identity = $this->getExpiredIdentity();
 
 		if ($identity === null || !$this->isLoggedIn()) {
-			$parts = explode('\\', static::class);
-			$className = array_pop($parts);
-
-			$message = Message::create()
-				->withContext(sprintf('Trying to get valid identity with %s->%s().', static::class, __FUNCTION__))
-				->withProblem('User is not logged in firewall.')
-				->withSolution(
-					sprintf(
-						'Check with %s->isLoggedIn() or use %s->getExpiredIdentity().',
-						$className,
-						$className,
-					),
-				);
-
-			throw InvalidState::create()
-				->withMessage($message);
+			throw CannotAccessIdentity::create(static::class, __FUNCTION__);
 		}
 
 		return $identity;

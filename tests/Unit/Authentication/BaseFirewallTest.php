@@ -3,8 +3,8 @@
 namespace Tests\Orisai\Auth\Unit\Authentication;
 
 use DateTimeImmutable;
+use Orisai\Auth\Authentication\CannotAccessIdentity;
 use Orisai\Auth\Authentication\IntIdentity;
-use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\ArrayIdentityStorage;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
@@ -74,7 +74,7 @@ final class BaseFirewallTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));
 		$firewall = new TestingFirewall($storage);
 
-		$this->expectException(InvalidState::class);
+		$this->expectException(CannotAccessIdentity::class);
 		$this->expectExceptionMessage(<<<'MSG'
 Context: Trying to get valid identity with
          Tests\Orisai\Auth\Doubles\TestingFirewall->getIdentity().
