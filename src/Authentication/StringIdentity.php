@@ -2,15 +2,10 @@
 
 namespace Orisai\Auth\Authentication;
 
-use function in_array;
-
-final class StringIdentity implements Identity
+final class StringIdentity extends BaseIdentity
 {
 
 	private string $id;
-
-	/** @var array<string> */
-	private array $roles;
 
 	/**
 	 * @param array<string> $roles
@@ -24,19 +19,6 @@ final class StringIdentity implements Identity
 	public function getId(): string
 	{
 		return $this->id;
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	public function getRoles(): array
-	{
-		return $this->roles;
-	}
-
-	public function hasRole(string $role): bool
-	{
-		return in_array($role, $this->roles, true);
 	}
 
 	/**
