@@ -15,7 +15,11 @@ final class IntIdentityTest extends TestCase
 		$identity = new IntIdentity(123, ['foo', 'bar']);
 
 		self::assertSame(123, $identity->getId());
+
 		self::assertSame(['foo', 'bar'], $identity->getRoles());
+		self::assertTrue($identity->hasRole('foo'));
+		self::assertTrue($identity->hasRole('bar'));
+		self::assertFalse($identity->hasRole('baz'));
 
 		$serialized = serialize($identity);
 		self::assertEquals($identity, unserialize($serialized));
