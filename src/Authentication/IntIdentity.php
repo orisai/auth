@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
+use function in_array;
+
 final class IntIdentity implements Identity
 {
 
@@ -30,6 +32,11 @@ final class IntIdentity implements Identity
 	public function getRoles(): array
 	{
 		return $this->roles;
+	}
+
+	public function hasRole(string $role): bool
+	{
+		return in_array($role, $this->roles, true);
 	}
 
 	/**

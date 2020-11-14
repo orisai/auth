@@ -15,6 +15,8 @@ interface Identity
 	 */
 	public function getRoles(): array;
 
+	public function hasRole(string $role): bool;
+
 	/**
 	 * @return array<mixed>
 	 */
