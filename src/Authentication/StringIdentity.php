@@ -2,10 +2,10 @@
 
 namespace Orisai\Auth\Authentication;
 
-final class StringIdentity extends BaseIdentity
+class StringIdentity extends BaseIdentity
 {
 
-	private string $id;
+	protected string $id;
 
 	/**
 	 * @param array<string> $roles
