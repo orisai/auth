@@ -4,6 +4,9 @@ namespace Orisai\Auth\Authentication;
 
 use DateTimeInterface;
 
+/**
+ * @phpstan-template T of Identity
+ */
 interface Firewall
 {
 
@@ -13,6 +16,9 @@ interface Firewall
 
 	public function isLoggedIn(): bool;
 
+	/**
+	 * @phpstan-param T $identity
+	 */
 	public function login(Identity $identity): void;
 
 	public function logout(): void;
@@ -23,10 +29,14 @@ interface Firewall
 	public function getLogoutReason(): ?int;
 
 	/**
+	 * @phpstan-return T
 	 * @throws CannotAccessIdentity When user is not logged id
 	 */
 	public function getIdentity(): Identity;
 
+	/**
+	 * @phpstan-return T|null
+	 */
 	public function getExpiredIdentity(): ?Identity;
 
 	public function setExpiration(DateTimeInterface $time): void;

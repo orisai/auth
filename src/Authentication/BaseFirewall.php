@@ -3,7 +3,12 @@
 namespace Orisai\Auth\Authentication;
 
 use DateTimeInterface;
+use function is_subclass_of;
 
+/**
+ * @template T of Identity
+ * @implements Firewall<T>
+ */
 abstract class BaseFirewall implements Firewall
 {
 
@@ -50,7 +55,19 @@ abstract class BaseFirewall implements Firewall
 
 	public function getExpiredIdentity(): ?Identity
 	{
-		return $this->storage->getIdentity();
+		$class = $this->getIdentityClass();
+		$identity = $this->storage->getIdentity();
+		if (!is_subclass_of($identity, $class)) {
+			// TODO - better method name
+			//		- difference between renewal methods should be clear
+			//		- storage creates new identity to make it up-to-date and returns null if should log-out
+			//		- here is just replaced the outdated Identity calss with new one
+			//		- maybe renewer could be moved here and setUnauthenticated could accept reason
+			//			- current code with two methods would be redundant
+			$identity = $this->identityRenewer->replaceOutdatedClass($class);
+		}
+
+		return $identity;
 	}
 
 	public function setExpiration(DateTimeInterface $time): void
@@ -62,5 +79,10 @@ abstract class BaseFirewall implements Firewall
 	{
 		$this->storage->removeExpiration();
 	}
+
+	/**
+	 * @phpstan-return class-string<T>
+	 */
+	abstract protected function getIdentityClass(): string;
 
 }
