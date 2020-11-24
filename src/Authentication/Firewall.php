@@ -15,6 +15,11 @@ interface Firewall
 
 	public function login(Identity $identity): void;
 
+	/**
+	 * @throws CannotRenewIdentity When user is not logged id
+	 */
+	public function renewIdentity(Identity $identity): void;
+
 	public function logout(): void;
 
 	/**

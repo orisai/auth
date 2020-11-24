@@ -48,12 +48,19 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 	{
 		$section = $this->getSessionSection();
 
-		$section->identity = $identity;
 		$section->authenticated = true;
 		$section->logoutReason = null;
 		$section->authenticationTime = time();
+		$this->renewIdentity($identity);
 
 		$this->session->regenerateId();
+	}
+
+	public function renewIdentity(Identity $identity): void
+	{
+		$section = $this->getSessionSection();
+
+		$section->identity = $identity;
 	}
 
 	/**
@@ -177,7 +184,7 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 
 		if ($section->authenticated === true) {
 			$this->checkInactivity($section);
-			$this->renewIdentity($section);
+			$this->checkIdentity($section);
 		}
 
 		return $section;
@@ -211,7 +218,7 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 		}
 	}
 
-	private function renewIdentity(SessionSection $section): void
+	private function checkIdentity(SessionSection $section): void
 	{
 		if ($this->identityRenewer === null) {
 			return;

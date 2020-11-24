@@ -15,6 +15,8 @@ interface IdentityStorage
 
 	public function login(Identity $identity): void;
 
+	public function renewIdentity(Identity $identity): void;
+
 	/**
 	 * @phpstan-param self::REASON_* $reason
 	 */

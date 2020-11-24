@@ -33,6 +33,22 @@ final class ArrayIdentityStorageTest extends TestCase
 		self::assertSame($storage::REASON_MANUAL, $storage->getLogoutReason());
 	}
 
+	public function testRenewIdentity(): void
+	{
+		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));
+		$identity = new IntIdentity(123, []);
+
+		$storage->login($identity);
+		self::assertSame($identity, $storage->getIdentity());
+
+		$storage->renewIdentity($identity);
+		self::assertSame($identity, $storage->getIdentity());
+
+		$newIdentity = new IntIdentity(123, []);
+		$storage->renewIdentity($newIdentity);
+		self::assertSame($newIdentity, $storage->getIdentity());
+	}
+
 	public function testExpiredIdentity(): void
 	{
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));

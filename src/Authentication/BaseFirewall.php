@@ -24,6 +24,18 @@ abstract class BaseFirewall implements Firewall
 		$this->storage->login($identity);
 	}
 
+	/**
+	 * @throws CannotRenewIdentity When user is not logged id
+	 */
+	public function renewIdentity(Identity $identity): void
+	{
+		if (!$this->isLoggedIn()) {
+			throw CannotRenewIdentity::create(static::class, __FUNCTION__);
+		}
+
+		$this->storage->renewIdentity($identity);
+	}
+
 	public function logout(): void
 	{
 		$this->storage->logout($this->storage::REASON_MANUAL);
