@@ -18,17 +18,17 @@ final class ArrayIdentityStorageTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));
 		$identity = new IntIdentity(123, []);
 
-		self::assertFalse($storage->isAuthenticated());
+		self::assertFalse($storage->isLoggedIn());
 		self::assertNull($storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
-		$storage->setUnauthenticated($storage::REASON_MANUAL);
-		self::assertFalse($storage->isAuthenticated());
+		$storage->logout($storage::REASON_MANUAL);
+		self::assertFalse($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_MANUAL, $storage->getLogoutReason());
 	}
@@ -38,11 +38,11 @@ final class ArrayIdentityStorageTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));
 		$identity = new IntIdentity(123, []);
 
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 
 		$storage->setExpiration(new DateTimeImmutable('10 seconds ago'));
-		self::assertFalse($storage->isAuthenticated());
+		self::assertFalse($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_INACTIVITY, $storage->getLogoutReason());
 	}
@@ -52,11 +52,11 @@ final class ArrayIdentityStorageTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));
 		$identity = new IntIdentity(123, []);
 
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 
 		$storage->setExpiration(new DateTimeImmutable('10 minutes'));
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -66,12 +66,12 @@ final class ArrayIdentityStorageTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'));
 		$identity = new IntIdentity(123, []);
 
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 
 		$storage->setExpiration(new DateTimeImmutable('10 seconds ago'));
 		$storage->removeExpiration();
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -81,8 +81,8 @@ final class ArrayIdentityStorageTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'), new AlwaysPassIdentityRenewer());
 		$identity = new IntIdentity(123, []);
 
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -93,8 +93,8 @@ final class ArrayIdentityStorageTest extends TestCase
 		$originalIdentity = new IntIdentity(123, []);
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'), new NewIdentityIdentityRenewer($newIdentity));
 
-		$storage->setAuthenticated($originalIdentity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($originalIdentity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($newIdentity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -104,8 +104,8 @@ final class ArrayIdentityStorageTest extends TestCase
 		$storage = new ArrayIdentityStorage(new DateTimeImmutable('now'), new NeverPassIdentityRenewer());
 		$identity = new IntIdentity(123, []);
 
-		$storage->setAuthenticated($identity);
-		self::assertFalse($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertFalse($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_INVALID_IDENTITY, $storage->getLogoutReason());
 	}

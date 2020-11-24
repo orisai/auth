@@ -13,14 +13,14 @@ interface IdentityStorage
 
 	public function getIdentity(): ?Identity;
 
-	public function setAuthenticated(Identity $identity): void;
+	public function login(Identity $identity): void;
 
 	/**
 	 * @phpstan-param self::REASON_* $reason
 	 */
-	public function setUnauthenticated(int $reason): void;
+	public function logout(int $reason): void;
 
-	public function isAuthenticated(): bool;
+	public function isLoggedIn(): bool;
 
 	/**
 	 * @phpstan-return self::REASON_*|null

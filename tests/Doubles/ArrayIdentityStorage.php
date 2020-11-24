@@ -34,19 +34,19 @@ final class ArrayIdentityStorage implements IdentityStorage
 		return $this->identity;
 	}
 
-	public function setAuthenticated(Identity $identity): void
+	public function login(Identity $identity): void
 	{
 		$this->authenticated = true;
 		$this->identity = $identity;
 		$this->logoutReason = null;
 	}
 
-	public function setUnauthenticated(int $reason): void
+	public function logout(int $reason): void
 	{
 		$this->unauthenticate($reason);
 	}
 
-	public function isAuthenticated(): bool
+	public function isLoggedIn(): bool
 	{
 		$this->checkAuthentication();
 
