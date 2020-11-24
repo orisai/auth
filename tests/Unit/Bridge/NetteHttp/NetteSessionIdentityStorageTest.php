@@ -47,17 +47,17 @@ final class NetteSessionIdentityStorageTest extends TestCase
 		$storage = $this->createStorage($session);
 		$identity = $this->createIdentity();
 
-		self::assertFalse($storage->isAuthenticated());
+		self::assertFalse($storage->isLoggedIn());
 		self::assertNull($storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
-		$storage->setUnauthenticated($storage::REASON_MANUAL);
-		self::assertFalse($storage->isAuthenticated());
+		$storage->logout($storage::REASON_MANUAL);
+		self::assertFalse($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_MANUAL, $storage->getLogoutReason());
 	}
@@ -68,11 +68,11 @@ final class NetteSessionIdentityStorageTest extends TestCase
 		$identity = $this->createIdentity();
 
 		$storage = $this->createStorage($session);
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 
 		$storage = $this->createStorage($session);
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 	}
 
 	public function testExpiredIdentity(): void
@@ -81,13 +81,13 @@ final class NetteSessionIdentityStorageTest extends TestCase
 		$identity = $this->createIdentity();
 
 		$storage = $this->createStorage($session);
-		$storage->setAuthenticated($identity);
+		$storage->login($identity);
 		$storage->setExpiration(new DateTimeImmutable('1 second'));
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		sleep(2);
 
 		$storage = $this->createStorage($session);
-		self::assertFalse($storage->isAuthenticated());
+		self::assertFalse($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_INACTIVITY, $storage->getLogoutReason());
 	}
@@ -98,12 +98,12 @@ final class NetteSessionIdentityStorageTest extends TestCase
 		$identity = $this->createIdentity();
 
 		$storage = $this->createStorage($session);
-		$storage->setAuthenticated($identity);
+		$storage->login($identity);
 		$storage->setExpiration(new DateTimeImmutable('10 minutes'));
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 
 		$storage = $this->createStorage($session);
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -114,13 +114,13 @@ final class NetteSessionIdentityStorageTest extends TestCase
 		$identity = $this->createIdentity();
 
 		$storage = $this->createStorage($session);
-		$storage->setAuthenticated($identity);
+		$storage->login($identity);
 		$storage->setExpiration(new DateTimeImmutable('1 seconds'));
 		$storage->removeExpiration();
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		sleep(2);
 
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -181,13 +181,13 @@ MSG);
 		$renewer = new AlwaysPassIdentityRenewer();
 
 		$storage = $this->createStorage($session, $renewer);
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
 		$storage = $this->createStorage($session, $renewer);
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -201,13 +201,13 @@ MSG);
 		$session = $this->createSession();
 
 		$storage = $this->createStorage($session, $renewer);
-		$storage->setAuthenticated($originalIdentity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($originalIdentity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($originalIdentity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
 		$storage = $this->createStorage($session, $renewer);
-		self::assertTrue($storage->isAuthenticated());
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($newIdentity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 	}
@@ -219,13 +219,13 @@ MSG);
 		$renewer = new NeverPassIdentityRenewer();
 
 		$storage = $this->createStorage($session, $renewer);
-		$storage->setAuthenticated($identity);
-		self::assertTrue($storage->isAuthenticated());
+		$storage->login($identity);
+		self::assertTrue($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
 		$storage = $this->createStorage($session, $renewer);
-		self::assertFalse($storage->isAuthenticated());
+		self::assertFalse($storage->isLoggedIn());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_INVALID_IDENTITY, $storage->getLogoutReason());
 	}

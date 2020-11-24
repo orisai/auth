@@ -16,17 +16,17 @@ abstract class BaseFirewall implements Firewall
 
 	public function isLoggedIn(): bool
 	{
-		return $this->storage->isAuthenticated();
+		return $this->storage->isLoggedIn();
 	}
 
 	public function login(Identity $identity): void
 	{
-		$this->storage->setAuthenticated($identity);
+		$this->storage->login($identity);
 	}
 
 	public function logout(): void
 	{
-		$this->storage->setUnauthenticated($this->storage::REASON_MANUAL);
+		$this->storage->logout($this->storage::REASON_MANUAL);
 	}
 
 	public function getLogoutReason(): ?int

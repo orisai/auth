@@ -44,7 +44,7 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 		return $this->getSessionSection()->identity;
 	}
 
-	public function setAuthenticated(Identity $identity): void
+	public function login(Identity $identity): void
 	{
 		$section = $this->getSessionSection();
 
@@ -59,7 +59,7 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 	/**
 	 * @phpstan-param self::REASON_* $reason
 	 */
-	public function setUnauthenticated(int $reason): void
+	public function logout(int $reason): void
 	{
 		$this->unauthenticate($this->getSessionSection(), $reason);
 	}
@@ -78,7 +78,7 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 		$this->removeExpiration();
 	}
 
-	public function isAuthenticated(): bool
+	public function isLoggedIn(): bool
 	{
 		if (!$this->session->exists()) {
 			return false;
