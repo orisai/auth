@@ -41,9 +41,9 @@ final class ArrayIdentityStorage implements IdentityStorage
 		$this->logoutReason = null;
 	}
 
-	public function setUnauthenticated(): void
+	public function setUnauthenticated(int $reason): void
 	{
-		$this->unauthenticate(self::REASON_MANUAL);
+		$this->unauthenticate($reason);
 	}
 
 	public function isAuthenticated(): bool

@@ -27,7 +27,7 @@ final class ArrayIdentityStorageTest extends TestCase
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertNull($storage->getLogoutReason());
 
-		$storage->setUnauthenticated();
+		$storage->setUnauthenticated($storage::REASON_MANUAL);
 		self::assertFalse($storage->isAuthenticated());
 		self::assertSame($identity, $storage->getIdentity());
 		self::assertSame($storage::REASON_MANUAL, $storage->getLogoutReason());
