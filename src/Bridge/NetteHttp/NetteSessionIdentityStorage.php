@@ -56,11 +56,17 @@ final class NetteSessionIdentityStorage implements IdentityStorage
 		$this->session->regenerateId();
 	}
 
-	public function setUnauthenticated(): void
+	/**
+	 * @phpstan-param self::REASON_* $reason
+	 */
+	public function setUnauthenticated(int $reason): void
 	{
-		$this->unauthenticate($this->getSessionSection(), self::REASON_MANUAL);
+		$this->unauthenticate($this->getSessionSection(), $reason);
 	}
 
+	/**
+	 * @phpstan-param self::REASON_* $reason
+	 */
 	private function unauthenticate(SessionSection $section, int $reason): void
 	{
 		$this->session->regenerateId();

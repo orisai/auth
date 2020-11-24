@@ -26,7 +26,7 @@ abstract class BaseFirewall implements Firewall
 
 	public function logout(): void
 	{
-		$this->storage->setUnauthenticated();
+		$this->storage->setUnauthenticated($this->storage::REASON_MANUAL);
 	}
 
 	public function getLogoutReason(): ?int

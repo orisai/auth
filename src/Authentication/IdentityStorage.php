@@ -15,7 +15,10 @@ interface IdentityStorage
 
 	public function setAuthenticated(Identity $identity): void;
 
-	public function setUnauthenticated(): void;
+	/**
+	 * @phpstan-param self::REASON_* $reason
+	 */
+	public function setUnauthenticated(int $reason): void;
 
 	public function isAuthenticated(): bool;
 
