@@ -37,8 +37,13 @@ final class ArrayIdentityStorage implements IdentityStorage
 	public function login(Identity $identity): void
 	{
 		$this->authenticated = true;
-		$this->identity = $identity;
 		$this->logoutReason = null;
+		$this->renewIdentity($identity);
+	}
+
+	public function renewIdentity(Identity $identity): void
+	{
+		$this->identity = $identity;
 	}
 
 	public function logout(int $reason): void
@@ -57,7 +62,7 @@ final class ArrayIdentityStorage implements IdentityStorage
 	{
 		if ($this->authenticated) {
 			$this->checkInactivity();
-			$this->renewIdentity();
+			$this->checkIdentity();
 		}
 	}
 
@@ -72,7 +77,7 @@ final class ArrayIdentityStorage implements IdentityStorage
 		}
 	}
 
-	private function renewIdentity(): void
+	private function checkIdentity(): void
 	{
 		if ($this->identityRenewer === null || $this->identity === null) {
 			return;

@@ -62,6 +62,23 @@ final class NetteSessionIdentityStorageTest extends TestCase
 		self::assertSame($storage::REASON_MANUAL, $storage->getLogoutReason());
 	}
 
+	public function testRenewIdentity(): void
+	{
+		$session = $this->createSession();
+		$storage = $this->createStorage($session);
+		$identity = $this->createIdentity();
+
+		$storage->login($identity);
+		self::assertSame($identity, $storage->getIdentity());
+
+		$storage->renewIdentity($identity);
+		self::assertSame($identity, $storage->getIdentity());
+
+		$newIdentity = $this->createIdentity();
+		$storage->renewIdentity($newIdentity);
+		self::assertSame($newIdentity, $storage->getIdentity());
+	}
+
 	public function testUseExistingSession(): void
 	{
 		$session = $this->createSession();
