@@ -4,6 +4,7 @@ namespace Orisai\Auth\Authentication;
 
 use DateTimeInterface;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
+use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Exceptions\Logic\ShouldNotHappen;
 
@@ -13,6 +14,8 @@ interface LoginStorage
 	public const REASON_MANUAL = 1;
 	public const REASON_INACTIVITY = 2;
 	public const REASON_INVALID_IDENTITY = 3;
+
+	public function getLogins(): Logins;
 
 	public function getIdentity(): ?Identity;
 

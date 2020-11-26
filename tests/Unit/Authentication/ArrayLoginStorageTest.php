@@ -15,6 +15,15 @@ use function array_keys;
 final class ArrayLoginStorageTest extends TestCase
 {
 
+	public function testGetLogins(): void
+	{
+		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+
+		$logins = $storage->getLogins();
+		self::assertNull($logins->getCurrentLogin());
+		self::assertSame([], $logins->getExpiredLogins());
+	}
+
 	public function testLogin(): void
 	{
 		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
