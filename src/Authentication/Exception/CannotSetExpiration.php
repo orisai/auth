@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Orisai\Auth\Authentication;
+namespace Orisai\Auth\Authentication\Exception;
 
 use Orisai\Exceptions\LogicalException;
 use Orisai\Exceptions\Message;
@@ -8,7 +8,7 @@ use function array_pop;
 use function explode;
 use function sprintf;
 
-final class CannotRenewIdentity extends LogicalException
+final class CannotSetExpiration extends LogicalException
 {
 
 	public static function create(string $class, string $function): self
@@ -17,13 +17,14 @@ final class CannotRenewIdentity extends LogicalException
 		$className = array_pop($parts);
 
 		$message = Message::create()
-			->withContext(sprintf('Trying to renew identity with %s->%s().', $class, $function))
+			->withContext(sprintf('Trying to set expiration with %s->%s().', $class, $function))
 			->withProblem('User is not logged in firewall.')
 			->withSolution(
 				sprintf(
-					'Use %s->login() instead or check with %s->isLoggedIn().',
+					'Ensure %s->login() is called before %s->%s().',
 					$className,
 					$className,
+					$function,
 				),
 			);
 

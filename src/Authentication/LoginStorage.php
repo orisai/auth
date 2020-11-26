@@ -4,20 +4,17 @@ namespace Orisai\Auth\Authentication;
 
 use DateTimeInterface;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
-use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
-use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
+use Orisai\Exceptions\Logic\ShouldNotHappen;
 
-interface Firewall
+interface LoginStorage
 {
 
-	public const REASON_MANUAL = LoginStorage::REASON_MANUAL;
-	public const REASON_INACTIVITY = LoginStorage::REASON_INACTIVITY;
-	public const REASON_INVALID_IDENTITY = LoginStorage::REASON_INVALID_IDENTITY;
+	public const REASON_MANUAL = 1;
+	public const REASON_INACTIVITY = 2;
+	public const REASON_INVALID_IDENTITY = 3;
 
-	public const EXPIRED_IDENTITIES_DEFAULT_LIMIT = 3;
-
-	public function isLoggedIn(): bool;
+	public function getIdentity(): ?Identity;
 
 	public function login(Identity $identity): void;
 
@@ -26,15 +23,13 @@ interface Firewall
 	 */
 	public function renewIdentity(Identity $identity): void;
 
-	public function logout(): void;
-
 	/**
-	 * @throws CannotAccessIdentity When user is not logged id
+	 * @phpstan-param self::REASON_* $reason
 	 */
-	public function getIdentity(): Identity;
+	public function logout(int $reason): void;
 
 	/**
-	 * @throws CannotSetExpiration When expiration is set before user is logged in
+	 * @throws ShouldNotHappen When expiration is set before user is logged in and firewall did not check
 	 */
 	public function setExpiration(DateTimeInterface $time): void;
 
@@ -52,9 +47,6 @@ interface Firewall
 	 */
 	public function removeExpiredLogin($id): void;
 
-	/**
-	 * @phpstan-param positive-int $count
-	 */
 	public function setExpiredIdentitiesLimit(int $count): void;
 
 }
