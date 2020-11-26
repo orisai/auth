@@ -42,6 +42,16 @@ final class NetteSessionLoginStorageTest extends TestCase
 		return new IntIdentity(123, []);
 	}
 
+	public function testGetLogins(): void
+	{
+		$session = $this->createSession();
+		$storage = $this->createStorage($session);
+
+		$logins = $storage->getLogins();
+		self::assertNull($logins->getCurrentLogin());
+		self::assertSame([], $logins->getExpiredLogins());
+	}
+
 	public function testLogin(): void
 	{
 		$session = $this->createSession();

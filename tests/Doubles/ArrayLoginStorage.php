@@ -30,6 +30,11 @@ final class ArrayLoginStorage implements LoginStorage
 		$this->logins = new Logins();
 	}
 
+	public function getLogins(): Logins
+	{
+		return $this->logins;
+	}
+
 	public function getIdentity(): ?Identity
 	{
 		$this->checkAuthentication();

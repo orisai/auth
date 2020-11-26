@@ -197,7 +197,7 @@ final class NetteSessionLoginStorage implements LoginStorage
 		return $section;
 	}
 
-	private function getLogins(): Logins
+	public function getLogins(): Logins
 	{
 		if ($this->logins !== null) {
 			return $this->logins;
