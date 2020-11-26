@@ -14,14 +14,15 @@ Passwords
     - `BcryptPasswordEncoder`
     - `SodiumPasswordEncoder`
     - `UpgradingPasswordEncoder`
+
 Authentication
 - `Firewall` interface
     - `BaseFirewall`
 - `Identity` interface
     - `IntIdentity`
     - `StringIdentity`
-- `IdentityStorage` interface
-    - `NetteSessionIdentityStorage`
+- `LoginStorage` interface
+    - `NetteSessionLoginStorage`
 - `IdentityRenewer` interface
 
 [Unreleased]: https://github.com/orisai/auth/compare/...HEAD

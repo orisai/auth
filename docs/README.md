@@ -222,11 +222,11 @@ final class AdminIdentityRenewer implements IdentityRenewer
 Create firewall instance
 
 ```php
-use Orisai\Auth\Bridge\NetteHttp\NetteSessionIdentityStorage;
+use Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage;
 
 $identityRenewer = new AdminIdentityRenewer($userRepository);
-$identityStorage = new NetteSessionIdentityStorage('admin', $session, $identityRenewer);
-$firewall = new AdminFirewall($identityStorage);
+$loginStorage = new NetteSessionLoginStorage('admin', $session, $identityRenewer);
+$firewall = new AdminFirewall($loginStorage);
 ```
 
 ### Authentication usage
@@ -240,13 +240,12 @@ $identity = new IntIdentity($user->getId(), $user->getRoles());
 $firewall->login($identity);
 $firewall->isLoggedIn(); // true
 $firewall->getIdentity(); // $identity
-$firewall->getExpiredIdentity(); // $identity
 ```
 
 #### Set or remove login expiration
 
 - Expiration is sliding, each request when firewall is used is expiration extended
-- After expiration is user logged out (`$firewall->getLogoutReason()` returns `$firewall::REASON_INACTIVITY`)
+- After expiration is user logged out (`ExpiredLogin->getLogoutReason()` returns `$firewall::REASON_INACTIVITY`)
 
 ```php
 $firewall->setExpiration(new DateTimeImmutable('1 week'));
@@ -259,20 +258,33 @@ $firewall->removeExpiration();
 - `$firewall->login()` would reset authentication time, don't use it for `Identity` update
 
 ```php
+use Orisai\Auth\Authentication\IntIdentity;
+
 $identity = new IntIdentity($user->getId(), $user->getRoles());
 $firewall->renewIdentity($identity);
 ```
 
 ##### Log out user
 
-- After manual logout `$firewall->getLogoutReason()` returns `$firewall::REASON_MANUAL`
-- `$firewall->getIdentity()` raises an exception, check with `$firewall->isLoggedIn()` or use `$firewall->getExpiredIdentity` instead
+- After manual logout `ExpiredLogin->getLogoutReason()` returns `$firewall::REASON_MANUAL`
+- `$firewall->getIdentity()` raises an exception, check with `$firewall->isLoggedIn()` or use `$firewall->getExpiredLogins()` instead
 
 ```php
 $firewall->logout();
 $firewall->isLoggedIn(); // false
 $firewall->getIdentity(); // exception
-$firewall->getExpiredIdentity(); // $identity
-$firewall->getLogoutReason(); // $firewall::REASON_* - REASON_MANUAL | REASON_INACTIVITY | REASON_INVALID_IDENTITY
+
+$firewall->removeExpiredLogins();
+$firewall->setExpiredIdentitiesLimit($count); // Maximum number of expired logins to store, defaults to 3
+
+$firewall->getExpiredLogins(); // array<ExpiredLogin>
+foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
+    $firewall->removeExpiredLogin($identityId);
+
+    $expiredLogin->getIdentity(); // Identity
+    $expiredLogin->getAuthenticationTimestamp(); // int
+    $expiredLogin->getLogoutReason(); // $firewall::REASON_* - REASON_MANUAL | REASON_INACTIVITY | REASON_INVALID_IDENTITY
+    $expiredLogin->getExpiration(); // Expiration|null
+}
 ```
 

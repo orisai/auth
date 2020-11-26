@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Orisai\Auth\Authentication;
+namespace Orisai\Auth\Authentication\Exception;
 
 use Orisai\Exceptions\LogicalException;
 use Orisai\Exceptions\Message;
