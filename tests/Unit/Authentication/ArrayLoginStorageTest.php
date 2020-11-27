@@ -2,9 +2,9 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication;
 
+use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\LoginStorage;
 use PHPUnit\Framework\TestCase;
-use Tests\Orisai\Auth\Doubles\ArrayLoginStorage;
 
 final class ArrayLoginStorageTest extends TestCase
 {

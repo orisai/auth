@@ -1,9 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Orisai\Auth\Doubles;
+namespace Orisai\Auth\Authentication;
 
 use Orisai\Auth\Authentication\Data\Logins;
-use Orisai\Auth\Authentication\LoginStorage;
 
 final class ArrayLoginStorage implements LoginStorage
 {
