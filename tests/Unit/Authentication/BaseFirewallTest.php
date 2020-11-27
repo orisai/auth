@@ -7,17 +7,22 @@ use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
+use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
+use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\ArrayLoginStorage;
+use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
 use function array_keys;
+use function sleep;
 
 final class BaseFirewallTest extends TestCase
 {
 
 	public function testBase(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 		$identity = new IntIdentity(123, []);
 
@@ -40,9 +45,37 @@ final class BaseFirewallTest extends TestCase
 		$firewall->getIdentity();
 	}
 
+	public function testSeparateNamespaces(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$identity = new IntIdentity(123, []);
+
+		$firewall1 = new TestingFirewall($storage, null, 'one');
+		$firewall2 = new TestingFirewall($storage, null, 'two');
+
+		self::assertFalse($storage->alreadyExists('one'));
+		self::assertFalse($storage->alreadyExists('two'));
+
+		$firewall1->login($identity);
+		self::assertTrue($storage->alreadyExists('one'));
+		self::assertFalse($storage->alreadyExists('two'));
+
+		$firewall2->login($identity);
+		self::assertTrue($storage->alreadyExists('one'));
+		self::assertTrue($storage->alreadyExists('two'));
+
+		self::assertSame($firewall1->getIdentity(), $firewall2->getIdentity());
+
+		$newIdentity = new IntIdentity(456, []);
+		$firewall1->login($newIdentity);
+
+		self::assertSame($newIdentity, $firewall1->getIdentity());
+		self::assertSame($identity, $firewall2->getIdentity());
+	}
+
 	public function testExpiredIdentities(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 		$firewall->setExpiredIdentitiesLimit(3);
 		$identity1 = new IntIdentity(1, []);
@@ -94,24 +127,26 @@ final class BaseFirewallTest extends TestCase
 		self::assertSame([], $firewall->getExpiredLogins());
 	}
 
-	public function testRenewIdentity(): void
+	public function testManualRenewIdentity(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
 
-		$newIdentity = new IntIdentity(123, []);
+		$firewall->renewIdentity($identity);
+		self::assertSame($identity, $firewall->getIdentity());
+
+		$newIdentity = new IntIdentity(456, []);
 		$firewall->renewIdentity($newIdentity);
-		self::assertSame($newIdentity, $storage->getIdentity());
 		self::assertSame($newIdentity, $firewall->getIdentity());
 	}
 
-	public function testRenewIdentityFailure(): void
+	public function testManualRenewIdentityFailure(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 		$identity = new IntIdentity(123, []);
 
@@ -127,14 +162,75 @@ MSG);
 		$firewall->renewIdentity($identity);
 	}
 
-	public function testTimeExpiration(): void
+	public function testRenewerSameIdentity(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$identity = new IntIdentity(123, []);
+
+		$storage = new ArrayLoginStorage();
+		$renewer = new AlwaysPassIdentityRenewer();
+		$firewall = new TestingFirewall($storage, $renewer);
+
+		$firewall->login($identity);
+		self::assertSame($identity, $firewall->getIdentity());
+		self::assertSame([], $firewall->getExpiredLogins());
+
+		$firewall->resetLoginsChecks();
+
+		self::assertSame($identity, $firewall->getIdentity());
+		self::assertSame([], $firewall->getExpiredLogins());
+	}
+
+	public function testRenewerNewIdentity(): void
+	{
+		$originalIdentity = new IntIdentity(123, []);
+		$newIdentity = new IntIdentity(456, []);
+
+		$storage = new ArrayLoginStorage();
+		$renewer = new NewIdentityIdentityRenewer($newIdentity);
+		$firewall = new TestingFirewall($storage, $renewer);
+
+		$firewall->login($originalIdentity);
+		self::assertSame($originalIdentity, $firewall->getIdentity());
+		self::assertSame([], $firewall->getExpiredLogins());
+
+		$firewall->resetLoginsChecks();
+
+		self::assertSame($newIdentity, $firewall->getIdentity());
+		self::assertSame([], $firewall->getExpiredLogins());
+	}
+
+	public function testRenewerRemovedIdentity(): void
+	{
+		$identity = new IntIdentity(123, []);
+
+		$storage = new ArrayLoginStorage();
+		$renewer = new NeverPassIdentityRenewer();
+		$firewall = new TestingFirewall($storage, $renewer);
+
+		$firewall->login($identity);
+		self::assertSame($identity, $firewall->getIdentity());
+		self::assertSame([], $firewall->getExpiredLogins());
+
+		$firewall->resetLoginsChecks();
+
+		$expired = $firewall->getExpiredLogins()[123];
+		self::assertSame($identity, $expired->getIdentity());
+		self::assertSame($firewall::REASON_INVALID_IDENTITY, $expired->getLogoutReason());
+	}
+
+	public function testTimeExpiredIdentity(): void
+	{
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(new DateTimeImmutable('10 seconds ago'));
+		$firewall->setExpiration(new DateTimeImmutable('1 second'));
+		self::assertSame($identity, $firewall->getIdentity());
+
+		sleep(2);
+		$firewall->resetLoginsChecks();
+
 		self::assertFalse($firewall->isLoggedIn());
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
@@ -146,24 +242,61 @@ MSG);
 		self::assertSame([], $firewall->getExpiredLogins());
 	}
 
-	public function testRemoveTimeExpiration(): void
+	public function testNotTimeExpiredIdentity(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(new DateTimeImmutable('10 seconds ago'));
-		$firewall->removeExpiration();
+		$firewall->setExpiration(new DateTimeImmutable('10 minutes'));
+		self::assertSame($identity, $firewall->getIdentity());
 
-		self::assertTrue($firewall->isLoggedIn());
+		$firewall->resetLoginsChecks();
+
 		self::assertSame($identity, $firewall->getIdentity());
 		self::assertSame([], $firewall->getExpiredLogins());
 	}
 
+	public function testRemovedTimeExpiration(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage);
+		$identity = new IntIdentity(123, []);
+
+		$firewall->login($identity);
+		$firewall->setExpiration(new DateTimeImmutable('1 seconds'));
+		$firewall->removeExpiration();
+		self::assertSame($identity, $firewall->getIdentity());
+
+		sleep(2);
+		$firewall->resetLoginsChecks();
+
+		self::assertSame($identity, $firewall->getIdentity());
+		self::assertSame([], $firewall->getExpiredLogins());
+	}
+
+	public function testExpirationTimeInThePast(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage);
+		$identity = new IntIdentity(123, []);
+
+		$firewall->login($identity);
+
+		$this->expectException(InvalidArgument::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to set login expiration time.
+Problem: Expiration time is lower than current time.
+Solution: Choose expiration time which is in future.
+MSG);
+
+		$firewall->setExpiration(new DateTimeImmutable('10 seconds ago'));
+	}
+
 	public function testNotLoggedInGetIdentity(): void
 	{
-		$storage = new ArrayLoginStorage(new DateTimeImmutable('now'));
+		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage);
 
 		$this->expectException(CannotAccessIdentity::class);
