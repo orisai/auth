@@ -173,14 +173,21 @@ Log in user into application via a firewall.
 
 ### Authentication setup
 
-Extend `BaseFirewall`
-- Only used for autowiring, no code change is required
+Create firewall
+- Should extend `BaseFirewall`
 
 ```php
+<?php
+
 use Orisai\Auth\Authentication\BaseFirewall;
 
 final class AdminFirewall extends BaseFirewall
 {
+
+	protected function getNamespace(): string
+	{
+		return 'admin';
+	}
 
 }
 ```
@@ -225,8 +232,8 @@ Create firewall instance
 use Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage;
 
 $identityRenewer = new AdminIdentityRenewer($userRepository);
-$loginStorage = new NetteSessionLoginStorage('admin', $session, $identityRenewer);
-$firewall = new AdminFirewall($loginStorage);
+$loginStorage = new NetteSessionLoginStorage($session);
+$firewall = new AdminFirewall($loginStorage, $identityRenewer);
 ```
 
 ### Authentication usage

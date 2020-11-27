@@ -2,18 +2,18 @@
 
 namespace Orisai\Auth\Authentication\Data;
 
-use Orisai\Auth\Authentication\LoginStorage;
+use Orisai\Auth\Authentication\Firewall;
 
 final class ExpiredLogin extends BaseLogin
 {
 
 	private ?Expiration $expiration = null;
 
-	/** @phpstan-var LoginStorage::REASON_* */
+	/** @phpstan-var Firewall::REASON_* */
 	private int $logoutReason;
 
 	/**
-	 * @phpstan-param LoginStorage::REASON_* $logoutReason
+	 * @phpstan-param Firewall::REASON_* $logoutReason
 	 */
 	public function __construct(CurrentLogin $currentLogin, int $logoutReason)
 	{
@@ -33,7 +33,7 @@ final class ExpiredLogin extends BaseLogin
 	}
 
 	/**
-	 * @phpstan-return LoginStorage::REASON_*
+	 * @phpstan-return Firewall::REASON_*
 	 */
 	public function getLogoutReason(): int
 	{

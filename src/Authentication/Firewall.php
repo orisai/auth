@@ -11,9 +11,9 @@ use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
 interface Firewall
 {
 
-	public const REASON_MANUAL = LoginStorage::REASON_MANUAL;
-	public const REASON_INACTIVITY = LoginStorage::REASON_INACTIVITY;
-	public const REASON_INVALID_IDENTITY = LoginStorage::REASON_INVALID_IDENTITY;
+	public const REASON_MANUAL = 1;
+	public const REASON_INACTIVITY = 2;
+	public const REASON_INVALID_IDENTITY = 3;
 
 	public const EXPIRED_IDENTITIES_DEFAULT_LIMIT = 3;
 
