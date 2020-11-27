@@ -5,9 +5,9 @@ namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
+use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IntIdentity;
-use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authentication\StringIdentity;
 use PHPUnit\Framework\TestCase;
 use function serialize;
@@ -29,7 +29,7 @@ final class LoginsTest extends TestCase
 		$logins->removeCurrentLogin();
 		self::assertNull($logins->getCurrentLogin());
 
-		$e1 = new ExpiredLogin($currentLogin, LoginStorage::REASON_MANUAL);
+		$e1 = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
 		$logins->addExpiredLogin($e1);
 		self::assertSame(['test' => $e1], $logins->getExpiredLogins());
 
@@ -104,7 +104,7 @@ final class LoginsTest extends TestCase
 
 	private function expiredLogin(Identity $identity): ExpiredLogin
 	{
-		return new ExpiredLogin(new CurrentLogin($identity, 1), LoginStorage::REASON_MANUAL);
+		return new ExpiredLogin(new CurrentLogin($identity, 1), Firewall::REASON_MANUAL);
 	}
 
 }
