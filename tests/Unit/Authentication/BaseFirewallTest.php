@@ -3,6 +3,7 @@
 namespace Tests\Orisai\Auth\Unit\Authentication;
 
 use DateTimeImmutable;
+use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\IntIdentity;
@@ -10,7 +11,6 @@ use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
-use Tests\Orisai\Auth\Doubles\ArrayLoginStorage;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
