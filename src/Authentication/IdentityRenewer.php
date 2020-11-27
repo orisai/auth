@@ -2,9 +2,15 @@
 
 namespace Orisai\Auth\Authentication;
 
+/**
+ * @template T of Identity
+ */
 interface IdentityRenewer
 {
 
+	/**
+	 * @return T|null
+	 */
 	public function renewIdentity(Identity $identity): ?Identity;
 
 }
