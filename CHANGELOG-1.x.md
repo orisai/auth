@@ -23,6 +23,7 @@ Authentication
     - `StringIdentity`
 - `LoginStorage` interface
     - `NetteSessionLoginStorage`
+    - `ArrayLoginStorage`
 - `IdentityRenewer` interface
 
 [Unreleased]: https://github.com/orisai/auth/compare/...HEAD
