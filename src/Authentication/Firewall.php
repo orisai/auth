@@ -8,6 +8,9 @@ use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
 
+/**
+ * @template T of Identity
+ */
 interface Firewall
 {
 
@@ -19,9 +22,13 @@ interface Firewall
 
 	public function isLoggedIn(): bool;
 
+	/**
+	 * @param T $identity
+	 */
 	public function login(Identity $identity): void;
 
 	/**
+	 * @param T $identity
 	 * @throws CannotRenewIdentity When user is not logged id
 	 */
 	public function renewIdentity(Identity $identity): void;
@@ -29,6 +36,7 @@ interface Firewall
 	public function logout(): void;
 
 	/**
+	 * @return T
 	 * @throws CannotAccessIdentity When user is not logged id
 	 */
 	public function getIdentity(): Identity;

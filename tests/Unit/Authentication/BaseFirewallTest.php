@@ -20,10 +20,15 @@ use function sleep;
 final class BaseFirewallTest extends TestCase
 {
 
+	public function renewer(): AlwaysPassIdentityRenewer
+	{
+		return new AlwaysPassIdentityRenewer();
+	}
+
 	public function testBase(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -50,8 +55,8 @@ final class BaseFirewallTest extends TestCase
 		$storage = new ArrayLoginStorage();
 		$identity = new IntIdentity(123, []);
 
-		$firewall1 = new TestingFirewall($storage, null, 'one');
-		$firewall2 = new TestingFirewall($storage, null, 'two');
+		$firewall1 = new TestingFirewall($storage, $this->renewer(), 'one');
+		$firewall2 = new TestingFirewall($storage, $this->renewer(), 'two');
 
 		self::assertFalse($storage->alreadyExists('one'));
 		self::assertFalse($storage->alreadyExists('two'));
@@ -73,10 +78,23 @@ final class BaseFirewallTest extends TestCase
 		self::assertSame($identity, $firewall2->getIdentity());
 	}
 
+	public function testIdentityClassUpdate(): void
+	{
+		$originalIdentity = new IntIdentity(123, []);
+		$renewedIdentity = new StringIdentity('string', []);
+
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, new NewIdentityIdentityRenewer($renewedIdentity));
+
+		$firewall->login($originalIdentity);
+		$firewall->resetLoginsChecks();
+		self::assertSame($renewedIdentity, $firewall->getLogins()->getCurrentLogin()->getIdentity());
+	}
+
 	public function testExpiredIdentities(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$firewall->setExpiredIdentitiesLimit(3);
 		$identity1 = new IntIdentity(1, []);
 
@@ -130,7 +148,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -147,7 +165,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentityFailure(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		$this->expectException(CannotRenewIdentity::class);
@@ -221,7 +239,7 @@ MSG);
 	public function testTimeExpiredIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -245,7 +263,7 @@ MSG);
 	public function testNotTimeExpiredIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -261,7 +279,7 @@ MSG);
 	public function testRemovedTimeExpiration(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -279,7 +297,7 @@ MSG);
 	public function testExpirationTimeInThePast(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -297,7 +315,7 @@ MSG);
 	public function testNotLoggedInGetIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage);
+		$firewall = new TestingFirewall($storage, $this->renewer());
 
 		$this->expectException(CannotAccessIdentity::class);
 		$this->expectExceptionMessage(<<<'MSG'

@@ -9,3 +9,7 @@ parameters:
 		# https://github.com/php/php-src/blob/901417f0ae02afc8bef904818edaf2b2db8f6b58/ext/standard/password.c#L655
 		- message: '#^Method (.+)BcryptPasswordEncoder\:\:encode\(\) should return string but returns string\|false\.$#'
 		  path: %currentWorkingDirectory%/src/Passwords/BcryptPasswordEncoder.php
+
+		# It should not be possible to get incorrect instance via firewall api
+		- message: '#^Method (.+)BaseFirewall\:\:getIdentity\(\) should return T of (.+)Identity but returns (.+)Identity\.$#'
+		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
