@@ -14,16 +14,25 @@ use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 use function time;
 
+/**
+ * @template T of Identity
+ * @implements Firewall<T>
+ */
 abstract class BaseFirewall implements Firewall
 {
 
 	private LoginStorage $storage;
-	private ?IdentityRenewer $renewer;
+
+	/** @var IdentityRenewer<T> */
+	private IdentityRenewer $renewer;
 
 	protected ?Logins $logins = null;
 	private int $expiredIdentitiesLimit = self::EXPIRED_IDENTITIES_DEFAULT_LIMIT;
 
-	public function __construct(LoginStorage $storage, ?IdentityRenewer $renewer = null)
+	/**
+	 * @param IdentityRenewer<T> $renewer
+	 */
+	public function __construct(LoginStorage $storage, IdentityRenewer $renewer)
 	{
 		$this->storage = $storage;
 		$this->renewer = $renewer;
@@ -173,7 +182,7 @@ abstract class BaseFirewall implements Firewall
 	{
 		$login = $logins->getCurrentLogin();
 
-		if ($login === null || $this->renewer === null) {
+		if ($login === null) {
 			return;
 		}
 
@@ -224,7 +233,7 @@ abstract class BaseFirewall implements Firewall
 		$logins->removeOldestExpiredLoginsAboveLimit($this->expiredIdentitiesLimit);
 	}
 
-	private function getLogins(): Logins
+	protected function getLogins(): Logins
 	{
 		if ($this->logins !== null) {
 			return $this->logins;

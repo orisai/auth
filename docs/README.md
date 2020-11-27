@@ -193,9 +193,8 @@ final class AdminFirewall extends BaseFirewall
 ```
 
 Create an identity renewer
-- optional
 - allows you to log out user on each request at which firewall is used - return null
-- renews identity on each request so data in user Identity are always actual
+- renews identity on each request so data in user Identity and class itself are always actual
 
 ```php
 use Orisai\Auth\Authentication\Identity;
