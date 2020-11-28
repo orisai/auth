@@ -11,6 +11,7 @@ use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
+use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
 use Orisai\Exceptions\Logic\InvalidArgument;
@@ -123,6 +124,17 @@ abstract class BaseFirewall implements Firewall
 		$login = $this->getLogins()->getCurrentLogin();
 
 		return $login === null ? null : $login->getIdentity();
+	}
+
+	public function getAuthenticationTime(): Instant
+	{
+		$login = $this->getLogins()->getCurrentLogin();
+
+		if ($login === null) {
+			throw CannotGetAuthenticationTime::create(static::class, __FUNCTION__);
+		}
+
+		return $login->getAuthenticationTime();
 	}
 
 	/**
