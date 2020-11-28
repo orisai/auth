@@ -2,24 +2,27 @@
 
 namespace Orisai\Auth\Authentication\Data;
 
+use Brick\DateTime\Duration;
+use Brick\DateTime\Instant;
+
 class Expiration
 {
 
-	protected int $timestamp;
-	private int $delta;
+	protected Instant $time;
+	private Duration $delta;
 
-	public function __construct(int $timestamp, int $delta)
+	public function __construct(Instant $time, Duration $delta)
 	{
-		$this->timestamp = $timestamp;
+		$this->time = $time;
 		$this->delta = $delta;
 	}
 
-	public function getTimestamp(): int
+	public function getTime(): Instant
 	{
-		return $this->timestamp;
+		return $this->time;
 	}
 
-	public function getDelta(): int
+	public function getDelta(): Duration
 	{
 		return $this->delta;
 	}
@@ -30,8 +33,8 @@ class Expiration
 	public function __serialize(): array
 	{
 		return [
-			'timestamp' => $this->timestamp,
-			'delta' => $this->delta,
+			'time' => $this->time->getEpochSecond(),
+			'delta' => $this->delta->getSeconds(),
 		];
 	}
 
@@ -40,8 +43,8 @@ class Expiration
 	 */
 	public function __unserialize(array $data): void
 	{
-		$this->timestamp = $data['timestamp'];
-		$this->delta = $data['delta'];
+		$this->time = Instant::of($data['time']);
+		$this->delta = Duration::ofSeconds($data['delta']);
 	}
 
 }

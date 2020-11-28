@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Bridge\NetteHttp;
 
+use Brick\DateTime\Duration;
+use Brick\DateTime\Instant;
 use Nette\Http\Session;
 use Nette\Http\SessionSection;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
@@ -92,10 +94,13 @@ final class NetteSessionLoginStorage implements LoginStorage
 		$section->logins = $logins = new Logins();
 
 		if ($section->identity !== null) {
-			$login = new CurrentLogin($section->identity, $section->authenticationTime ?? time());
+			$login = new CurrentLogin($section->identity, Instant::of($section->authenticationTime ?? time()));
 
 			if ($section->expirationTime !== null && $section->expirationDelta !== null) {
-				$expiration = new CurrentExpiration($section->expirationTime, $section->expirationDelta);
+				$expiration = new CurrentExpiration(
+					Instant::of($section->expirationTime),
+					Duration::ofSeconds($section->expirationDelta),
+				);
 				$login->setExpiration($expiration);
 			}
 

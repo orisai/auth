@@ -2,6 +2,8 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 
+use Brick\DateTime\Duration;
+use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\IntIdentity;
@@ -16,13 +18,14 @@ final class CurrentLoginTest extends TestCase
 	public function test(): void
 	{
 		$identity = new IntIdentity(1, []);
-		$login = new CurrentLogin($identity, 2);
+		$authTime = Instant::of(2);
+		$login = new CurrentLogin($identity, $authTime);
 
 		self::assertSame($identity, $login->getIdentity());
-		self::assertSame(2, $login->getAuthenticationTimestamp());
+		self::assertSame($authTime, $login->getAuthenticationTime());
 		self::assertNull($login->getExpiration());
 
-		$expiration = new CurrentExpiration(123, 456);
+		$expiration = new CurrentExpiration(Instant::of(123), Duration::ofSeconds(456));
 		$login->setExpiration($expiration);
 		self::assertSame($expiration, $login->getExpiration());
 

@@ -3,6 +3,7 @@
 namespace Orisai\Auth\Authentication\Data;
 
 use __PHP_Incomplete_Class;
+use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Exceptions\Logic\InvalidState;
 use Orisai\Exceptions\Message;
@@ -12,12 +13,12 @@ abstract class BaseLogin
 {
 
 	protected Identity $identity;
-	private int $authenticationTimestamp;
+	private Instant $authenticationTime;
 
-	public function __construct(Identity $identity, int $authenticationTimestamp)
+	public function __construct(Identity $identity, Instant $authenticationTime)
 	{
 		$this->identity = $identity;
-		$this->authenticationTimestamp = $authenticationTimestamp;
+		$this->authenticationTime = $authenticationTime;
 	}
 
 	public function getIdentity(): Identity
@@ -25,9 +26,9 @@ abstract class BaseLogin
 		return $this->identity;
 	}
 
-	public function getAuthenticationTimestamp(): int
+	public function getAuthenticationTime(): Instant
 	{
-		return $this->authenticationTimestamp;
+		return $this->authenticationTime;
 	}
 
 	/**
@@ -37,7 +38,7 @@ abstract class BaseLogin
 	{
 		return [
 			'identity' => $this->identity,
-			'authenticationTime' => $this->authenticationTimestamp,
+			'authenticationTime' => $this->authenticationTime->getEpochSecond(),
 		];
 	}
 
@@ -61,7 +62,7 @@ abstract class BaseLogin
 		}
 
 		$this->identity = $data['identity'];
-		$this->authenticationTimestamp = $data['authenticationTime'];
+		$this->authenticationTime = Instant::of($data['authenticationTime']);
 	}
 
 }

@@ -2,7 +2,7 @@
 
 namespace Orisai\Auth\Authentication;
 
-use DateTimeInterface;
+use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
@@ -44,7 +44,7 @@ interface Firewall
 	/**
 	 * @throws CannotSetExpiration When expiration is set before user is logged in
 	 */
-	public function setExpiration(DateTimeInterface $time): void;
+	public function setExpiration(Instant $time): void;
 
 	public function removeExpiration(): void;
 
