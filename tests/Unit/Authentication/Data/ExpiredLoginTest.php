@@ -2,6 +2,8 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 
+use Brick\DateTime\Duration;
+use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\Expiration;
@@ -18,10 +20,11 @@ final class ExpiredLoginTest extends TestCase
 	public function testBase(): void
 	{
 		$identity = new IntIdentity(1, []);
-		$login = new ExpiredLogin(new CurrentLogin($identity, 2), Firewall::REASON_MANUAL);
+		$authTime = Instant::of(2);
+		$login = new ExpiredLogin(new CurrentLogin($identity, $authTime), Firewall::REASON_MANUAL);
 
 		self::assertSame($identity, $login->getIdentity());
-		self::assertSame(2, $login->getAuthenticationTimestamp());
+		self::assertSame($authTime, $login->getAuthenticationTime());
 		self::assertNull($login->getExpiration());
 		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutReason());
 
@@ -31,15 +34,17 @@ final class ExpiredLoginTest extends TestCase
 	public function testExpiration(): void
 	{
 		$identity = new IntIdentity(1, []);
-		$currentLogin = new CurrentLogin($identity, 2);
-		$currentLogin->setExpiration(new CurrentExpiration(123, 456));
+		$currentLogin = new CurrentLogin($identity, Instant::of(2));
+		$time = Instant::of(123);
+		$delta = Duration::ofSeconds(456);
+		$currentLogin->setExpiration(new CurrentExpiration($time, $delta));
 		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
 
 		$expiration = $login->getExpiration();
 		self::assertInstanceOf(Expiration::class, $expiration);
 		self::assertNotInstanceOf(CurrentLogin::class, $expiration);
-		self::assertSame(123, $expiration->getTimestamp());
-		self::assertSame(456, $expiration->getDelta());
+		self::assertSame($time, $expiration->getTime());
+		self::assertSame($delta, $expiration->getDelta());
 
 		self::assertEquals($login, unserialize(serialize($login)));
 	}

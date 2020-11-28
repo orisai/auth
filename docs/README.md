@@ -254,7 +254,9 @@ $firewall->getIdentity(); // $identity
 - After expiration is user logged out (`ExpiredLogin->getLogoutReason()` returns `$firewall::REASON_INACTIVITY`)
 
 ```php
-$firewall->setExpiration(new DateTimeImmutable('1 week'));
+use Brick\DateTime\Instant;
+
+$firewall->setExpiration(Instant::now()->plusDays(7));
 $firewall->removeExpiration();
 ```
 
