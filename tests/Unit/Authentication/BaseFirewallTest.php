@@ -326,7 +326,7 @@ Context: Trying to get valid identity with
          Tests\Orisai\Auth\Doubles\TestingFirewall->getIdentity().
 Problem: User is not logged in firewall.
 Solution: Check with TestingFirewall->isLoggedIn() or use
-          TestingFirewall->getExpiredIdentity().
+          TestingFirewall->getExpiredLogins().
 MSG);
 
 		$firewall->getIdentity();
