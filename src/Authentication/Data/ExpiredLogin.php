@@ -17,11 +17,11 @@ final class ExpiredLogin extends BaseLogin
 	 */
 	public function __construct(CurrentLogin $currentLogin, int $logoutReason)
 	{
-		parent::__construct($currentLogin->getIdentity(), $currentLogin->getAuthenticationTimestamp());
+		parent::__construct($currentLogin->getIdentity(), $currentLogin->getAuthenticationTime());
 
 		$expiration = $currentLogin->getExpiration();
 		if ($expiration !== null) {
-			$this->expiration = new Expiration($expiration->getTimestamp(), $expiration->getDelta());
+			$this->expiration = new Expiration($expiration->getTime(), $expiration->getDelta());
 		}
 
 		$this->logoutReason = $logoutReason;

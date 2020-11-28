@@ -2,7 +2,10 @@
 
 namespace Orisai\Auth\Authentication;
 
-use DateTimeInterface;
+use Brick\DateTime\Clock;
+use Brick\DateTime\Clock\SystemClock;
+use Brick\DateTime\Duration;
+use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
@@ -12,7 +15,6 @@ use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
-use function time;
 
 /**
  * @template T of Identity
@@ -26,16 +28,19 @@ abstract class BaseFirewall implements Firewall
 	/** @var IdentityRenewer<T> */
 	private IdentityRenewer $renewer;
 
+	private Clock $clock;
+
 	protected ?Logins $logins = null;
 	private int $expiredIdentitiesLimit = self::EXPIRED_IDENTITIES_DEFAULT_LIMIT;
 
 	/**
 	 * @param IdentityRenewer<T> $renewer
 	 */
-	public function __construct(LoginStorage $storage, IdentityRenewer $renewer)
+	public function __construct(LoginStorage $storage, IdentityRenewer $renewer, ?Clock $clock = null)
 	{
 		$this->storage = $storage;
 		$this->renewer = $renewer;
+		$this->clock = $clock ?? new SystemClock();
 	}
 
 	abstract protected function getNamespace(): string;
@@ -54,7 +59,7 @@ abstract class BaseFirewall implements Firewall
 			$this->addExpiredLogin(new ExpiredLogin($previousLogin, $this::REASON_MANUAL));
 		}
 
-		$logins->setCurrentLogin(new CurrentLogin($identity, time()));
+		$logins->setCurrentLogin(new CurrentLogin($identity, $this->clock->getTime()));
 
 		$this->storage->regenerateSecurityToken($this->getNamespace());
 	}
@@ -123,7 +128,7 @@ abstract class BaseFirewall implements Firewall
 	/**
 	 * @throws CannotSetExpiration When expiration is set before user is logged in
 	 */
-	public function setExpiration(DateTimeInterface $time): void
+	public function setExpiration(Instant $time): void
 	{
 		$login = $this->getLogins()->getCurrentLogin();
 
@@ -131,9 +136,8 @@ abstract class BaseFirewall implements Firewall
 			throw CannotSetExpiration::create(static::class, __FUNCTION__);
 		}
 
-		$expirationTime = (int) $time->format('U');
-		$delta = $expirationTime - time();
-		$login->setExpiration(new CurrentExpiration($expirationTime, $delta));
+		$delta = $time->getEpochSecond() - $this->clock->getTime()->getEpochSecond();
+		$login->setExpiration(new CurrentExpiration($time, Duration::ofSeconds($delta)));
 
 		if ($delta <= 0) {
 			$message = Message::create()
@@ -171,10 +175,12 @@ abstract class BaseFirewall implements Firewall
 			return;
 		}
 
-		if ($expiration->getTimestamp() < time()) {
+		$now = $this->clock->getTime();
+
+		if ($expiration->getTime()->isBefore($now)) {
 			$this->unauthenticate(self::REASON_INACTIVITY, $logins);
 		} else {
-			$expiration->setTimestamp(time() + $expiration->getDelta());
+			$expiration->setTime($now->plusSeconds($expiration->getDelta()->toSeconds()));
 		}
 	}
 

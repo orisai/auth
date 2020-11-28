@@ -2,7 +2,8 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication;
 
-use DateTimeImmutable;
+use Brick\DateTime\Clock\FixedClock;
+use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
@@ -15,7 +16,6 @@ use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
 use function array_keys;
-use function sleep;
 
 final class BaseFirewallTest extends TestCase
 {
@@ -55,8 +55,8 @@ final class BaseFirewallTest extends TestCase
 		$storage = new ArrayLoginStorage();
 		$identity = new IntIdentity(123, []);
 
-		$firewall1 = new TestingFirewall($storage, $this->renewer(), 'one');
-		$firewall2 = new TestingFirewall($storage, $this->renewer(), 'two');
+		$firewall1 = new TestingFirewall($storage, $this->renewer(), null, 'one');
+		$firewall2 = new TestingFirewall($storage, $this->renewer(), null, 'two');
 
 		self::assertFalse($storage->alreadyExists('one'));
 		self::assertFalse($storage->alreadyExists('two'));
@@ -238,15 +238,16 @@ MSG);
 
 	public function testTimeExpiredIdentity(): void
 	{
+		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(new DateTimeImmutable('1 second'));
+		$firewall->setExpiration(Instant::now()->plusSeconds(1));
 		self::assertSame($identity, $firewall->getIdentity());
 
-		sleep(2);
+		$clock->move(2);
 		$firewall->resetLoginsChecks();
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -267,7 +268,7 @@ MSG);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(new DateTimeImmutable('10 minutes'));
+		$firewall->setExpiration(Instant::now()->plusMinutes(10));
 		self::assertSame($identity, $firewall->getIdentity());
 
 		$firewall->resetLoginsChecks();
@@ -278,16 +279,17 @@ MSG);
 
 	public function testRemovedTimeExpiration(): void
 	{
+		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(new DateTimeImmutable('1 seconds'));
+		$firewall->setExpiration(Instant::now()->plusSeconds(1));
 		$firewall->removeExpiration();
 		self::assertSame($identity, $firewall->getIdentity());
 
-		sleep(2);
+		$clock->move(2);
 		$firewall->resetLoginsChecks();
 
 		self::assertSame($identity, $firewall->getIdentity());
@@ -309,7 +311,7 @@ Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
 MSG);
 
-		$firewall->setExpiration(new DateTimeImmutable('10 seconds ago'));
+		$firewall->setExpiration(Instant::now()->minusSeconds(10));
 	}
 
 	public function testNotLoggedInGetIdentity(): void
