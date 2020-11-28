@@ -5,6 +5,7 @@ namespace Orisai\Auth\Authentication;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
+use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
 
@@ -40,6 +41,11 @@ interface Firewall
 	 * @throws CannotAccessIdentity When user is not logged id
 	 */
 	public function getIdentity(): Identity;
+
+	/**
+	 * @throws CannotGetAuthenticationTime When user is not logged id
+	 */
+	public function getAuthenticationTime(): Instant;
 
 	/**
 	 * @throws CannotSetExpiration When expiration is set before user is logged in
