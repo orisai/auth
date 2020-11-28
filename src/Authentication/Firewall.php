@@ -42,6 +42,8 @@ interface Firewall
 	 */
 	public function getIdentity(): Identity;
 
+	public function hasRole(string $role): bool;
+
 	/**
 	 * @throws CannotGetAuthenticationTime When user is not logged id
 	 */

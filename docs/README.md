@@ -247,6 +247,7 @@ $firewall->login($identity);
 $firewall->isLoggedIn(); // true
 $firewall->getIdentity(); // $identity
 $firewall->getAuthenticationTime(); // Instant
+$firewall->hasRole($role); // bool
 ```
 
 #### Set or remove login expiration
