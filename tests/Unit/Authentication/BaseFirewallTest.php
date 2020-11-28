@@ -6,6 +6,7 @@ use Brick\DateTime\Clock\FixedClock;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
+use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
@@ -329,6 +330,32 @@ Solution: Check with TestingFirewall->isLoggedIn() or use
 MSG);
 
 		$firewall->getIdentity();
+	}
+
+	public function testGetAuthenticationTime(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, $this->renewer(), new FixedClock(Instant::of(1)));
+
+		$identity = new IntIdentity(123, []);
+		$firewall->login($identity);
+		self::assertSame(1, $firewall->getAuthenticationTime()->getEpochSecond());
+	}
+
+	public function testNotLoggedInGetAuthTime(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, $this->renewer());
+
+		$this->expectException(CannotGetAuthenticationTime::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to get authentication time with
+         Tests\Orisai\Auth\Doubles\TestingFirewall->getAuthenticationTime().
+Problem: User is not logged in firewall.
+Solution: Check with TestingFirewall->isLoggedIn().
+MSG);
+
+		$firewall->getAuthenticationTime();
 	}
 
 }

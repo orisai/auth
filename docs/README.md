@@ -246,6 +246,7 @@ $identity = new IntIdentity($user->getId(), $user->getRoles());
 $firewall->login($identity);
 $firewall->isLoggedIn(); // true
 $firewall->getIdentity(); // $identity
+$firewall->getAuthenticationTime(); // Instant
 ```
 
 #### Set or remove login expiration
