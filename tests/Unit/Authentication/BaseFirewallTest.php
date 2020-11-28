@@ -92,6 +92,20 @@ final class BaseFirewallTest extends TestCase
 		self::assertSame($renewedIdentity, $firewall->getLogins()->getCurrentLogin()->getIdentity());
 	}
 
+	public function testHasRole(): void
+	{
+		$identity = new IntIdentity(123, ['foo']);
+
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, $this->renewer());
+
+		self::assertFalse($firewall->hasRole('foo'));
+
+		$firewall->login($identity);
+		self::assertTrue($firewall->hasRole('foo'));
+		self::assertFalse($firewall->hasRole('bar'));
+	}
+
 	public function testExpiredIdentities(): void
 	{
 		$storage = new ArrayLoginStorage();

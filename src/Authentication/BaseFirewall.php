@@ -137,6 +137,17 @@ abstract class BaseFirewall implements Firewall
 		return $login->getAuthenticationTime();
 	}
 
+	public function hasRole(string $role): bool
+	{
+		$identity = $this->fetchIdentity();
+
+		if ($identity === null) {
+			return false;
+		}
+
+		return $identity->hasRole($role);
+	}
+
 	/**
 	 * @throws CannotSetExpiration When expiration is set before user is logged in
 	 */
