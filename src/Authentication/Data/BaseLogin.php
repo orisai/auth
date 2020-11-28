@@ -5,15 +5,13 @@ namespace Orisai\Auth\Authentication\Data;
 use __PHP_Incomplete_Class;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Exceptions\Logic\InvalidState;
-use Orisai\Exceptions\Message;
-use function sprintf;
 
 abstract class BaseLogin
 {
 
 	protected Identity $identity;
 	private Instant $authenticationTime;
+	private bool $hasInvalidIdentity = false;
 
 	public function __construct(Identity $identity, Instant $authenticationTime)
 	{
@@ -29,6 +27,11 @@ abstract class BaseLogin
 	public function getAuthenticationTime(): Instant
 	{
 		return $this->authenticationTime;
+	}
+
+	public function hasInvalidIdentity(): bool
+	{
+		return $this->hasInvalidIdentity;
 	}
 
 	/**
@@ -48,20 +51,11 @@ abstract class BaseLogin
 	public function __unserialize(array $data): void
 	{
 		if ($data['identity'] instanceof __PHP_Incomplete_Class) {
-			$message = Message::create()
-				->withContext('Trying to deserialize Identity data.')
-				->withProblem(
-					sprintf('Deserialized class %s does not exist.', $data['identity']->__PHP_Incomplete_Class_Name),
-				)
-				->withSolution(
-					'Ensure class actually exists and is autoloadable or remove logins which use that class from storage.',
-				);
-
-			throw InvalidState::create()
-				->withMessage($message);
+			$this->hasInvalidIdentity = true;
+		} else {
+			$this->identity = $data['identity'];
 		}
 
-		$this->identity = $data['identity'];
 		$this->authenticationTime = Instant::of($data['authenticationTime']);
 	}
 

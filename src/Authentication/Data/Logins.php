@@ -84,6 +84,16 @@ final class Logins
 	{
 		$this->currentLogin = $data['currentLogin'];
 		$this->expiredLogins = $data['expiredLogins'];
+
+		if ($this->currentLogin !== null && $this->currentLogin->hasInvalidIdentity()) {
+			$this->currentLogin = null;
+		}
+
+		foreach ($this->expiredLogins as $key => $expiredLogin) {
+			if ($expiredLogin->hasInvalidIdentity()) {
+				unset($this->expiredLogins[$key]);
+			}
+		}
 	}
 
 }
