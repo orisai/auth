@@ -3,6 +3,7 @@ includes:
 
 parameters:
 	level: max
+	resultCachePath: %currentWorkingDirectory%/var/build-tools/PHPStan/resultCache.src.php
 
 	ignoreErrors:
 		# Since php 7.4 there is no chance password_hash would return false
