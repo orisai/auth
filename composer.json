@@ -21,7 +21,8 @@
 	"require": {
 		"php": ">=7.4.0",
 		"brick/date-time": "^0.2.2",
-		"orisai/exceptions": "^1.0.0"
+		"orisai/exceptions": "^1.0.0",
+		"orisai/utils": "^1.0.0"
 	},
 	"require-dev": {
 		"ext-sodium": "*",
