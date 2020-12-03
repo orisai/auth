@@ -3,8 +3,8 @@
 namespace Orisai\Auth\Passwords;
 
 use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\Exceptions\Logic\InvalidState;
 use Orisai\Exceptions\Message;
+use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
 use function extension_loaded;
 use function max;
 use function sodium_crypto_pwhash_str;
@@ -24,13 +24,7 @@ final class SodiumPasswordEncoder implements PasswordEncoder
 	public function __construct(?int $timeCost = null, ?int $memoryCost = null)
 	{
 		if (!self::isSupported()) {
-			$message = Message::create()
-				->withContext(sprintf('Trying to create instance of %s.', self::class))
-				->withProblem('PHP extension sodium is not available.')
-				->withSolution('Install and activate sodium PHP extension.');
-
-			throw InvalidState::create()
-				->withMessage($message);
+			throw ExtensionRequired::forClass(['sodium'], self::class);
 		}
 
 		$timeCost ??= max(4, SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE);
