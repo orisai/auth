@@ -68,9 +68,6 @@ interface Firewall
 	 */
 	public function removeExpiredLogin($id): void;
 
-	/**
-	 * @phpstan-param positive-int $count
-	 */
 	public function setExpiredIdentitiesLimit(int $count): void;
 
 }
