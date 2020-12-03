@@ -3,13 +3,13 @@
 namespace Orisai\Auth\Authentication;
 
 /**
- * @template T of Identity
+ * @phpstan-template T of Identity
  */
 interface IdentityRenewer
 {
 
 	/**
-	 * @return T|null
+	 * @phpstan-return T|null
 	 */
 	public function renewIdentity(Identity $identity): ?Identity;
 

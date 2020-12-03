@@ -18,8 +18,8 @@ use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 
 /**
- * @template T of Identity
- * @implements Firewall<T>
+ * @phpstan-template T of Identity
+ * @phpstan-implements Firewall<T>
  */
 abstract class BaseFirewall implements Firewall
 {
