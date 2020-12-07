@@ -30,7 +30,7 @@ interface Firewall
 
 	/**
 	 * @phpstan-param T $identity
-	 * @throws CannotRenewIdentity When user is not logged id
+	 * @throws CannotRenewIdentity User is not logged id
 	 */
 	public function renewIdentity(Identity $identity): void;
 
@@ -38,19 +38,19 @@ interface Firewall
 
 	/**
 	 * @phpstan-return T
-	 * @throws CannotAccessIdentity When user is not logged id
+	 * @throws CannotAccessIdentity User is not logged id
 	 */
 	public function getIdentity(): Identity;
 
 	public function hasRole(string $role): bool;
 
 	/**
-	 * @throws CannotGetAuthenticationTime When user is not logged id
+	 * @throws CannotGetAuthenticationTime User is not logged id
 	 */
 	public function getAuthenticationTime(): Instant;
 
 	/**
-	 * @throws CannotSetExpiration When expiration is set before user is logged in
+	 * @throws CannotSetExpiration User is not logged id
 	 */
 	public function setExpiration(Instant $time): void;
 

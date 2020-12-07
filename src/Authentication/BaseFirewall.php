@@ -66,7 +66,7 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @throws CannotRenewIdentity When user is not logged id
+	 * @throws CannotRenewIdentity
 	 */
 	public function renewIdentity(Identity $identity): void
 	{
@@ -102,7 +102,7 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @throws CannotAccessIdentity When user is not logged id
+	 * @throws CannotAccessIdentity
 	 */
 	public function getIdentity(): Identity
 	{
@@ -149,7 +149,7 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @throws CannotSetExpiration When expiration is set before user is logged in
+	 * @throws CannotSetExpiration
 	 */
 	public function setExpiration(Instant $time): void
 	{
