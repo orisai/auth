@@ -48,7 +48,7 @@ abstract class BaseFirewall implements Firewall
 
 	public function isLoggedIn(): bool
 	{
-		return $this->getLogins()->getCurrentLogin() !== null;
+		return $this->fetchIdentity() !== null;
 	}
 
 	public function login(Identity $identity): void
