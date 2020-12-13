@@ -128,6 +128,10 @@ abstract class BaseFirewall implements Firewall
 
 	public function getAuthenticationTime(): Instant
 	{
+		if (!$this->storage->alreadyExists($this->getNamespace())) {
+			throw CannotGetAuthenticationTime::create(static::class, __FUNCTION__);
+		}
+
 		$login = $this->getLogins()->getCurrentLogin();
 
 		if ($login === null) {
