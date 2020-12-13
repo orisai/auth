@@ -372,4 +372,39 @@ MSG);
 		$firewall->getAuthenticationTime();
 	}
 
+	/**
+	 * Prevents errors like "headers already sent" when storage uses session
+	 * and firewall is used for read after headers were sent
+	 */
+	public function testReadOnlyMethodsDoesNotTriggerStorageCreation(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$namespace = 'test';
+		$firewall = new TestingFirewall($storage, $this->renewer(), null, $namespace);
+
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		try {
+			$firewall->getIdentity();
+		}catch (CannotAccessIdentity $exception) {
+			// Just to test storage creation
+		}
+
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		try {
+			$firewall->getAuthenticationTime();
+		}catch (CannotGetAuthenticationTime $exception) {
+			// Just to test storage creation
+		}
+
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		self::assertSame([], $firewall->getExpiredLogins());
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		self::assertFalse($firewall->hasRole('any'));
+		self::assertFalse($storage->alreadyExists($namespace));
+	}
+
 }
