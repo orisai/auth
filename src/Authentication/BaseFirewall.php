@@ -115,24 +115,25 @@ abstract class BaseFirewall implements Firewall
 		return $identity;
 	}
 
-	private function fetchIdentity(): ?Identity
+	private function fetchCurrentLogin(): ?CurrentLogin
 	{
 		if (!$this->storage->alreadyExists($this->getNamespace())) {
 			return null;
 		}
 
-		$login = $this->getLogins()->getCurrentLogin();
+		return $this->getLogins()->getCurrentLogin();
+	}
+
+	private function fetchIdentity(): ?Identity
+	{
+		$login = $this->fetchCurrentLogin();
 
 		return $login === null ? null : $login->getIdentity();
 	}
 
 	public function getAuthenticationTime(): Instant
 	{
-		if (!$this->storage->alreadyExists($this->getNamespace())) {
-			throw CannotGetAuthenticationTime::create(static::class, __FUNCTION__);
-		}
-
-		$login = $this->getLogins()->getCurrentLogin();
+		$login = $this->fetchCurrentLogin();
 
 		if ($login === null) {
 			throw CannotGetAuthenticationTime::create(static::class, __FUNCTION__);
