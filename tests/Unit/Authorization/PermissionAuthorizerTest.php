@@ -2,10 +2,8 @@
 
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
-use Generator;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\PermissionAuthorizer;
-use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\TestingPermissionAuthorizer;
@@ -597,50 +595,6 @@ final class PermissionAuthorizerTest extends TestCase
 		);
 
 		$authorizer->isAllowed($identity, 'unknown');
-	}
-
-	/**
-	 * @dataProvider privilegeParsingProvider
-	 */
-	public function testPrivilegeParsing(string $privilege, string $message): void
-	{
-		$authorizer = new PermissionAuthorizer();
-
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage($message);
-
-		$authorizer->addPrivilege($privilege);
-	}
-
-	/**
-	 * @return Generator<array<mixed>>
-	 */
-	public function privilegeParsingProvider(): Generator
-	{
-		yield [
-			'',
-			'Privilege is an empty string, which is not allowed.',
-		];
-
-		yield [
-			'article.*',
-			'Privilege article.* contains `*`, which can be used only standalone.',
-		];
-
-		yield [
-			'.article',
-			'Privilege .article starts with dot `.`, which is not allowed.',
-		];
-
-		yield [
-			'article.',
-			'Privilege article. ends with dot `.`, which is not allowed.',
-		];
-
-		yield [
-			'article..view',
-			'Privilege article..view contains multiple adjacent dots, which is not allowed.',
-		];
 	}
 
 }
