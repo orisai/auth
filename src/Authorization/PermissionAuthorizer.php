@@ -3,17 +3,12 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
 use function array_shift;
-use function explode;
 use function is_array;
-use function str_contains;
-use function str_ends_with;
-use function str_starts_with;
 
 class PermissionAuthorizer implements Authorizer
 {
@@ -61,7 +56,7 @@ class PermissionAuthorizer implements Authorizer
 
 	public function addPrivilege(string $privilege): void
 	{
-		$privilegeParts = $this->parsePrivilege($privilege);
+		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
 
 		$privilegesCurrent = &$this->privileges;
 
@@ -88,7 +83,7 @@ class PermissionAuthorizer implements Authorizer
 			return;
 		}
 
-		$privilegeParts = $this->parsePrivilege($privilege);
+		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
 		$privilegeValue = $this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
 
 		$rolePrivilegesCurrent = &$this->rolePrivileges[$role];
@@ -106,7 +101,7 @@ class PermissionAuthorizer implements Authorizer
 			return;
 		}
 
-		$privilegeParts = $this->parsePrivilege($privilege);
+		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
 		$this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
 
 		$this->removeKey($this->rolePrivileges[$role], $privilegeParts);
@@ -114,7 +109,7 @@ class PermissionAuthorizer implements Authorizer
 
 	public function isAllowed(Identity $identity, string $privilege): bool
 	{
-		$privilegeParts = $this->parsePrivilege($privilege);
+		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
 		$requiredPrivileges = $this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
 
 		foreach ($identity->getRoles() as $role) {
@@ -164,39 +159,6 @@ class PermissionAuthorizer implements Authorizer
 			->withMessage(
 				"Privilege {$privilege} is unknown, add with addPrivilege() before calling {$class}->{$function}()",
 			);
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	private function parsePrivilege(string $privilege): array
-	{
-		if ($privilege === '') {
-			throw InvalidArgument::create()
-				->withMessage('Privilege is an empty string, which is not allowed.');
-		}
-
-		if (str_starts_with($privilege, '.')) {
-			throw InvalidArgument::create()
-				->withMessage("Privilege {$privilege} starts with dot `.`, which is not allowed.");
-		}
-
-		if (str_ends_with($privilege, '.')) {
-			throw InvalidArgument::create()
-				->withMessage("Privilege {$privilege} ends with dot `.`, which is not allowed.");
-		}
-
-		if ($privilege !== self::ALL_PRIVILEGES && str_contains($privilege, self::ALL_PRIVILEGES)) {
-			throw InvalidArgument::create()
-				->withMessage("Privilege {$privilege} contains `*`, which can be used only standalone.");
-		}
-
-		if (str_contains($privilege, '..')) {
-			throw InvalidArgument::create()
-				->withMessage("Privilege {$privilege} contains multiple adjacent dots, which is not allowed.");
-		}
-
-		return explode('.', $privilege);
 	}
 
 	/**
