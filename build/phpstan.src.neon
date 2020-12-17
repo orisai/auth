@@ -14,3 +14,8 @@ parameters:
 		# It should not be possible to get incorrect instance via firewall api
 		- message: '#^Method (.+)BaseFirewall\:\:getIdentity\(\) should return T of (.+)Identity but returns (.+)Identity\.$#'
 		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
+
+		# Shouldn't happen, arrays are checked before usage
+		- message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, string\|null given\.$#'
+		  path: %currentWorkingDirectory%/src/Authorization/PermissionAuthorizer.php
+		  count: 3
