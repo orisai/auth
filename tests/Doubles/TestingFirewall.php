@@ -7,6 +7,7 @@ use Orisai\Auth\Authentication\BaseFirewall;
 use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\IdentityRenewer;
 use Orisai\Auth\Authentication\LoginStorage;
+use Orisai\Auth\Authorization\Authorizer;
 
 final class TestingFirewall extends BaseFirewall
 {
@@ -16,11 +17,12 @@ final class TestingFirewall extends BaseFirewall
 	public function __construct(
 		LoginStorage $storage,
 		IdentityRenewer $renewer,
+		Authorizer $authorizer,
 		?Clock $clock = null,
 		string $namespace = 'test'
 	)
 	{
-		parent::__construct($storage, $renewer, $clock);
+		parent::__construct($storage, $renewer, $authorizer, $clock);
 		$this->namespace = $namespace;
 	}
 

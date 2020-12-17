@@ -25,3 +25,7 @@ Authentication
     - `NetteSessionLoginStorage`
     - `ArrayLoginStorage`
 - `IdentityRenewer` interface
+
+Authorization
+- `Authorizer` interface
+	- `PermissionAuthorizer`

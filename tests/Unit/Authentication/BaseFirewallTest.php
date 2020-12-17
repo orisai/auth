@@ -10,6 +10,7 @@ use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
+use Orisai\Auth\Authorization\PermissionAuthorizer;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
@@ -21,15 +22,20 @@ use function array_keys;
 final class BaseFirewallTest extends TestCase
 {
 
-	public function renewer(): AlwaysPassIdentityRenewer
+	private function renewer(): AlwaysPassIdentityRenewer
 	{
 		return new AlwaysPassIdentityRenewer();
+	}
+
+	private function authorizer(): PermissionAuthorizer
+	{
+		return new PermissionAuthorizer();
 	}
 
 	public function testBase(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -56,8 +62,8 @@ final class BaseFirewallTest extends TestCase
 		$storage = new ArrayLoginStorage();
 		$identity = new IntIdentity(123, []);
 
-		$firewall1 = new TestingFirewall($storage, $this->renewer(), null, 'one');
-		$firewall2 = new TestingFirewall($storage, $this->renewer(), null, 'two');
+		$firewall1 = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), null, 'one');
+		$firewall2 = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), null, 'two');
 
 		self::assertFalse($storage->alreadyExists('one'));
 		self::assertFalse($storage->alreadyExists('two'));
@@ -85,7 +91,11 @@ final class BaseFirewallTest extends TestCase
 		$renewedIdentity = new StringIdentity('string', []);
 
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, new NewIdentityIdentityRenewer($renewedIdentity));
+		$firewall = new TestingFirewall(
+			$storage,
+			new NewIdentityIdentityRenewer($renewedIdentity),
+			$this->authorizer(),
+		);
 
 		$firewall->login($originalIdentity);
 		$firewall->resetLoginsChecks();
@@ -97,7 +107,7 @@ final class BaseFirewallTest extends TestCase
 		$identity = new IntIdentity(123, ['foo']);
 
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		self::assertFalse($firewall->hasRole('foo'));
 
@@ -109,7 +119,7 @@ final class BaseFirewallTest extends TestCase
 	public function testExpiredIdentities(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$firewall->setExpiredIdentitiesLimit(3);
 		$identity1 = new IntIdentity(1, []);
 
@@ -163,7 +173,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -180,7 +190,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentityFailure(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$this->expectException(CannotRenewIdentity::class);
@@ -201,7 +211,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$renewer = new AlwaysPassIdentityRenewer();
-		$firewall = new TestingFirewall($storage, $renewer);
+		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
@@ -220,7 +230,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$renewer = new NewIdentityIdentityRenewer($newIdentity);
-		$firewall = new TestingFirewall($storage, $renewer);
+		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($originalIdentity);
 		self::assertSame($originalIdentity, $firewall->getIdentity());
@@ -238,7 +248,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$renewer = new NeverPassIdentityRenewer();
-		$firewall = new TestingFirewall($storage, $renewer);
+		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
@@ -255,7 +265,7 @@ MSG);
 	{
 		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $clock);
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -279,7 +289,7 @@ MSG);
 	public function testNotTimeExpiredIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -296,7 +306,7 @@ MSG);
 	{
 		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $clock);
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -314,7 +324,7 @@ MSG);
 	public function testExpirationTimeInThePast(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -332,7 +342,7 @@ MSG);
 	public function testNotLoggedInGetIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		$this->expectException(CannotAccessIdentity::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -349,7 +359,12 @@ MSG);
 	public function testGetAuthenticationTime(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), new FixedClock(Instant::of(1)));
+		$firewall = new TestingFirewall(
+			$storage,
+			$this->renewer(),
+			$this->authorizer(),
+			new FixedClock(Instant::of(1)),
+		);
 
 		$identity = new IntIdentity(123, []);
 		$firewall->login($identity);
@@ -359,7 +374,7 @@ MSG);
 	public function testNotLoggedInGetAuthTime(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		$this->expectException(CannotGetAuthenticationTime::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -380,7 +395,7 @@ MSG);
 	{
 		$storage = new ArrayLoginStorage();
 		$namespace = 'test';
-		$firewall = new TestingFirewall($storage, $this->renewer(), null, $namespace);
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), null, $namespace);
 
 		self::assertFalse($storage->alreadyExists($namespace));
 
@@ -405,6 +420,32 @@ MSG);
 
 		self::assertFalse($firewall->hasRole('any'));
 		self::assertFalse($storage->alreadyExists($namespace));
+
+		self::assertFalse($firewall->isAllowed('any'));
+		self::assertFalse($storage->alreadyExists($namespace));
+	}
+
+	public function testIsAllowed(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$authorizer = new PermissionAuthorizer();
+		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
+
+		$authorizer->addPrivilege('admin');
+		$authorizer->addPrivilege('front');
+
+		$authorizer->addRole('guest');
+
+		$authorizer->allow('guest', 'front');
+
+		self::assertFalse($firewall->isAllowed('front'));
+		self::assertFalse($firewall->isAllowed('admin'));
+
+		$identity = new IntIdentity(1, ['guest']);
+		$firewall->login($identity);
+
+		self::assertTrue($firewall->isAllowed('front'));
+		self::assertFalse($firewall->isAllowed('admin'));
 	}
 
 }

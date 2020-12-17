@@ -12,6 +12,7 @@ Authentication and authorization
 - [Authentication](#authentication)
     - [Setup](#authentication-setup)
     - [Usage](#authentication-usage)
+- [Authorization](#authorization)
 
 ## Setup
 
@@ -228,11 +229,13 @@ final class AdminIdentityRenewer implements IdentityRenewer
 Create firewall instance
 
 ```php
+use Orisai\Auth\Authorization\PermissionAuthorizer;
 use Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage;
 
 $identityRenewer = new AdminIdentityRenewer($userRepository);
 $loginStorage = new NetteSessionLoginStorage($session);
-$firewall = new AdminFirewall($loginStorage, $identityRenewer);
+$authorizer = new PermissionAuthorizer();
+$firewall = new AdminFirewall($loginStorage, $identityRenewer, $authorizer);
 ```
 
 ### Authentication usage
@@ -248,6 +251,7 @@ $firewall->isLoggedIn(); // true
 $firewall->getIdentity(); // $identity
 $firewall->getAuthenticationTime(); // Instant
 $firewall->hasRole($role); // bool
+$firewall->isAllowed($privilege); // bool
 ```
 
 #### Set or remove login expiration
@@ -298,3 +302,43 @@ foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
 }
 ```
 
+# Authorization
+
+Represent your app permissions with privilege hierarchy
+
+✓ article
+	✓ view
+	✓ publish
+	✓ edit
+		✓ all
+		✓ owned
+	✓ delete
+
+```php
+use Orisai\Auth\Authorization\PermissionAuthorizer;
+
+$authorizer = new PermissionAuthorizer();
+
+// Add roles
+$authorizer->addRole('editor');
+
+// Add privileges
+//	- they support hierarchy via dot (e.g article.view is part of article)
+$authorizer->addPrivilege('article.view');
+$authorizer->addPrivilege('article.publish');
+$authorizer->addPrivilege('article.delete');
+$authorizer->addPrivilege('article.edit.owned');
+$authorizer->addPrivilege('article.edit.all');
+
+// Allow role to work with specified privileges
+$authorizer->allow('editor', $authorizer::ALL_PRIVILEGES); // Everything
+$authorizer->allow('editor', 'article.edit'); // Everything from article.edit
+$authorizer->allow('editor', 'article'); // Everything from article
+
+// Deny role to work with privileges (you shouldn't need to do this explicitly, everything is disallowed by default)
+$authorizer->deny('editor', 'article');
+
+// Check if user has privilege
+$authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
+$firewall->isAllowed('article'); // shortcut to $authorizer->isAllowed(), but also checks whether user is logged in
+```

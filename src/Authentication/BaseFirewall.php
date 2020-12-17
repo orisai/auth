@@ -14,6 +14,7 @@ use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
 use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 
@@ -29,6 +30,8 @@ abstract class BaseFirewall implements Firewall
 	/** @var IdentityRenewer<T> */
 	private IdentityRenewer $renewer;
 
+	private Authorizer $authorizer;
+
 	private Clock $clock;
 
 	protected ?Logins $logins = null;
@@ -37,10 +40,16 @@ abstract class BaseFirewall implements Firewall
 	/**
 	 * @param IdentityRenewer<T> $renewer
 	 */
-	public function __construct(LoginStorage $storage, IdentityRenewer $renewer, ?Clock $clock = null)
+	public function __construct(
+		LoginStorage $storage,
+		IdentityRenewer $renewer,
+		Authorizer $authorizer,
+		?Clock $clock = null
+	)
 	{
 		$this->storage = $storage;
 		$this->renewer = $renewer;
+		$this->authorizer = $authorizer;
 		$this->clock = $clock ?? new SystemClock();
 	}
 
@@ -151,6 +160,17 @@ abstract class BaseFirewall implements Firewall
 		}
 
 		return $identity->hasRole($role);
+	}
+
+	public function isAllowed(string $privilege): bool
+	{
+		$identity = $this->fetchIdentity();
+
+		if ($identity === null) {
+			return false;
+		}
+
+		return $this->authorizer->isAllowed($identity, $privilege);
 	}
 
 	/**

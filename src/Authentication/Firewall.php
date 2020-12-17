@@ -44,6 +44,8 @@ interface Firewall
 
 	public function hasRole(string $role): bool;
 
+	public function isAllowed(string $privilege): bool;
+
 	/**
 	 * @throws CannotGetAuthenticationTime User is not logged id
 	 */
