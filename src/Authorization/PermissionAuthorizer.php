@@ -119,22 +119,37 @@ class PermissionAuthorizer implements Authorizer
 
 			$rolePrivileges = &$this->rolePrivileges[$role];
 
-			$matchingRolePrivileges = $privilege === self::ALL_PRIVILEGES
-				? $rolePrivileges
-				: $this->getKey($rolePrivileges, $privilegeParts);
-
-			if ($matchingRolePrivileges === null) {
-				continue;
-			}
-
-			$this->removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingRolePrivileges);
-
-			if ($requiredPrivileges === []) {
+			if ($this->isAllowedByRole($requiredPrivileges, $rolePrivileges, $privilege, $privilegeParts)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param array<mixed> $requiredPrivileges
+	 * @param array<mixed> $rolePrivileges
+	 * @param array<string> $privilegeParts
+	 */
+	private function isAllowedByRole(
+		array &$requiredPrivileges,
+		array $rolePrivileges,
+		string $privilege,
+		array $privilegeParts
+	): bool
+	{
+		$matchingRolePrivileges = $privilege === self::ALL_PRIVILEGES
+			? $rolePrivileges
+			: $this->getKey($rolePrivileges, $privilegeParts);
+
+		if ($matchingRolePrivileges === null) {
+			return false;
+		}
+
+		$this->removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingRolePrivileges);
+
+		return $requiredPrivileges === [];
 	}
 
 	/**
