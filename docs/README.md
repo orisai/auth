@@ -7,6 +7,7 @@ Authentication and authorization
 - [Password encoders](#password-encoders)
     - [Sodium](#sodium-encoder)
     - [Bcrypt](#bcrypt-encoder)
+	- [Unsafe MD5](#unsafe-md5-encoder)
     - [Backward compatibility](#backward-compatibility---upgrading-encoder)
     - [Extending](#extending)
 - [Authentication](#authentication)
@@ -111,6 +112,19 @@ Options:
         - Cost of the algorithm
         - Must be in range `4-31`
         - By default is set to `10`
+
+### Unsafe MD5 encoder
+
+**Use only for testing**
+
+Encoding passwords with sodium is safe option, but also time and resource intensive.
+For automated tests purposes it may be helpful to choose faster MD5 algorithm which would be **unsafe** in production environment.
+
+```php
+use Orisai\Auth\Passwords\UnsafeMD5PasswordEncoder;
+
+$encoder = new UnsafeMD5PasswordEncoder();
+```
 
 ### Backward compatibility - upgrading encoder
 
