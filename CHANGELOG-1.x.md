@@ -13,6 +13,7 @@ Passwords
 - `PasswordEncoder` interface
     - `BcryptPasswordEncoder`
     - `SodiumPasswordEncoder`
+    - `UnsafeMD5PasswordEncoder`
     - `UpgradingPasswordEncoder`
 
 Authentication
