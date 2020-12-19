@@ -11,6 +11,7 @@ use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authentication\IntIdentity;
 use PHPUnit\Framework\TestCase;
+use function assert;
 use function serialize;
 use function unserialize;
 
@@ -47,6 +48,16 @@ final class ExpiredLoginTest extends TestCase
 		self::assertSame($delta, $expiration->getDelta());
 
 		self::assertEquals($login, unserialize(serialize($login)));
+	}
+
+	public function testIncompleteIdentityClass(): void
+	{
+		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":4:{s:8:"identity";O:15:"InvalidIdentity":2:{s:2:"id";i:1;s:5:"roles";a:0:{}}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}';
+
+		$login = unserialize($serialized);
+		assert($login instanceof ExpiredLogin);
+
+		self::assertTrue($login->hasInvalidIdentity());
 	}
 
 }
