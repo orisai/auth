@@ -4,8 +4,8 @@ namespace Orisai\Auth\Passwords;
 
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
+use Orisai\Utils\Dependencies\Dependencies;
 use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
-use function extension_loaded;
 use function max;
 use function sodium_crypto_pwhash_str;
 use function sodium_crypto_pwhash_str_needs_rehash;
@@ -79,7 +79,7 @@ final class SodiumPasswordEncoder implements PasswordEncoder
 
 	public static function isSupported(): bool
 	{
-		return extension_loaded('sodium');
+		return Dependencies::isExtensionLoaded('sodium');
 	}
 
 	private function isArgonHashed(string $encoded): bool

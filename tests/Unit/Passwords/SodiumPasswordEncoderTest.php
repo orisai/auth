@@ -5,6 +5,8 @@ namespace Tests\Orisai\Auth\Unit\Passwords;
 use Generator;
 use Orisai\Auth\Passwords\SodiumPasswordEncoder;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
+use Orisai\Utils\Tester\DependenciesTester;
 use PHPUnit\Framework\TestCase;
 
 final class SodiumPasswordEncoderTest extends TestCase
@@ -110,6 +112,28 @@ Solution: Choose cost 10240 or greater (in bytes).');
 		yield ['password', '$5y$09$tD9kmDjFoiws/6ioiR.25uwPuC0Cn9MWPKUn9Uugb5IqA.3HpN8Hq', true];
 		yield ['password', '$2y$10$WfjR3j4GPLEYUNPJ/MRw0.UQ3Ar12XSY4XH65XCNUXg04i9tniR6m', true];
 		yield ['1234', 'loremipsum', true];
+	}
+
+	/**
+	 * @runInSeparateProcess
+	 */
+	public function testOptionalDependencies(): void
+	{
+		DependenciesTester::addIgnoredExtensions(['sodium']);
+
+		$exception = null;
+
+		try {
+			new SodiumPasswordEncoder();
+		} catch (ExtensionRequired $exception) {
+			// Handled below
+		}
+
+		self::assertNotNull($exception);
+		self::assertSame(
+			['sodium'],
+			$exception->getExtensions(),
+		);
 	}
 
 }
