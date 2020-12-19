@@ -8,6 +8,7 @@ use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
 use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
 use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
+use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\PermissionAuthorizer;
@@ -334,6 +335,23 @@ MSG);
 Context: Trying to set login expiration time.
 Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
+MSG);
+
+		$firewall->setExpiration(Instant::now()->minusSeconds(10));
+	}
+
+	public function testExpirationCannotBeSet(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+
+		$this->expectException(CannotSetExpiration::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to set expiration with
+         Tests\Orisai\Auth\Doubles\TestingFirewall->setExpiration().
+Problem: User is not logged in firewall.
+Solution: Ensure TestingFirewall->login() is called before
+          TestingFirewall->setExpiration().
 MSG);
 
 		$firewall->setExpiration(Instant::now()->minusSeconds(10));
