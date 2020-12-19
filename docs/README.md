@@ -320,6 +320,7 @@ foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
 
 Represent your app permissions with privilege hierarchy
 
+```
 ✓ article
 	✓ view
 	✓ publish
@@ -327,6 +328,7 @@ Represent your app permissions with privilege hierarchy
 		✓ all
 		✓ owned
 	✓ delete
+```
 
 ```php
 use Orisai\Auth\Authorization\PermissionAuthorizer;
