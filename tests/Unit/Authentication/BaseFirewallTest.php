@@ -448,4 +448,18 @@ MSG);
 		self::assertFalse($firewall->isAllowed('admin'));
 	}
 
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function testRemovalMethodsSoftFail(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+
+		$firewall->logout();
+		$firewall->removeExpiration();
+		$firewall->removeExpiredLogin(123);
+		$firewall->removeExpiredLogins();
+	}
+
 }
