@@ -9,6 +9,7 @@ use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
 use PHPUnit\Framework\TestCase;
+use function assert;
 use function serialize;
 use function unserialize;
 
@@ -34,6 +35,16 @@ final class CurrentLoginTest extends TestCase
 		self::assertSame($identity, $login->getIdentity());
 
 		self::assertEquals($login, unserialize(serialize($login)));
+	}
+
+	public function testIncompleteIdentityClass(): void
+	{
+		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\CurrentLogin":3:{s:8:"identity";O:15:"InvalidIdentity":2:{s:2:"id";i:1;s:5:"roles";a:0:{}}s:18:"authenticationTime";i:2;s:10:"expiration";N;}';
+
+		$login = unserialize($serialized);
+		assert($login instanceof CurrentLogin);
+
+		self::assertTrue($login->hasInvalidIdentity());
 	}
 
 }
