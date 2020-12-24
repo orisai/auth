@@ -33,7 +33,7 @@ class PermissionAuthorizer implements Authorizer
 	public function addRole(string $role): void
 	{
 		$this->roles[$role] = null;
-		$this->rolePrivileges[$role] = [];
+		$this->rolePrivileges[$role] ??= [];
 	}
 
 	private function checkRole(string $role): void
