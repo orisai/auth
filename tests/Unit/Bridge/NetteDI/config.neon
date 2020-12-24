@@ -1,0 +1,47 @@
+extensions:
+	http: Nette\Bridges\HttpDI\HttpExtension
+	session: Nette\Bridges\HttpDI\SessionExtension
+
+services:
+	# storages
+	auth.storage.session: Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage
+	auth.storage.array: Orisai\Auth\Authentication\ArrayLoginStorage
+
+	# front firewall
+	auth.front.authorizer:
+		factory: Orisai\Auth\Authorization\PermissionAuthorizer
+		setup:
+			- addRole(editor)
+			- addPrivilege(article.foo)
+			- allow(editor, article.foo)
+	auth.front.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
+	auth.front.firewall:
+		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
+		arguments:
+			storage: @auth.storage.session
+			renewer: @auth.front.renewer
+			authorizer: @auth.front.authorizer
+			namespace: front
+
+	# admin firewall
+	auth.admin.authorizer: Orisai\Auth\Authorization\PermissionAuthorizer
+	auth.admin.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
+	auth.admin.firewall:
+		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
+		arguments:
+			storage: @auth.storage.session
+			renewer: @auth.admin.renewer
+			authorizer: @auth.admin.authorizer
+			namespace: admin
+
+	# api firewall
+	auth.api.authorizerCreator: Tests\Orisai\Auth\Doubles\PermissionAuthorizerCreator
+	auth.api.authorizer: @auth.api.authorizerCreator::create()
+	auth.api.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
+	auth.api.firewall:
+		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
+		arguments:
+			storage: @auth.storage.array
+			renewer: @auth.api.renewer
+			authorizer: @auth.api.authorizer
+			namespace: api
