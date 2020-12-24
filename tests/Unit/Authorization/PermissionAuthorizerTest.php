@@ -257,6 +257,31 @@ final class PermissionAuthorizerTest extends TestCase
 		);
 	}
 
+	public function testRolesPrivilegesNotOverridden(): void
+	{
+		$authorizer = new TestingPermissionAuthorizer();
+
+		$authorizer->addRole('role');
+		$authorizer->addPrivilege('privilege');
+		$authorizer->allow('role', 'privilege');
+
+		$rolePrivilegesData = $authorizer->getDebugRolePrivileges();
+		self::assertSame(
+			[
+				'role' => [
+					'privilege' => [],
+				],
+			],
+			$rolePrivilegesData,
+		);
+
+		$authorizer->addRole('role');
+		self::assertSame(
+			$rolePrivilegesData,
+			$authorizer->getDebugRolePrivileges(),
+		);
+	}
+
 	public function testNothingSet(): void
 	{
 		$authorizer = new PermissionAuthorizer();
