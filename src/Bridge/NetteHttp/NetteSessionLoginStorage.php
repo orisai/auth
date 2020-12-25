@@ -2,17 +2,11 @@
 
 namespace Orisai\Auth\Bridge\NetteHttp;
 
-use Brick\DateTime\Duration;
-use Brick\DateTime\Instant;
 use Nette\Http\Session;
 use Nette\Http\SessionSection;
-use Orisai\Auth\Authentication\Data\CurrentExpiration;
-use Orisai\Auth\Authentication\Data\CurrentLogin;
-use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\LoginStorage;
 use function assert;
-use function time;
 
 final class NetteSessionLoginStorage implements LoginStorage
 {
@@ -59,8 +53,6 @@ final class NetteSessionLoginStorage implements LoginStorage
 
 		if ($isNew) {
 			$this->setDefaults($section);
-		} else {
-			$this->migrateData($section);
 		}
 
 		return $section;
@@ -82,46 +74,6 @@ final class NetteSessionLoginStorage implements LoginStorage
 	{
 		$section->version = 2;
 		$section->logins = new Logins();
-	}
-
-	private function migrateData(SessionSection $section): void
-	{
-		if ($section->version !== 1) {
-			return;
-		}
-
-		$section->version = 2;
-		$section->logins = $logins = new Logins();
-
-		if ($section->identity !== null) {
-			$login = new CurrentLogin($section->identity, Instant::of($section->authenticationTime ?? time()));
-
-			if ($section->expirationTime !== null && $section->expirationDelta !== null) {
-				$expiration = new CurrentExpiration(
-					Instant::of($section->expirationTime),
-					Duration::ofSeconds($section->expirationDelta),
-				);
-				$login->setExpiration($expiration);
-			}
-
-			if ($section->authenticated === true) {
-				$logins->setCurrentLogin($login);
-			} else {
-				$logins->addExpiredLogin(new ExpiredLogin(
-					$login,
-					$section->logoutReason,
-				));
-			}
-		}
-
-		unset(
-			$section->authenticated,
-			$section->authenticationTime,
-			$section->identity,
-			$section->logoutReason,
-			$section->expirationTime,
-			$section->expirationDelta,
-		);
 	}
 
 }
