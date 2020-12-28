@@ -9,7 +9,7 @@ use Orisai\Exceptions\Message;
 use function array_pop;
 use function explode;
 
-final class CannotGetAuthenticationTime extends LogicalException
+final class NotLoggedIn extends LogicalException
 {
 
 	/**
@@ -21,9 +21,9 @@ final class CannotGetAuthenticationTime extends LogicalException
 		$className = array_pop($parts);
 
 		$message = Message::create()
-			->withContext("Trying to get authentication time with {$class}->{$function}().")
+			->withContext("Calling {$class}->{$function}().")
 			->withProblem('User is not logged in firewall.')
-			->withSolution("Check with {$className}->isLoggedIn().");
+			->withSolution("Login with {$className}->login(\$identity) or check with {$className}->isLoggedIn().");
 
 		$self = new self();
 		$self->withMessage($message);

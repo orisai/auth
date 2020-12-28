@@ -4,10 +4,7 @@ namespace Orisai\Auth\Authentication;
 
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
-use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
-use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
-use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
-use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
+use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 
 /**
  * @phpstan-template T of Identity
@@ -30,7 +27,7 @@ interface Firewall
 
 	/**
 	 * @phpstan-param T $identity
-	 * @throws CannotRenewIdentity User is not logged id
+	 * @throws NotLoggedIn
 	 */
 	public function renewIdentity(Identity $identity): void;
 
@@ -38,7 +35,7 @@ interface Firewall
 
 	/**
 	 * @phpstan-return T
-	 * @throws CannotAccessIdentity User is not logged id
+	 * @throws NotLoggedIn
 	 */
 	public function getIdentity(): Identity;
 
@@ -47,12 +44,12 @@ interface Firewall
 	public function isAllowed(string $privilege): bool;
 
 	/**
-	 * @throws CannotGetAuthenticationTime User is not logged id
+	 * @throws NotLoggedIn
 	 */
 	public function getAuthenticationTime(): Instant;
 
 	/**
-	 * @throws CannotSetExpiration User is not logged id
+	 * @throws NotLoggedIn
 	 */
 	public function setExpiration(Instant $time): void;
 
