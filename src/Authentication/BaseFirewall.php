@@ -10,10 +10,7 @@ use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
-use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
-use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
-use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
-use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
+use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
@@ -75,14 +72,14 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @throws CannotRenewIdentity
+	 * @throws NotLoggedIn
 	 */
 	public function renewIdentity(Identity $identity): void
 	{
 		$login = $this->getLogins()->getCurrentLogin();
 
 		if ($login === null) {
-			throw CannotRenewIdentity::create(static::class, __FUNCTION__);
+			throw NotLoggedIn::create(static::class, __FUNCTION__);
 		}
 
 		$login->setIdentity($identity);
@@ -111,14 +108,14 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @throws CannotAccessIdentity
+	 * @throws NotLoggedIn
 	 */
 	public function getIdentity(): Identity
 	{
 		$identity = $this->fetchIdentity();
 
 		if ($identity === null) {
-			throw CannotAccessIdentity::create(static::class, __FUNCTION__);
+			throw NotLoggedIn::create(static::class, __FUNCTION__);
 		}
 
 		return $identity;
@@ -145,7 +142,7 @@ abstract class BaseFirewall implements Firewall
 		$login = $this->fetchCurrentLogin();
 
 		if ($login === null) {
-			throw CannotGetAuthenticationTime::create(static::class, __FUNCTION__);
+			throw NotLoggedIn::create(static::class, __FUNCTION__);
 		}
 
 		return $login->getAuthenticationTime();
@@ -174,14 +171,14 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @throws CannotSetExpiration
+	 * @throws NotLoggedIn
 	 */
 	public function setExpiration(Instant $time): void
 	{
 		$login = $this->getLogins()->getCurrentLogin();
 
 		if ($login === null) {
-			throw CannotSetExpiration::create(static::class, __FUNCTION__);
+			throw NotLoggedIn::create(static::class, __FUNCTION__);
 		}
 
 		$delta = $time->getEpochSecond() - $this->clock->getTime()->getEpochSecond();

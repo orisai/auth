@@ -5,10 +5,7 @@ namespace Tests\Orisai\Auth\Unit\Authentication;
 use Brick\DateTime\Clock\FixedClock;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\ArrayLoginStorage;
-use Orisai\Auth\Authentication\Exception\CannotAccessIdentity;
-use Orisai\Auth\Authentication\Exception\CannotGetAuthenticationTime;
-use Orisai\Auth\Authentication\Exception\CannotRenewIdentity;
-use Orisai\Auth\Authentication\Exception\CannotSetExpiration;
+use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\PermissionAuthorizer;
@@ -54,7 +51,7 @@ final class BaseFirewallTest extends TestCase
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame($firewall::REASON_MANUAL, $expired->getLogoutReason());
 
-		$this->expectException(CannotAccessIdentity::class);
+		$this->expectException(NotLoggedIn::class);
 		$firewall->getIdentity();
 	}
 
@@ -194,12 +191,11 @@ final class BaseFirewallTest extends TestCase
 		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
-		$this->expectException(CannotRenewIdentity::class);
+		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to renew identity with
-         Tests\Orisai\Auth\Doubles\TestingFirewall->renewIdentity().
+Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->renewIdentity().
 Problem: User is not logged in firewall.
-Solution: Use TestingFirewall->login() instead or check with
+Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
 MSG);
 
@@ -345,13 +341,12 @@ MSG);
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
-		$this->expectException(CannotSetExpiration::class);
+		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to set expiration with
-         Tests\Orisai\Auth\Doubles\TestingFirewall->setExpiration().
+Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->setExpiration().
 Problem: User is not logged in firewall.
-Solution: Ensure TestingFirewall->login() is called before
-          TestingFirewall->setExpiration().
+Solution: Login with TestingFirewall->login($identity) or check with
+          TestingFirewall->isLoggedIn().
 MSG);
 
 		$firewall->setExpiration(Instant::now()->minusSeconds(10));
@@ -362,13 +357,12 @@ MSG);
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
-		$this->expectException(CannotAccessIdentity::class);
+		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to get valid identity with
-         Tests\Orisai\Auth\Doubles\TestingFirewall->getIdentity().
+Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->getIdentity().
 Problem: User is not logged in firewall.
-Solution: Check with TestingFirewall->isLoggedIn() or use
-          TestingFirewall->getExpiredLogins().
+Solution: Login with TestingFirewall->login($identity) or check with
+          TestingFirewall->isLoggedIn().
 MSG);
 
 		$firewall->getIdentity();
@@ -394,12 +388,13 @@ MSG);
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
-		$this->expectException(CannotGetAuthenticationTime::class);
+		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to get authentication time with
+Context: Calling
          Tests\Orisai\Auth\Doubles\TestingFirewall->getAuthenticationTime().
 Problem: User is not logged in firewall.
-Solution: Check with TestingFirewall->isLoggedIn().
+Solution: Login with TestingFirewall->login($identity) or check with
+          TestingFirewall->isLoggedIn().
 MSG);
 
 		$firewall->getAuthenticationTime();
@@ -419,7 +414,7 @@ MSG);
 
 		try {
 			$firewall->getIdentity();
-		}catch (CannotAccessIdentity $exception) {
+		}catch (NotLoggedIn $exception) {
 			// Just to test storage creation
 		}
 
@@ -427,7 +422,7 @@ MSG);
 
 		try {
 			$firewall->getAuthenticationTime();
-		}catch (CannotGetAuthenticationTime $exception) {
+		}catch (NotLoggedIn $exception) {
 			// Just to test storage creation
 		}
 
