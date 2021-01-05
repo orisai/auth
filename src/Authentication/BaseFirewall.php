@@ -121,7 +121,7 @@ abstract class BaseFirewall implements Firewall
 		return $identity;
 	}
 
-	private function fetchCurrentLogin(): ?CurrentLogin
+	protected function fetchCurrentLogin(): ?CurrentLogin
 	{
 		if (!$this->storage->alreadyExists($this->getNamespace())) {
 			return null;
@@ -130,7 +130,7 @@ abstract class BaseFirewall implements Firewall
 		return $this->getLogins()->getCurrentLogin();
 	}
 
-	private function fetchIdentity(): ?Identity
+	protected function fetchIdentity(): ?Identity
 	{
 		$login = $this->fetchCurrentLogin();
 
