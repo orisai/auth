@@ -7,13 +7,13 @@ use Nette\Http\Response;
 use Nette\Http\Session;
 use Nette\Http\UrlScript;
 use Orisai\Auth\Authentication\LoginStorage;
-use Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage;
+use Orisai\Auth\Bridge\NetteHttp\SessionLoginStorage;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @runTestsInSeparateProcesses
  */
-final class NetteSessionLoginStorageTest extends TestCase
+final class SessionLoginStorageTest extends TestCase
 {
 
 	private function createSession(): Session
@@ -23,7 +23,7 @@ final class NetteSessionLoginStorageTest extends TestCase
 
 	private function createStorage(Session $session): LoginStorage
 	{
-		return new NetteSessionLoginStorage($session);
+		return new SessionLoginStorage($session);
 	}
 
 	public function test(): void

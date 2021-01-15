@@ -244,10 +244,10 @@ Create firewall instance
 
 ```php
 use Orisai\Auth\Authorization\PermissionAuthorizer;
-use Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage;
+use Orisai\Auth\Bridge\NetteHttp\SessionLoginStorage;
 
 $identityRenewer = new AdminIdentityRenewer($userRepository);
-$loginStorage = new NetteSessionLoginStorage($session);
+$loginStorage = new SessionLoginStorage($session);
 $authorizer = new PermissionAuthorizer();
 $firewall = new AdminFirewall($loginStorage, $identityRenewer, $authorizer);
 ```
