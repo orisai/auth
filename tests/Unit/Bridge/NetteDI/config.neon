@@ -4,7 +4,7 @@ extensions:
 
 services:
 	# storages
-	auth.storage.session: Orisai\Auth\Bridge\NetteHttp\NetteSessionLoginStorage
+	auth.storage.session: Orisai\Auth\Bridge\NetteHttp\SessionLoginStorage
 	auth.storage.array: Orisai\Auth\Authentication\ArrayLoginStorage
 
 	# front firewall

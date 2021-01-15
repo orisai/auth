@@ -8,7 +8,7 @@ use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\LoginStorage;
 use function assert;
 
-final class NetteSessionLoginStorage implements LoginStorage
+final class SessionLoginStorage implements LoginStorage
 {
 
 	private const SESSION_PREFIX = 'orisai.auth';
