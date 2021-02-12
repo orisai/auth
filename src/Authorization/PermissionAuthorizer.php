@@ -63,6 +63,17 @@ class PermissionAuthorizer implements Authorizer
 		$this->addKeyValue($privilegesCurrent, $privilegeParts, []);
 	}
 
+	public function hasPrivilege(string $privilege): bool
+	{
+		if ($privilege === self::ALL_PRIVILEGES) {
+			return true;
+		}
+
+		$privilegeValue = $this->getKey($this->privileges, PrivilegeParser::parsePrivilege($privilege));
+
+		return $privilegeValue !== null;
+	}
+
 	/**
 	 * @return array<string>
 	 */
