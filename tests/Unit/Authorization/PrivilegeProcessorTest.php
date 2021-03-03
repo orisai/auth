@@ -3,11 +3,11 @@
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Generator;
-use Orisai\Auth\Authorization\PrivilegeParser;
+use Orisai\Auth\Authorization\PrivilegeProcessor;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 
-final class PrivilegeParserTest extends TestCase
+final class PrivilegeProcessorTest extends TestCase
 {
 
 	/**
@@ -18,7 +18,7 @@ final class PrivilegeParserTest extends TestCase
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage($message);
 
-		PrivilegeParser::parsePrivilege($privilege);
+		PrivilegeProcessor::parsePrivilege($privilege);
 	}
 
 	/**
