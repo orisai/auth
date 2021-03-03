@@ -56,7 +56,7 @@ class PermissionAuthorizer implements Authorizer
 
 	public function addPrivilege(string $privilege): void
 	{
-		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
+		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 
 		$privilegesCurrent = &$this->privileges;
 
@@ -69,7 +69,7 @@ class PermissionAuthorizer implements Authorizer
 			return true;
 		}
 
-		$privilegeValue = $this->getKey($this->privileges, PrivilegeParser::parsePrivilege($privilege));
+		$privilegeValue = $this->getKey($this->privileges, PrivilegeProcessor::parsePrivilege($privilege));
 
 		return $privilegeValue !== null;
 	}
@@ -94,7 +94,7 @@ class PermissionAuthorizer implements Authorizer
 			return;
 		}
 
-		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
+		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$privilegeValue = $this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
 
 		$rolePrivilegesCurrent = &$this->rolePrivileges[$role];
@@ -112,7 +112,7 @@ class PermissionAuthorizer implements Authorizer
 			return;
 		}
 
-		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
+		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
 
 		$this->removeKey($this->rolePrivileges[$role], $privilegeParts);
@@ -120,7 +120,7 @@ class PermissionAuthorizer implements Authorizer
 
 	public function isAllowed(Identity $identity, string $privilege): bool
 	{
-		$privilegeParts = PrivilegeParser::parsePrivilege($privilege);
+		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$requiredPrivileges = $this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
 
 		foreach ($identity->getRoles() as $role) {
