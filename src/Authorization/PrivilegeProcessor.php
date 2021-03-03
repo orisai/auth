@@ -44,4 +44,25 @@ final class PrivilegeProcessor
 		return explode('.', $privilege);
 	}
 
+	/**
+	 * @return array<string>
+	 */
+	public static function getPrivilegeParents(string $privilege, bool $includePowerUser): array
+	{
+		$all = [];
+
+		if ($includePowerUser) {
+			$all[] = Authorizer::ALL_PRIVILEGES;
+		}
+
+		$parts = self::parsePrivilege($privilege);
+		$current = null;
+		foreach ($parts as $part) {
+			$current = $current === null ? $part : "{$current}.{$part}";
+			$all[] = $current;
+		}
+
+		return $all;
+	}
+
 }

@@ -3,6 +3,7 @@
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Generator;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\PrivilegeProcessor;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
@@ -49,6 +50,45 @@ final class PrivilegeProcessorTest extends TestCase
 		yield [
 			'article..view',
 			'Privilege article..view contains multiple adjacent dots, which is not allowed.',
+		];
+	}
+
+	/**
+	 * @dataProvider privilegeParentsProvider
+	 * @param array<string> $expected
+	 */
+	public function testPrivilegeParents(string $privilege, bool $includePowerUser, array $expected): void
+	{
+		self::assertSame(
+			PrivilegeProcessor::getPrivilegeParents($privilege, $includePowerUser),
+			$expected,
+		);
+	}
+
+	/**
+	 * @return Generator<array<mixed>>
+	 */
+	public function privilegeParentsProvider(): Generator
+	{
+		yield [
+			'article.edit.owned',
+			true,
+			[
+				Authorizer::ALL_PRIVILEGES,
+				'article',
+				'article.edit',
+				'article.edit.owned',
+			],
+		];
+
+		yield [
+			'article.edit.owned',
+			false,
+			[
+				'article',
+				'article.edit',
+				'article.edit.owned',
+			],
 		];
 	}
 
