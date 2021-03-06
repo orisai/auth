@@ -87,6 +87,10 @@ abstract class BaseFirewall implements Firewall
 
 	public function logout(): void
 	{
+		if (!$this->doesStorageAlreadyExist()) {
+			return;
+		}
+
 		$this->unauthenticate(self::REASON_MANUAL, $this->getLogins());
 	}
 
@@ -123,7 +127,7 @@ abstract class BaseFirewall implements Firewall
 
 	protected function fetchCurrentLogin(): ?CurrentLogin
 	{
-		if (!$this->storage->alreadyExists($this->getNamespace())) {
+		if (!$this->doesStorageAlreadyExist()) {
 			return null;
 		}
 
@@ -197,7 +201,7 @@ abstract class BaseFirewall implements Firewall
 
 	public function removeExpiration(): void
 	{
-		$login = $this->getLogins()->getCurrentLogin();
+		$login = $this->fetchCurrentLogin();
 
 		if ($login === null) {
 			return;
@@ -251,7 +255,7 @@ abstract class BaseFirewall implements Firewall
 	 */
 	public function getExpiredLogins(): array
 	{
-		if (!$this->storage->alreadyExists($this->getNamespace())) {
+		if (!$this->doesStorageAlreadyExist()) {
 			return [];
 		}
 
@@ -260,6 +264,10 @@ abstract class BaseFirewall implements Firewall
 
 	public function removeExpiredLogins(): void
 	{
+		if (!$this->doesStorageAlreadyExist()) {
+			return;
+		}
+
 		$this->getLogins()->removeExpiredLogins();
 	}
 
@@ -268,13 +276,20 @@ abstract class BaseFirewall implements Firewall
 	 */
 	public function removeExpiredLogin($id): void
 	{
+		if (!$this->doesStorageAlreadyExist()) {
+			return;
+		}
+
 		$this->getLogins()->removeExpiredLogin($id);
 	}
 
 	public function setExpiredIdentitiesLimit(int $count): void
 	{
 		$this->expiredIdentitiesLimit = $count;
-		$this->getLogins()->removeOldestExpiredLoginsAboveLimit($count);
+
+		if ($this->doesStorageAlreadyExist()) {
+			$this->getLogins()->removeOldestExpiredLoginsAboveLimit($count);
+		}
 	}
 
 	private function addExpiredLogin(ExpiredLogin $login): void
@@ -295,6 +310,11 @@ abstract class BaseFirewall implements Firewall
 		$this->upToDateChecks($logins);
 
 		return $this->logins = $logins;
+	}
+
+	protected function doesStorageAlreadyExist(): bool
+	{
+		return $this->storage->alreadyExists($this->getNamespace());
 	}
 
 	private function upToDateChecks(Logins $logins): void

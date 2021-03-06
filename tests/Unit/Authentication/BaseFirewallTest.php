@@ -404,7 +404,7 @@ MSG);
 	 * Prevents errors like "headers already sent" when storage uses session
 	 * and firewall is used for read after headers were sent
 	 */
-	public function testReadOnlyMethodsDoesNotTriggerStorageCreation(): void
+	public function testMethodsDoesNotUnnecessaryTriggerStorageCreation(): void
 	{
 		$storage = new ArrayLoginStorage();
 		$namespace = 'test';
@@ -435,6 +435,21 @@ MSG);
 		self::assertFalse($storage->alreadyExists($namespace));
 
 		self::assertFalse($firewall->isAllowed('any'));
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		$firewall->logout();
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		$firewall->removeExpiration();
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		$firewall->removeExpiredLogins();
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		$firewall->removeExpiredLogin('1234');
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		$firewall->setExpiredIdentitiesLimit(5);
 		self::assertFalse($storage->alreadyExists($namespace));
 	}
 
