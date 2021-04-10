@@ -8,13 +8,22 @@ use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\PermissionAuthorizer;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\Article;
+use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
+use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
+use Tests\Orisai\Auth\Doubles\User;
+use Tests\Orisai\Auth\Doubles\UserAwareFirewall;
+use Tests\Orisai\Auth\Doubles\UserGetter;
 use function array_keys;
 
 final class BaseFirewallTest extends TestCase
@@ -414,7 +423,7 @@ MSG);
 
 		try {
 			$firewall->getIdentity();
-		}catch (NotLoggedIn $exception) {
+		} catch (NotLoggedIn $exception) {
 			// Just to test storage creation
 		}
 
@@ -422,7 +431,7 @@ MSG);
 
 		try {
 			$firewall->getAuthenticationTime();
-		}catch (NotLoggedIn $exception) {
+		} catch (NotLoggedIn $exception) {
 			// Just to test storage creation
 		}
 
@@ -467,13 +476,17 @@ MSG);
 		$authorizer->allow('guest', 'front');
 
 		self::assertFalse($firewall->isAllowed('front'));
+		self::assertFalse($firewall->hasPrivilege('front'));
 		self::assertFalse($firewall->isAllowed('admin'));
+		self::assertFalse($firewall->hasPrivilege('admin'));
 
 		$identity = new IntIdentity(1, ['guest']);
 		$firewall->login($identity);
 
 		self::assertTrue($firewall->isAllowed('front'));
+		self::assertTrue($firewall->hasPrivilege('front'));
 		self::assertFalse($firewall->isAllowed('admin'));
+		self::assertFalse($firewall->hasPrivilege('admin'));
 	}
 
 	/**
@@ -488,6 +501,149 @@ MSG);
 		$firewall->removeExpiration();
 		$firewall->removeExpiredLogin(123);
 		$firewall->removeExpiredLogins();
+	}
+
+	public function testAddPolicy(): void
+	{
+		$authorizer = $this->authorizer();
+		$firewall = new UserAwareFirewall(new UserGetter(), new ArrayLoginStorage(), $this->renewer(), $authorizer);
+
+		$authorizer->addPrivilege('article.edit');
+		$firewall->addPolicy(ArticleEditPolicy::class);
+
+		$this->expectException(InvalidState::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to add policy of type
+         Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy via
+         Tests\Orisai\Auth\Doubles\UserAwareFirewall->addPolicy().
+Problem: Policies privilege article.edit.owned is not known by underlying
+         authorizer (type of Orisai\Auth\Authorization\PermissionAuthorizer).
+Solution: Add privilege to authorizer first.
+MSG);
+
+		$firewall->addPolicy(ArticleEditOwnedPolicy::class);
+	}
+
+	public function testIsAllowedUnknownPolicy(): void
+	{
+		$authorizer = $this->authorizer();
+		$firewall = new UserAwareFirewall(new UserGetter(), new ArrayLoginStorage(), $this->renewer(), $authorizer);
+
+		$this->expectException(InvalidState::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to check policy of type
+         Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy via
+         Tests\Orisai\Auth\Doubles\UserAwareFirewall->isAllowed().
+Problem: Policy is not registered by UserAwareFirewall.
+Solution: Register policy via UserAwareFirewall->addPolicy() first.
+MSG);
+
+		$firewall->isAllowed(new ArticleEditOwnedPolicy(new Article(new User(1))));
+	}
+
+	public function testIsAllowedRequiresPolicy(): void
+	{
+		$authorizer = $this->authorizer();
+		$firewall = new UserAwareFirewall(new UserGetter(), new ArrayLoginStorage(), $this->renewer(), $authorizer);
+
+		self::assertFalse($firewall->isAllowed('article.edit'));
+
+		$authorizer->addPrivilege('article.edit');
+		$firewall->addPolicy(ArticleEditPolicy::class);
+
+		$this->expectException(InvalidArgument::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to check privilege article.edit via
+         Tests\Orisai\Auth\Doubles\UserAwareFirewall->isAllowed().
+Problem: Privilege has defined policy
+         Tests\Orisai\Auth\Doubles\ArticleEditPolicy.
+Solution: Pass policy instead or skip policy and check just privilege with
+          UserAwareFirewall->hasPrivilege().
+MSG);
+
+		$firewall->isAllowed('article.edit');
+	}
+
+	public function testPolicyResourceOwner(): void
+	{
+		$getter = new UserGetter();
+		$authorizer = $this->authorizer();
+		$firewall = new UserAwareFirewall($getter, new ArrayLoginStorage(), $this->renewer(), $authorizer);
+
+		$authorizer->addPrivilege('article.edit.all');
+		$authorizer->addPrivilege('article.edit.owned');
+		$authorizer->addPrivilege('article.view');
+		$authorizer->addPrivilege(NeverPassPolicy::getPrivilege());
+
+		$authorizer->addRole('owner');
+		$authorizer->addRole('editor');
+		$authorizer->addRole('supervisor');
+
+		$authorizer->allow('editor', 'article.edit.all');
+		$authorizer->allow('owner', 'article.edit.owned');
+		$authorizer->allow('supervisor', Authorizer::ALL_PRIVILEGES);
+
+		$firewall->addPolicy(ArticleEditPolicy::class);
+		$firewall->addPolicy(ArticleEditOwnedPolicy::class);
+		$firewall->addPolicy(NeverPassPolicy::class);
+
+		$user1 = new User(1);
+		$getter->addUser($user1);
+
+		$policy1 = new ArticleEditPolicy(new Article($user1));
+		$policy2 = new ArticleEditOwnedPolicy(new Article($user1));
+
+		// Not logged in
+		self::assertFalse($firewall->isAllowed($policy1));
+		self::assertFalse($firewall->isAllowed($policy2));
+
+		// Logged in, don't have privileges
+		$identity1 = new IntIdentity($user1->getId(), []);
+		$firewall->login($identity1);
+
+		self::assertFalse($firewall->isAllowed($policy1));
+		self::assertFalse($firewall->isAllowed($policy2));
+
+		// Logged in, has access to owned resources
+		$identity1 = new IntIdentity($user1->getId(), ['owner']);
+		$firewall->login($identity1);
+
+		self::assertTrue($firewall->hasPrivilege('article.edit.owned'));
+		self::assertTrue($firewall->isAllowed($policy1));
+		self::assertTrue($firewall->isAllowed($policy2));
+
+		// Logged in, does not have access to resource of another user
+		$user2 = new User(2);
+		$getter->addUser($user2);
+
+		$policy3 = new ArticleEditPolicy(new Article($user2));
+		self::assertTrue($firewall->hasPrivilege('article.edit.owned'));
+		self::assertFalse($firewall->isAllowed($policy3));
+
+		// Logged in, has access to resources of all users
+		$identity1 = new IntIdentity($user1->getId(), ['owner', 'editor']);
+		$firewall->login($identity1);
+
+		self::assertTrue($firewall->isAllowed($policy3));
+
+		// - but not other resources
+		self::assertFalse($firewall->isAllowed('article.view'));
+		self::assertFalse($firewall->isAllowed('article'));
+		self::assertFalse($firewall->isAllowed(Authorizer::ALL_PRIVILEGES));
+
+		// Logged in, has access to all resources
+		$identity1 = new IntIdentity($user1->getId(), ['supervisor']);
+		$firewall->login($identity1);
+
+		self::assertTrue($firewall->isAllowed($policy3));
+
+		self::assertTrue($firewall->isAllowed('article.view'));
+		self::assertTrue($firewall->isAllowed('article'));
+		self::assertTrue($firewall->isAllowed(Authorizer::ALL_PRIVILEGES));
+
+		// - except these which have defined policy which does not allow it
+		self::assertTrue($firewall->hasPrivilege(NeverPassPolicy::getPrivilege()));
+		self::assertFalse($firewall->isAllowed(new NeverPassPolicy()));
 	}
 
 }

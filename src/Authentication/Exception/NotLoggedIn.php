@@ -3,7 +3,6 @@
 namespace Orisai\Auth\Authentication\Exception;
 
 use Orisai\Auth\Authentication\Firewall;
-use Orisai\Auth\Authentication\Identity;
 use Orisai\Exceptions\LogicalException;
 use Orisai\Exceptions\Message;
 use function array_pop;
@@ -13,7 +12,8 @@ final class NotLoggedIn extends LogicalException
 {
 
 	/**
-	 * @param class-string<Firewall<Identity>> $class
+	 * @phpstan-template F of Firewall
+	 * @param class-string<F> $class
 	 */
 	public static function create(string $class, string $function): self
 	{

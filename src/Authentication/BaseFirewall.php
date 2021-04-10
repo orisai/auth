@@ -12,30 +12,43 @@ use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\Policy;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\Exceptions\Logic\InvalidState;
 use Orisai\Exceptions\Message;
+use function array_pop;
+use function explode;
+use function get_class;
+use function is_string;
 
 /**
- * @phpstan-template T of Identity
- * @phpstan-implements Firewall<T>
+ * @phpstan-template I of Identity
+ * @phpstan-template-covariant F of Firewall
+ * @phpstan-implements Firewall<I, F>
  */
 abstract class BaseFirewall implements Firewall
 {
 
 	private LoginStorage $storage;
 
-	/** @var IdentityRenewer<T> */
+	/** @phpstan-var IdentityRenewer<I> */
 	private IdentityRenewer $renewer;
 
 	private Authorizer $authorizer;
 
 	private Clock $clock;
 
+	/**
+	 * @var array<string, class-string<Policy>>
+	 * @phpstan-var array<string, class-string<Policy<$this>>>
+	 */
+	private array $privilegePolicies = [];
+
 	protected ?Logins $logins = null;
 	private int $expiredIdentitiesLimit = self::EXPIRED_IDENTITIES_DEFAULT_LIMIT;
 
 	/**
-	 * @param IdentityRenewer<T> $renewer
+	 * @phpstan-param IdentityRenewer<I> $renewer
 	 */
 	public function __construct(
 		LoginStorage $storage,
@@ -163,7 +176,20 @@ abstract class BaseFirewall implements Firewall
 		return $identity->hasRole($role);
 	}
 
-	public function isAllowed(string $privilege): bool
+	/**
+	 * @param string|Policy $requirement
+	 * @phpstan-param string|Policy<$this> $requirement
+	 */
+	public function isAllowed($requirement): bool
+	{
+		if (is_string($requirement)) {
+			return $this->isAllowedByPrivilege($requirement, __FUNCTION__);
+		}
+
+		return $this->isAllowedByPolicy($requirement, __FUNCTION__);
+	}
+
+	public function hasPrivilege(string $privilege): bool
 	{
 		$identity = $this->fetchIdentity();
 
@@ -172,6 +198,84 @@ abstract class BaseFirewall implements Firewall
 		}
 
 		return $this->authorizer->isAllowed($identity, $privilege);
+	}
+
+	private function isAllowedByPrivilege(string $privilege, string $method): bool
+	{
+		if (isset($this->privilegePolicies[$privilege])) {
+			$class = static::class;
+			$parts = explode('\\', static::class);
+			$className = array_pop($parts);
+			$policy = $this->privilegePolicies[$privilege];
+
+			$message = Message::create();
+			$message->withContext("Trying to check privilege $privilege via {$class}->$method().")
+				->withProblem("Privilege has defined policy {$policy}.")
+				->withSolution(
+					"Pass policy instead or skip policy and check just privilege with {$className}->hasPrivilege().",
+				);
+
+			throw InvalidArgument::create()
+				->withMessage($message);
+		}
+
+		return $this->hasPrivilege($privilege);
+	}
+
+	/**
+	 * @phpstan-param Policy<$this> $policy
+	 */
+	private function isAllowedByPolicy(Policy $policy, string $method): bool
+	{
+		$privilege = $policy::getPrivilege();
+
+		if (!isset($this->privilegePolicies[$privilege])) {
+			$class = static::class;
+			$parts = explode('\\', static::class);
+			$className = array_pop($parts);
+			$policyClass = get_class($policy);
+
+			$message = Message::create()
+				->withContext("Trying to check policy of type {$policyClass} via {$class}->{$method}().")
+				->withProblem("Policy is not registered by {$className}.")
+				->withSolution("Register policy via {$className}->addPolicy() first.");
+
+			throw InvalidState::create()
+				->withMessage($message);
+		}
+
+		if (!$this->isLoggedIn()) {
+			return false;
+		}
+
+		return $policy->isAllowed($this);
+	}
+
+	/**
+	 * @param class-string<Policy> $policyClass
+	 * @phpstan-param class-string<Policy<$this>> $policyClass
+	 */
+	public function addPolicy(string $policyClass): void
+	{
+		$privilege = $policyClass::getPrivilege();
+
+		if (!$this->authorizer->hasPrivilege($privilege)) {
+			$class = static::class;
+			$method = __FUNCTION__;
+			$authorizerClass = get_class($this->authorizer);
+
+			$message = Message::create()
+				->withContext("Trying to add policy of type {$policyClass} via {$class}->{$method}().")
+				->withProblem(
+					"Policies privilege {$privilege} is not known by underlying authorizer (type of {$authorizerClass}).",
+				)
+				->withSolution('Add privilege to authorizer first.');
+
+			throw InvalidState::create()
+				->withMessage($message);
+		}
+
+		$this->privilegePolicies[$privilege] = $policyClass;
 	}
 
 	/**
