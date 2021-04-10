@@ -14,6 +14,7 @@ Authentication and authorization
     - [Setup](#authentication-setup)
     - [Usage](#authentication-usage)
 - [Authorization](#authorization)
+	- [Policies](#policies)
 
 ## Setup
 
@@ -358,3 +359,97 @@ $authorizer->deny('editor', 'article');
 $authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
 $firewall->isAllowed('article'); // shortcut to $authorizer->isAllowed(), but also checks whether user is logged in
 ```
+
+## Policies
+
+Too check whether user has privilege to edit an article, you have to call `$firewall->isAllowed('article.edit')` and
+firewall performs checks if user has that privilege and, if any are defined, all child privileges like `article.edit.owned` and `article.edit.all`.
+This approach is safe but may impractical. To customize that behavior, define a policy:
+
+```php
+use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authorization\Policy;
+
+/**
+ * @phpstan-implements Policy<UserAwareFirewall>
+ */
+final class ArticleEditPolicy implements Policy
+{
+
+	public const EDIT_ALL = 'article.edit.all';
+
+	private Article $article;
+
+	public function __construct(Article $article)
+	{
+		$this->article = $article;
+	}
+
+	public static function getPrivilege(): string
+	{
+		return 'article.edit';
+	}
+
+	public function isAllowed(Firewall $firewall): bool
+	{
+		// User is allowed to edit an article, if is allowed to edit all of them or is the article author
+		return $firewall->isAllowed(self::EDIT_ALL)
+			|| $firewall->isAllowed(new ArticleEditOwnedPolicy($this->article));
+	}
+
+}
+```
+
+```php
+use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authorization\Policy;
+
+/**
+ * @phpstan-implements Policy<UserAwareFirewall>
+ */
+final class ArticleEditOwnedPolicy implements Policy
+{
+
+	private Article $article;
+
+	public function __construct(Article $article)
+	{
+		$this->article = $article;
+	}
+
+	public static function getPrivilege(): string
+	{
+		return 'article.edit.owned';
+	}
+
+	public function isAllowed(Firewall $firewall): bool
+	{
+		return $firewall->hasPrivilege(self::getPrivilege())
+			&& $firewall->getUser()->getId() === $this->article->getAuthor()->getId();
+	}
+
+}
+```
+
+Now you have to register these policies in firewall:
+
+```php
+$firewall->addPolicy(ArticleEditPolicy::class);
+$firewall->addPolicy(ArticleEditOwnedPolicy::class);
+```
+
+And check if user is allowed by that policy to perform actions:
+
+```php
+$firewall->isAllowed(new ArticleEditPolicy($article));
+```
+
+Be aware that in case of policy firewall itself don't perform any checks except the logged-in check, so you have to do
+all the required privilege checks yourself in the policy.
+
+Once the policy is registered, firewall will force you to use that policy instead of privilege in `$firewall->isAllowed()`
+call to prevent security issues, but you can still check the privilege via `$firewall->hasPrivilege()`.
+
+Always check against the most specific permissions you need. If user is allowed to do everything, `article` privilege
+check would be successful, but `ArticleEditOwnedPolicy` check (`article.edit.owned` privilege) may return false in case
+user is not author of that article. You may still achieve this behavior by checking `$firewall->hasPrivilege(Authorizer::ALL_PRIVILEGES)`.
