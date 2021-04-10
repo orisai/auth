@@ -5,9 +5,11 @@ namespace Orisai\Auth\Authentication;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
+use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-template T of Identity
+ * @phpstan-template I of Identity
+ * @phpstan-template-covariant F of Firewall
  */
 interface Firewall
 {
@@ -21,12 +23,12 @@ interface Firewall
 	public function isLoggedIn(): bool;
 
 	/**
-	 * @phpstan-param T $identity
+	 * @phpstan-param I $identity
 	 */
 	public function login(Identity $identity): void;
 
 	/**
-	 * @phpstan-param T $identity
+	 * @phpstan-param I $identity
 	 * @throws NotLoggedIn
 	 */
 	public function renewIdentity(Identity $identity): void;
@@ -34,14 +36,20 @@ interface Firewall
 	public function logout(): void;
 
 	/**
-	 * @phpstan-return T
+	 * @phpstan-return I
 	 * @throws NotLoggedIn
 	 */
 	public function getIdentity(): Identity;
 
 	public function hasRole(string $role): bool;
 
-	public function isAllowed(string $privilege): bool;
+	/**
+	 * @param string|Policy $requirement
+	 * @phpstan-param string|Policy<$this> $requirement
+	 */
+	public function isAllowed($requirement): bool;
+
+	public function hasPrivilege(string $privilege): bool;
 
 	/**
 	 * @throws NotLoggedIn
