@@ -9,7 +9,7 @@ use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\PermissionAuthorizer;
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
@@ -34,9 +34,9 @@ final class BaseFirewallTest extends TestCase
 		return new AlwaysPassIdentityRenewer();
 	}
 
-	private function authorizer(): PermissionAuthorizer
+	private function authorizer(): PrivilegeAuthorizer
 	{
-		return new PermissionAuthorizer();
+		return new PrivilegeAuthorizer();
 	}
 
 	public function testBase(): void
@@ -465,7 +465,7 @@ MSG);
 	public function testIsAllowed(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
 
 		$authorizer->addPrivilege('admin');
@@ -517,7 +517,7 @@ Context: Trying to add policy of type
          Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy via
          Tests\Orisai\Auth\Doubles\UserAwareFirewall->addPolicy().
 Problem: Policies privilege article.edit.owned is not known by underlying
-         authorizer (type of Orisai\Auth\Authorization\PermissionAuthorizer).
+         authorizer (type of Orisai\Auth\Authorization\PrivilegeAuthorizer).
 Solution: Add privilege to authorizer first.
 MSG);
 

@@ -3,17 +3,17 @@
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\IntIdentity;
-use Orisai\Auth\Authorization\PermissionAuthorizer;
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
-use Tests\Orisai\Auth\Doubles\TestingPermissionAuthorizer;
+use Tests\Orisai\Auth\Doubles\TestingPrivilegeAuthorizer;
 
-final class PermissionAuthorizerTest extends TestCase
+final class PrivilegeAuthorizerTest extends TestCase
 {
 
 	public function testPrivilegesData(): void
 	{
-		$authorizer = new TestingPermissionAuthorizer();
+		$authorizer = new TestingPrivilegeAuthorizer();
 
 		$authorizer->addPrivilege('article');
 		$authorizer->addPrivilege('article.view');
@@ -51,7 +51,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testHasPrivilege(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 
 		self::assertTrue($authorizer->hasPrivilege($authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->hasPrivilege('article'));
@@ -73,7 +73,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testRolesData(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 
 		$authorizer->addRole('supervisor');
 		$authorizer->addRole('admin');
@@ -93,7 +93,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testRolePrivilegesData(): void
 	{
-		$authorizer = new TestingPermissionAuthorizer();
+		$authorizer = new TestingPrivilegeAuthorizer();
 		$role = 'editor';
 
 		$authorizer->addPrivilege('article.view');
@@ -281,7 +281,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testRolesPrivilegesNotOverridden(): void
 	{
-		$authorizer = new TestingPermissionAuthorizer();
+		$authorizer = new TestingPrivilegeAuthorizer();
 
 		$authorizer->addRole('role');
 		$authorizer->addPrivilege('privilege');
@@ -306,7 +306,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testNothingSet(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
@@ -323,7 +323,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testNoPrivilegesEqualToAllPrivileges(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
@@ -335,7 +335,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testAllAllowed(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$identity = new IntIdentity(1, ['supervisor']);
 
 		$authorizer->addPrivilege('foo.bar.baz');
@@ -370,7 +370,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testAllAllowedRolesNotMixed(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$supervisor = new IntIdentity(1, ['supervisor']);
 		$admin = new IntIdentity(2, ['admin']);
 
@@ -390,7 +390,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testPrivilegesFromMultipleRoles(): void
 	{
-		$authorizer = new TestingPermissionAuthorizer();
+		$authorizer = new TestingPrivilegeAuthorizer();
 		$identity = new IntIdentity(1, ['editor', 'editor-in-chief']);
 
 		$authorizer->addPrivilege('article.view');
@@ -424,7 +424,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testRolesNotMixed(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$supervisor = new IntIdentity(1, ['supervisor']);
 		$admin = new IntIdentity(2, ['admin']);
 
@@ -447,7 +447,7 @@ final class PermissionAuthorizerTest extends TestCase
 		$role = 'guest';
 		$identity = new IntIdentity(1, [$role]);
 
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 
 		$authorizer->addPrivilege('admin');
 		$authorizer->addPrivilege('front');
@@ -465,7 +465,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testOverrideAllowThenDenyFromLeastSpecific(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
@@ -506,7 +506,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testOverrideDenyThenAllowFromLeastSpecific(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
@@ -539,7 +539,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testOverrideAllowThenDenyFromMostSpecific(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
@@ -571,7 +571,7 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testAuthorizerDontDefineAllIdentityRoles(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$identity = new IntIdentity(1, ['not-defined-by-authorizer']);
 
 		$authorizer->addPrivilege('something');
@@ -581,11 +581,11 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testAllowChecksRole(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
-			'Role role does not exist, add it with Orisai\Auth\Authorization\PermissionAuthorizer->addRole($role)',
+			'Role role does not exist, add it with Orisai\Auth\Authorization\PrivilegeAuthorizer->addRole($role)',
 		);
 
 		$authorizer->allow('role', 'article');
@@ -593,11 +593,11 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testDenyChecksRole(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
-			'Role role does not exist, add it with Orisai\Auth\Authorization\PermissionAuthorizer->addRole($role)',
+			'Role role does not exist, add it with Orisai\Auth\Authorization\PrivilegeAuthorizer->addRole($role)',
 		);
 
 		$authorizer->deny('role', 'article');
@@ -605,12 +605,12 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testAllowChecksPrivilege(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$authorizer->addRole('role');
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
-			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PermissionAuthorizer->allow()',
+			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PrivilegeAuthorizer->allow()',
 		);
 
 		$authorizer->allow('role', 'unknown');
@@ -618,12 +618,12 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testDenyChecksPrivilege(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$authorizer->addRole('role');
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
-			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PermissionAuthorizer->deny()',
+			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PrivilegeAuthorizer->deny()',
 		);
 
 		$authorizer->deny('role', 'unknown');
@@ -631,14 +631,14 @@ final class PermissionAuthorizerTest extends TestCase
 
 	public function testIsAllowedChecksPrivilege(): void
 	{
-		$authorizer = new PermissionAuthorizer();
+		$authorizer = new PrivilegeAuthorizer();
 		$authorizer->addRole('role');
 
 		$identity = new IntIdentity(1, ['role']);
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
-			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PermissionAuthorizer->isAllowed()',
+			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed()',
 		);
 
 		$authorizer->isAllowed($identity, 'unknown');

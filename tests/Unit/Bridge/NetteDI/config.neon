@@ -9,7 +9,7 @@ services:
 
 	# front firewall
 	auth.front.authorizer:
-		factory: Orisai\Auth\Authorization\PermissionAuthorizer
+		factory: Orisai\Auth\Authorization\PrivilegeAuthorizer
 		setup:
 			- addRole(editor)
 			- addPrivilege(article.foo)
@@ -24,7 +24,7 @@ services:
 			namespace: front
 
 	# admin firewall
-	auth.admin.authorizer: Orisai\Auth\Authorization\PermissionAuthorizer
+	auth.admin.authorizer: Orisai\Auth\Authorization\PrivilegeAuthorizer
 	auth.admin.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
 	auth.admin.firewall:
 		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
@@ -35,7 +35,7 @@ services:
 			namespace: admin
 
 	# api firewall
-	auth.api.authorizerCreator: Tests\Orisai\Auth\Doubles\PermissionAuthorizerCreator
+	auth.api.authorizerCreator: Tests\Orisai\Auth\Doubles\PrivilegeAuthorizerCreator
 	auth.api.authorizer: @auth.api.authorizerCreator::create()
 	auth.api.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
 	auth.api.firewall:

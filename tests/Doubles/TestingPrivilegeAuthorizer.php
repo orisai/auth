@@ -2,9 +2,9 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Orisai\Auth\Authorization\PermissionAuthorizer;
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 
-final class TestingPermissionAuthorizer extends PermissionAuthorizer
+final class TestingPrivilegeAuthorizer extends PrivilegeAuthorizer
 {
 
 	/**

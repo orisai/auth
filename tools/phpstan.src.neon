@@ -21,5 +21,5 @@ parameters:
 
 		# Shouldn't happen, arrays are checked before usage
 		- message: '#^Parameter \#1 \$key of function array_key_exists expects int\|string, string\|null given\.$#'
-		  path: %currentWorkingDirectory%/src/Authorization/PermissionAuthorizer.php
+		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 3
