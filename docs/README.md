@@ -244,12 +244,12 @@ final class AdminIdentityRenewer implements IdentityRenewer
 Create firewall instance
 
 ```php
-use Orisai\Auth\Authorization\PermissionAuthorizer;
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Bridge\NetteHttp\SessionLoginStorage;
 
 $identityRenewer = new AdminIdentityRenewer($userRepository);
 $loginStorage = new SessionLoginStorage($session);
-$authorizer = new PermissionAuthorizer();
+$authorizer = new PrivilegeAuthorizer();
 $firewall = new AdminFirewall($loginStorage, $identityRenewer, $authorizer);
 ```
 
@@ -332,9 +332,9 @@ Represent your app permissions with privilege hierarchy
 ```
 
 ```php
-use Orisai\Auth\Authorization\PermissionAuthorizer;
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 
-$authorizer = new PermissionAuthorizer();
+$authorizer = new PrivilegeAuthorizer();
 
 // Add roles
 $authorizer->addRole('editor');

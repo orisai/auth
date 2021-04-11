@@ -10,7 +10,7 @@ use function array_merge;
 use function array_shift;
 use function is_array;
 
-class PermissionAuthorizer implements Authorizer
+class PrivilegeAuthorizer implements Authorizer
 {
 
 	/** @var array<string, null> */
