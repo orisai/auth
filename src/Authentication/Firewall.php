@@ -68,6 +68,8 @@ interface Firewall
 	 */
 	public function getExpiredLogins(): array;
 
+	public function getLastExpiredLogin(): ?ExpiredLogin;
+
 	public function removeExpiredLogins(): void;
 
 	/**

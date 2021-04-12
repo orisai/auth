@@ -366,6 +366,15 @@ abstract class BaseFirewall implements Firewall
 		return $this->getLogins()->getExpiredLogins();
 	}
 
+	public function getLastExpiredLogin(): ?ExpiredLogin
+	{
+		if (!$this->doesStorageAlreadyExist()) {
+			return null;
+		}
+
+		return $this->getLogins()->getLastExpiredLogin();
+	}
+
 	public function removeExpiredLogins(): void
 	{
 		if (!$this->doesStorageAlreadyExist()) {

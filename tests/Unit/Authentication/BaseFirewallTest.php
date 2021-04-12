@@ -135,9 +135,11 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->logout();
 		self::assertSame([1], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
 
 		$firewall->login($identity1);
 		self::assertSame([], $firewall->getExpiredLogins());
+		self::assertNull($firewall->getLastExpiredLogin());
 
 		$identity2 = new StringIdentity('second', []);
 		$firewall->login($identity2);
@@ -145,36 +147,43 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->logout();
 		self::assertSame([1, 'second'], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity2, $firewall->getLastExpiredLogin()->getIdentity());
 
 		$identity3 = new IntIdentity(3, []);
 		$firewall->login($identity3);
 		$firewall->login($identity2);
 		$firewall->logout();
 		self::assertSame([1, 3, 'second'], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity2, $firewall->getLastExpiredLogin()->getIdentity());
 
 		// logout removes logins above limit
 		$identity4 = new IntIdentity(4, []);
 		$firewall->login($identity4);
 		$firewall->logout();
 		self::assertSame([3, 'second', 4], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity4, $firewall->getLastExpiredLogin()->getIdentity());
 
 		// new login also removes logins above limit
 		$firewall->login($identity1);
 		$identity5 = new StringIdentity('fifth', []);
 		$firewall->login($identity5);
 		self::assertSame(['second', 4, 1], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
 
 		// Remove expired login with specific ID
 		$firewall->removeExpiredLogin(4);
 		self::assertSame(['second', 1], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
 
 		// Remove expired logins above limit
 		$firewall->setExpiredIdentitiesLimit(1);
 		self::assertSame([1], array_keys($firewall->getExpiredLogins()));
+		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
 
 		// Remove all expired logins
 		$firewall->removeExpiredLogins();
 		self::assertSame([], $firewall->getExpiredLogins());
+		self::assertNull($firewall->getLastExpiredLogin());
 	}
 
 	public function testManualRenewIdentity(): void
@@ -438,6 +447,9 @@ MSG);
 		self::assertFalse($storage->alreadyExists($namespace));
 
 		self::assertSame([], $firewall->getExpiredLogins());
+		self::assertFalse($storage->alreadyExists($namespace));
+
+		self::assertNull($firewall->getLastExpiredLogin());
 		self::assertFalse($storage->alreadyExists($namespace));
 
 		self::assertFalse($firewall->hasRole('any'));

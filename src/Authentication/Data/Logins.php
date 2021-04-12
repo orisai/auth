@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authentication\Data;
 
+use function array_key_last;
 use function array_slice;
 use function count;
 
@@ -42,6 +43,17 @@ final class Logins
 	public function getExpiredLogins(): array
 	{
 		return $this->expiredLogins;
+	}
+
+	public function getLastExpiredLogin(): ?ExpiredLogin
+	{
+		$key = array_key_last($this->expiredLogins);
+
+		if ($key === null) {
+			return null;
+		}
+
+		return $this->expiredLogins[$key];
 	}
 
 	public function removeOldestExpiredLoginsAboveLimit(int $limit): void
