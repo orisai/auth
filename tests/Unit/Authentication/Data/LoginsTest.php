@@ -34,9 +34,11 @@ final class LoginsTest extends TestCase
 		$e1 = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
 		$logins->addExpiredLogin($e1);
 		self::assertSame(['test' => $e1], $logins->getExpiredLogins());
+		self::assertSame($e1, $logins->getLastExpiredLogin());
 
 		$logins->setCurrentLogin($currentLogin);
 		self::assertSame([], $logins->getExpiredLogins());
+		self::assertNull($logins->getLastExpiredLogin());
 
 		self::assertEquals($logins, unserialize(serialize($logins)));
 
@@ -59,6 +61,8 @@ final class LoginsTest extends TestCase
 			],
 			$logins->getExpiredLogins(),
 		);
+		self::assertSame($e3, $logins->getLastExpiredLogin());
+
 		$logins->addExpiredLogin($e2);
 		self::assertSame(
 			[
@@ -68,6 +72,7 @@ final class LoginsTest extends TestCase
 			],
 			$logins->getExpiredLogins(),
 		);
+		self::assertSame($e2, $logins->getLastExpiredLogin());
 
 		// Remove expired by identity id
 		$logins->removeExpiredLogin(3);
@@ -78,6 +83,7 @@ final class LoginsTest extends TestCase
 			],
 			$logins->getExpiredLogins(),
 		);
+		self::assertSame($e2, $logins->getLastExpiredLogin());
 
 		// Remove expired by limit
 		$logins->addExpiredLogin($e3);
@@ -90,6 +96,8 @@ final class LoginsTest extends TestCase
 			],
 			$logins->getExpiredLogins(),
 		);
+		self::assertSame($e3, $logins->getLastExpiredLogin());
+
 		$logins->removeOldestExpiredLoginsAboveLimit(2);
 		self::assertSame(
 			[
@@ -98,10 +106,12 @@ final class LoginsTest extends TestCase
 			],
 			$logins->getExpiredLogins(),
 		);
+		self::assertSame($e3, $logins->getLastExpiredLogin());
 
 		// Remove all expired
 		$logins->removeExpiredLogins();
 		self::assertSame([], $logins->getExpiredLogins());
+		self::assertNull($logins->getLastExpiredLogin());
 	}
 
 	private function expiredLogin(Identity $identity): ExpiredLogin
