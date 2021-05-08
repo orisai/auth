@@ -9,6 +9,7 @@ class Expiration
 {
 
 	protected Instant $time;
+
 	private Duration $delta;
 
 	public function __construct(Instant $time, Duration $delta)
