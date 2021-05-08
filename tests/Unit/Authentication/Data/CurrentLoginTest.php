@@ -39,6 +39,7 @@ final class CurrentLoginTest extends TestCase
 
 	public function testIncompleteIdentityClass(): void
 	{
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\CurrentLogin":3:{s:8:"identity";O:15:"InvalidIdentity":2:{s:2:"id";i:1;s:5:"roles";a:0:{}}s:18:"authenticationTime";i:2;s:10:"expiration";N;}';
 
 		$login = unserialize($serialized);

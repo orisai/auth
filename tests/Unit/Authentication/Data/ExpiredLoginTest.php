@@ -52,6 +52,7 @@ final class ExpiredLoginTest extends TestCase
 
 	public function testIncompleteIdentityClass(): void
 	{
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":4:{s:8:"identity";O:15:"InvalidIdentity":2:{s:2:"id";i:1;s:5:"roles";a:0:{}}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}';
 
 		$login = unserialize($serialized);
