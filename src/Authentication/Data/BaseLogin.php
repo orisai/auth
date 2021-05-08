@@ -10,7 +10,9 @@ abstract class BaseLogin
 {
 
 	protected Identity $identity;
+
 	private Instant $authenticationTime;
+
 	private bool $hasInvalidIdentity = false;
 
 	public function __construct(Identity $identity, Instant $authenticationTime)

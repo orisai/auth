@@ -19,6 +19,7 @@ final class SodiumPasswordEncoder implements PasswordEncoder
 {
 
 	private int $timeCost;
+
 	private int $memoryCost;
 
 	public function __construct(?int $timeCost = null, ?int $memoryCost = null)

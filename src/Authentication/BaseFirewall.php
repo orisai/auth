@@ -45,6 +45,7 @@ abstract class BaseFirewall implements Firewall
 	private array $privilegePolicies = [];
 
 	protected ?Logins $logins = null;
+
 	private int $expiredIdentitiesLimit = self::EXPIRED_IDENTITIES_DEFAULT_LIMIT;
 
 	/**

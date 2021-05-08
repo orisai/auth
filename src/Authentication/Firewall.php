@@ -15,7 +15,9 @@ interface Firewall
 {
 
 	public const REASON_MANUAL = 1;
+
 	public const REASON_INACTIVITY = 2;
+
 	public const REASON_INVALID_IDENTITY = 3;
 
 	public const EXPIRED_IDENTITIES_DEFAULT_LIMIT = 3;
