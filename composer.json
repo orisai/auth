@@ -27,7 +27,7 @@
 	},
 	"require-dev": {
 		"ext-sodium": "*",
-		"infection/infection": "^0.20.0",
+		"infection/infection": "^0.22.1",
 		"nette/di": "^3.0.0",
 		"nette/http": "^3.0.1",
 		"orisai/coding-standard": "^2.0.0",
