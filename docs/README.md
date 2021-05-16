@@ -245,12 +245,14 @@ Create firewall instance
 
 ```php
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Auth\Bridge\NetteHttp\SessionLoginStorage;
 
 $identityRenewer = new AdminIdentityRenewer($userRepository);
 $loginStorage = new SessionLoginStorage($session);
 $authorizer = new PrivilegeAuthorizer();
-$firewall = new AdminFirewall($loginStorage, $identityRenewer, $authorizer);
+$policyManager = new SimplePolicyManager();
+$firewall = new AdminFirewall($loginStorage, $identityRenewer, $authorizer, $policyManager);
 ```
 
 ### Authentication usage
@@ -371,30 +373,40 @@ use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<UserAwareFirewall>
+ * @phpstan-implements Policy<UserAwareFirewall, Article>
  */
 final class ArticleEditPolicy implements Policy
 {
 
 	public const EDIT_ALL = 'article.edit.all';
 
-	private Article $article;
-
-	public function __construct(Article $article)
-	{
-		$this->article = $article;
-	}
-
 	public static function getPrivilege(): string
 	{
 		return 'article.edit';
 	}
 
-	public function isAllowed(Firewall $firewall): bool
+	public static function getRequirementsClass(): string
+	{
+		return Article::class;
+	}
+
+	/**
+	 * @param UserAwareFirewall $firewall
+	 * @param Article           $requirements
+	 */
+	public function isAllowed(Firewall $firewall, object $requirements): bool
 	{
 		// User is allowed to edit an article, if is allowed to edit all of them or is the article author
 		return $firewall->isAllowed(self::EDIT_ALL)
-			|| $firewall->isAllowed(new ArticleEditOwnedPolicy($this->article));
+			|| $firewall->isAllowed(...ArticleEditOwnedPolicy::get($requirements));
+	}
+
+	/**
+	 * @return array{string, object}
+	 */
+	public static function get(Article $article): array
+	{
+		return [self::getPrivilege(), $article];
 	}
 
 }
@@ -405,51 +417,66 @@ use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<UserAwareFirewall>
+ * @phpstan-implements Policy<UserAwareFirewall, Article>
  */
 final class ArticleEditOwnedPolicy implements Policy
 {
-
-	private Article $article;
-
-	public function __construct(Article $article)
-	{
-		$this->article = $article;
-	}
 
 	public static function getPrivilege(): string
 	{
 		return 'article.edit.owned';
 	}
 
-	public function isAllowed(Firewall $firewall): bool
+	public static function getRequirementsClass(): string
+	{
+		return Article::class;
+	}
+
+	/**
+	 * @param UserAwareFirewall $firewall
+	 * @param Article           $requirements
+	 */
+	public function isAllowed(Firewall $firewall, object $requirements): bool
 	{
 		return $firewall->hasPrivilege(self::getPrivilege())
-			&& $firewall->getUser()->getId() === $this->article->getAuthor()->getId();
+			&& $firewall->getUser()->getId() === $requirements->getAuthor()->getId();
+	}
+
+	/**
+	 * @return array{string, object}
+	 */
+	public static function get(Article $article): array
+	{
+		return [self::getPrivilege(), $article];
 	}
 
 }
 ```
 
-Now you have to register these policies in firewall:
+Now you have to register these policies in policy manager:
+
+- registration example is for `SimplePolicyManager`, other implementations may require different approach
 
 ```php
-$firewall->addPolicy(ArticleEditPolicy::class);
-$firewall->addPolicy(ArticleEditOwnedPolicy::class);
+$policyManager->add(new ArticleEditPolicy());
+$policyManager->add(new ArticleEditOwnedPolicy());
 ```
 
 And check if user is allowed by that policy to perform actions:
 
 ```php
-$firewall->isAllowed(new ArticleEditPolicy($article));
+$firewall->isAllowed(...ArticleEditPolicy::get($article));
 ```
 
 Be aware that in case of policy firewall itself don't perform any checks except the logged-in check, so you have to do
-all the required privilege checks yourself in the policy.
+all the required privilege checks yourself in the policy. It is possible to fallback to default behavior with
+`$firewall->hasPrivilege(self::getPrivilege())`
 
-Once the policy is registered, firewall will force you to use that policy instead of privilege in `$firewall->isAllowed()`
-call to prevent security issues, but you can still check the privilege via `$firewall->hasPrivilege()`.
+Once the policy is registered, firewall will require you to pass policy requirements.
+You may choose to make requirements nullable and change `object $requirements` to `?object $requirements`.
+Other possibility is to not have any requirements at all - in that case use requirement `Orisai\Auth\Authorization\NoRequirement`
+and firewall will auto-create it for you.
 
 Always check against the most specific permissions you need. If user is allowed to do everything, `article` privilege
 check would be successful, but `ArticleEditOwnedPolicy` check (`article.edit.owned` privilege) may return false in case
-user is not author of that article. You may still achieve this behavior by checking `$firewall->hasPrivilege(Authorizer::ALL_PRIVILEGES)`.
+user is not author of that article.

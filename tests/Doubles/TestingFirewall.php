@@ -10,9 +10,11 @@ use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRenewer;
 use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyManager;
 
 /**
- * @phpstan-extends BaseFirewall<Identity, Firewall>
+ * @phpstan-extends BaseFirewall<Identity, Firewall, Policy>
  */
 final class TestingFirewall extends BaseFirewall
 {
@@ -23,11 +25,12 @@ final class TestingFirewall extends BaseFirewall
 		LoginStorage $storage,
 		IdentityRenewer $renewer,
 		Authorizer $authorizer,
+		PolicyManager $policyManager,
 		?Clock $clock = null,
 		string $namespace = 'test'
 	)
 	{
-		parent::__construct($storage, $renewer, $authorizer, $clock);
+		parent::__construct($storage, $renewer, $authorizer, $policyManager, $clock);
 		$this->namespace = $namespace;
 	}
 

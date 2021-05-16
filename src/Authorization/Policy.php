@@ -6,6 +6,7 @@ use Orisai\Auth\Authentication\Firewall;
 
 /**
  * @phpstan-template F of Firewall
+ * @phpstan-template R of object
  */
 interface Policy
 {
@@ -13,8 +14,15 @@ interface Policy
 	public static function getPrivilege(): string;
 
 	/**
-	 * @phpstan-param F $firewall
+	 * @return class-string
+	 * @phpstan-return class-string<R>
 	 */
-	public function isAllowed(Firewall $firewall): bool;
+	public static function getRequirementsClass(): string;
+
+	/**
+	 * @phpstan-param F $firewall
+	 * @phpstan-param R $requirements
+	 */
+	public function isAllowed(Firewall $firewall, object $requirements): bool;
 
 }

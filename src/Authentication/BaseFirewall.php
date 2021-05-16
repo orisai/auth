@@ -12,18 +12,20 @@ use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use Orisai\Exceptions\Message;
-use function array_pop;
-use function explode;
+use ReflectionClass;
 use function get_class;
-use function is_string;
+use function is_a;
 
 /**
  * @phpstan-template I of Identity
  * @phpstan-template-covariant F of Firewall
+ * @phpstan-template-covariant P of Policy
  * @phpstan-implements Firewall<I, F>
  */
 abstract class BaseFirewall implements Firewall
@@ -36,13 +38,10 @@ abstract class BaseFirewall implements Firewall
 
 	private Authorizer $authorizer;
 
-	private Clock $clock;
+	/** @phpstan-var PolicyManager<P> */
+	private PolicyManager $policyManager;
 
-	/**
-	 * @var array<string, class-string<Policy>>
-	 * @phpstan-var array<string, class-string<Policy<$this>>>
-	 */
-	private array $privilegePolicies = [];
+	private Clock $clock;
 
 	protected ?Logins $logins = null;
 
@@ -50,17 +49,20 @@ abstract class BaseFirewall implements Firewall
 
 	/**
 	 * @phpstan-param IdentityRenewer<I> $renewer
+	 * @phpstan-param PolicyManager<P> $policyManager
 	 */
 	public function __construct(
 		LoginStorage $storage,
 		IdentityRenewer $renewer,
 		Authorizer $authorizer,
+		PolicyManager $policyManager,
 		?Clock $clock = null
 	)
 	{
 		$this->storage = $storage;
 		$this->renewer = $renewer;
 		$this->authorizer = $authorizer;
+		$this->policyManager = $policyManager;
 		$this->clock = $clock ?? new SystemClock();
 	}
 
@@ -177,17 +179,13 @@ abstract class BaseFirewall implements Firewall
 		return $identity->hasRole($role);
 	}
 
-	/**
-	 * @param string|Policy $requirement
-	 * @phpstan-param string|Policy<$this> $requirement
-	 */
-	public function isAllowed($requirement): bool
+	public function isAllowed(string $privilege, ?object $requirements = null): bool
 	{
-		if (is_string($requirement)) {
-			return $this->isAllowedByPrivilege($requirement, __FUNCTION__);
-		}
+		$policy = $this->policyManager->get($privilege);
 
-		return $this->isAllowedByPolicy($requirement, __FUNCTION__);
+		return $policy === null
+			? $this->isAllowedByPrivilege($privilege, $requirements, __FUNCTION__)
+			: $this->isAllowedByPolicy($policy, $requirements, __FUNCTION__);
 	}
 
 	public function hasPrivilege(string $privilege): bool
@@ -201,20 +199,17 @@ abstract class BaseFirewall implements Firewall
 		return $this->authorizer->isAllowed($identity, $privilege);
 	}
 
-	private function isAllowedByPrivilege(string $privilege, string $method): bool
+	private function isAllowedByPrivilege(string $privilege, ?object $requirements, string $method): bool
 	{
-		if (isset($this->privilegePolicies[$privilege])) {
+		if ($requirements !== null) {
 			$class = static::class;
-			$parts = explode('\\', static::class);
-			$className = array_pop($parts);
-			$policy = $this->privilegePolicies[$privilege];
-
-			$message = Message::create();
-			$message->withContext("Trying to check privilege $privilege via {$class}->$method().")
-				->withProblem("Privilege has defined policy {$policy}.")
-				->withSolution(
-					"Pass policy instead or skip policy and check just privilege with {$className}->hasPrivilege().",
-				);
+			$requirementsType = get_class($requirements);
+			$message = Message::create()
+				->withContext("Trying to check privilege $privilege via $class->$method().")
+				->withProblem(
+					"Passed requirement object (type of $requirementsType) which is not allowed by privilege without policy.",
+				)
+				->withSolution('Do not pass the requirement object or define policy which can handle it.');
 
 			throw InvalidArgument::create()
 				->withMessage($message);
@@ -223,60 +218,63 @@ abstract class BaseFirewall implements Firewall
 		return $this->hasPrivilege($privilege);
 	}
 
-	/**
-	 * @phpstan-param Policy<$this> $policy
-	 */
-	private function isAllowedByPolicy(Policy $policy, string $method): bool
+	private function isAllowedByPolicy(Policy $policy, ?object $requirements, string $method): bool
 	{
 		$privilege = $policy::getPrivilege();
-
-		if (!isset($this->privilegePolicies[$privilege])) {
-			$class = static::class;
-			$parts = explode('\\', static::class);
-			$className = array_pop($parts);
-			$policyClass = get_class($policy);
-
-			$message = Message::create()
-				->withContext("Trying to check policy of type {$policyClass} via {$class}->{$method}().")
-				->withProblem("Policy is not registered by {$className}.")
-				->withSolution("Register policy via {$className}->addPolicy() first.");
-
-			throw InvalidState::create()
-				->withMessage($message);
-		}
-
-		if (!$this->isLoggedIn()) {
-			return false;
-		}
-
-		return $policy->isAllowed($this);
-	}
-
-	/**
-	 * @param class-string<Policy> $policyClass
-	 * @phpstan-param class-string<Policy<$this>> $policyClass
-	 */
-	public function addPolicy(string $policyClass): void
-	{
-		$privilege = $policyClass::getPrivilege();
-
+		$class = static::class;
 		if (!$this->authorizer->hasPrivilege($privilege)) {
-			$class = static::class;
-			$method = __FUNCTION__;
 			$authorizerClass = get_class($this->authorizer);
-
 			$message = Message::create()
-				->withContext("Trying to add policy of type {$policyClass} via {$class}->{$method}().")
-				->withProblem(
-					"Policies privilege {$privilege} is not known by underlying authorizer (type of {$authorizerClass}).",
-				)
+				->withContext("Trying to check privilege $privilege via $class->$method().")
+				->withProblem("Privilege $privilege is not known by underlying authorizer (type of $authorizerClass).")
 				->withSolution('Add privilege to authorizer first.');
 
 			throw InvalidState::create()
 				->withMessage($message);
 		}
 
-		$this->privilegePolicies[$privilege] = $policyClass;
+		$requirementsClass = $policy::getRequirementsClass();
+		if ($requirements !== null) {
+			if (!is_a($requirements, $requirementsClass, true)) {
+				$policyClass = get_class($policy);
+				$passedRequirementsClass = get_class($requirements);
+				$message = Message::create()
+					->withContext("Trying to check privilege $privilege via $class->$method().")
+					->withProblem(
+						"Passed requirements are of type $passedRequirementsClass, which is not supported by $policyClass.",
+					)
+					->withSolution(
+						"Pass requirements of type $requirementsClass or change policy or its requirements.",
+					);
+
+				throw InvalidArgument::create()
+					->withMessage($message);
+			}
+		} elseif ($requirementsClass === NoRequirements::class) {
+			$requirements = new NoRequirements();
+		} else {
+			$methodRef = (new ReflectionClass($policy))->getMethod('isAllowed');
+
+			if (!$methodRef->getParameters()[1]->allowsNull()) {
+				$policyClass = get_class($policy);
+				$noRequirementsClass = NoRequirements::class;
+				$message = Message::create()
+					->withContext("Trying to check privilege $privilege via $class->$method().")
+					->withProblem("Policy requirements are missing, which is not supported by $policyClass.")
+					->withSolution(
+						"Pass requirements of type $requirementsClass or mark policy requirements nullable or change them to $noRequirementsClass.",
+					);
+
+				throw InvalidArgument::create()
+					->withMessage($message);
+			}
+		}
+
+		if (!$this->isLoggedIn()) {
+			return false;
+		}
+
+		return $policy->isAllowed($this, $requirements);
 	}
 
 	/**
