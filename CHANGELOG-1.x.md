@@ -23,10 +23,18 @@ Authentication
     - `IntIdentity`
     - `StringIdentity`
 - `LoginStorage` interface
-    - `NetteSessionLoginStorage`
     - `ArrayLoginStorage`
 - `IdentityRenewer` interface
 
 Authorization
 - `Authorizer` interface
 	- `PermissionAuthorizer`
+- `Policy` interface
+	- `PolicyManager` interface
+	- `SimplePolicyManager`
+- `NoRequirements` Policy requirement
+
+Bridges
+- Nette
+	- `SessionLoginStorage`
+	- `LazyPolicyManager`
