@@ -10,11 +10,10 @@ use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRenewer;
 use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyManager;
 
 /**
- * @phpstan-extends BaseFirewall<Identity, Firewall, Policy>
+ * @phpstan-extends BaseFirewall<Identity, Firewall>
  */
 final class TestingFirewall extends BaseFirewall
 {

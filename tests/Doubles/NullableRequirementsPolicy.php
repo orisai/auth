@@ -6,7 +6,8 @@ use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<Firewall, Article>
+ * @phpstan-template F of Firewall
+ * @phpstan-implements Policy<F, Article>
  */
 final class NullableRequirementsPolicy implements Policy
 {

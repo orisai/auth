@@ -43,7 +43,6 @@ final class ExpiredLoginTest extends TestCase
 
 		$expiration = $login->getExpiration();
 		self::assertInstanceOf(Expiration::class, $expiration);
-		self::assertNotInstanceOf(CurrentLogin::class, $expiration);
 		self::assertSame($time, $expiration->getTime());
 		self::assertSame($delta, $expiration->getDelta());
 
