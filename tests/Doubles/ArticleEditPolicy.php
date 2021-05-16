@@ -6,29 +6,39 @@ use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<UserAwareFirewall>
+ * @phpstan-implements Policy<UserAwareFirewall, Article>
  */
 final class ArticleEditPolicy implements Policy
 {
 
 	public const EDIT_ALL = 'article.edit.all';
 
-	private Article $article;
-
-	public function __construct(Article $article)
-	{
-		$this->article = $article;
-	}
-
 	public static function getPrivilege(): string
 	{
 		return 'article.edit';
 	}
 
-	public function isAllowed(Firewall $firewall): bool
+	public static function getRequirementsClass(): string
+	{
+		return Article::class;
+	}
+
+	/**
+	 * @param UserAwareFirewall $firewall
+	 * @param Article           $requirements
+	 */
+	public function isAllowed(Firewall $firewall, object $requirements): bool
 	{
 		return $firewall->isAllowed(self::EDIT_ALL)
-			|| $firewall->isAllowed(new ArticleEditOwnedPolicy($this->article));
+			|| $firewall->isAllowed(...ArticleEditOwnedPolicy::get($requirements));
+	}
+
+	/**
+	 * @return array{string, object}
+	 */
+	public static function get(Article $article): array
+	{
+		return [self::getPrivilege(), $article];
 	}
 
 }
