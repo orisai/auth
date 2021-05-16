@@ -9,12 +9,12 @@ use Orisai\Auth\Authorization\Policy;
 /**
  * @phpstan-implements Policy<Firewall, NoRequirements>
  */
-final class NeverPassPolicy implements Policy
+final class NoRequirementsPolicy implements Policy
 {
 
 	public static function getPrivilege(): string
 	{
-		return 'never-pass';
+		return 'no-requirements';
 	}
 
 	public static function getRequirementsClass(): string
@@ -22,17 +22,9 @@ final class NeverPassPolicy implements Policy
 		return NoRequirements::class;
 	}
 
-	public function isAllowed(Firewall $firewall, object $requirements): bool
+	public function isAllowed(Firewall $firewall, ?object $requirements): bool
 	{
 		return false;
-	}
-
-	/**
-	 * @return array{string, null}
-	 */
-	public static function get(): array
-	{
-		return [self::getPrivilege(), null];
 	}
 
 }
