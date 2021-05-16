@@ -5,6 +5,9 @@ namespace Tests\Orisai\Auth\Doubles;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRenewer;
 
+/**
+ * @phpstan-implements IdentityRenewer<Identity>
+ */
 final class NewIdentityIdentityRenewer implements IdentityRenewer
 {
 
@@ -15,7 +18,7 @@ final class NewIdentityIdentityRenewer implements IdentityRenewer
 		$this->identity = $identity;
 	}
 
-	public function renewIdentity(Identity $identity): ?Identity
+	public function renewIdentity(Identity $identity): Identity
 	{
 		return $this->identity;
 	}

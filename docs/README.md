@@ -197,6 +197,9 @@ Create firewall
 
 use Orisai\Auth\Authentication\BaseFirewall;
 
+/**
+ * @phpstan-extends BaseFirewall<IntIdentity, Firewall>
+ */
 final class AdminFirewall extends BaseFirewall
 {
 
@@ -217,6 +220,9 @@ use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRenewer;
 use Orisai\Auth\Authentication\IntIdentity;
 
+/**
+ * @phpstan-implements IdentityRenewer<IntIdentity>
+ */
 final class AdminIdentityRenewer implements IdentityRenewer
 {
 
