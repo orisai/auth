@@ -2,7 +2,7 @@ includes:
 	- phpstan.base.neon
 
 parameters:
-	level: 3
+	level: 7
 	resultCachePath: %currentWorkingDirectory%/var/tools/PHPStan/resultCache.tests.php
 
 	exceptionRules:

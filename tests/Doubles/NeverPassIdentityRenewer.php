@@ -5,6 +5,9 @@ namespace Tests\Orisai\Auth\Doubles;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRenewer;
 
+/**
+ * @phpstan-implements IdentityRenewer<Identity>
+ */
 final class NeverPassIdentityRenewer implements IdentityRenewer
 {
 

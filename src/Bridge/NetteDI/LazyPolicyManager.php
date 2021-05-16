@@ -8,10 +8,6 @@ use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use function get_class;
 
-/**
- * @phpstan-template P of Policy
- * @phpstan-implements PolicyManager<P>
- */
 final class LazyPolicyManager implements PolicyManager
 {
 

@@ -29,6 +29,9 @@ parameters:
 		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 3
 
-		- message: '#^Method (.+)LazyPolicyManager\:\:get\(\) should return P of (.+)\\Policy\|null but returns (.+)\\Policy\.$#'
-		  path: %currentWorkingDirectory%/src/Bridge/NetteDI/LazyPolicyManager.php
-		  count: 1
+		# Policy manager does not work with specific Policy, cannot specify type
+		- message: '#^(.+)generic interface Orisai\\Auth\\Authorization\\Policy(.+)$#'
+		  paths:
+		  	- %currentWorkingDirectory%/src/Authorization/PolicyManager.php
+		  	- %currentWorkingDirectory%/src/Authorization/SimplePolicyManager.php
+		  	- %currentWorkingDirectory%/src/Bridge/NetteDI/LazyPolicyManager.php

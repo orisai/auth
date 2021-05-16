@@ -25,7 +25,6 @@ use function is_a;
 /**
  * @phpstan-template I of Identity
  * @phpstan-template-covariant F of Firewall
- * @phpstan-template-covariant P of Policy
  * @phpstan-implements Firewall<I, F>
  */
 abstract class BaseFirewall implements Firewall
@@ -38,7 +37,7 @@ abstract class BaseFirewall implements Firewall
 
 	private Authorizer $authorizer;
 
-	/** @phpstan-var PolicyManager<P> */
+	/** @phpstan-var PolicyManager */
 	private PolicyManager $policyManager;
 
 	private Clock $clock;
@@ -49,7 +48,7 @@ abstract class BaseFirewall implements Firewall
 
 	/**
 	 * @phpstan-param IdentityRenewer<I> $renewer
-	 * @phpstan-param PolicyManager<P> $policyManager
+	 * @phpstan-param PolicyManager $policyManager
 	 */
 	public function __construct(
 		LoginStorage $storage,
