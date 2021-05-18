@@ -4,7 +4,3 @@ includes:
 parameters:
 	level: 7
 	resultCachePath: %currentWorkingDirectory%/var/tools/PHPStan/resultCache.tests.php
-
-	exceptionRules:
-		methodWhitelist:
-			PHPUnit\Framework\TestCase: '#^(test|(setup|setupbeforeclass|teardown|teardownafterclass)$)#i'
