@@ -20,7 +20,7 @@ final class NetteDISetupTest extends TestCase
 	{
 		$configurator = new ManualConfigurator(dirname(__DIR__, 4));
 		$configurator->setDebugMode(true);
-		$configurator->addConfig(__DIR__ . '/config.neon');
+		$configurator->addConfig(__DIR__ . '/config.full.neon');
 
 		$container = $configurator->createContainer();
 
@@ -36,7 +36,7 @@ final class NetteDISetupTest extends TestCase
 	{
 		$configurator = new ManualConfigurator(dirname(__DIR__, 4));
 		$configurator->setDebugMode(true);
-		$configurator->addConfig(__DIR__ . '/config.neon');
+		$configurator->addConfig(__DIR__ . '/config.full.neon');
 
 		$container = $configurator->createContainer();
 

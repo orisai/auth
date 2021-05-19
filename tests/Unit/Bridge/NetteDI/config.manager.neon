@@ -1,0 +1,11 @@
+services:
+	policy.article.edit: Tests\Orisai\Auth\Doubles\ArticleEditPolicy
+	policy.invalid.class: stdClass
+
+	auth.policyManager:
+		factory: Orisai\Auth\Bridge\NetteDI\LazyPolicyManager
+		arguments:
+			servicesMap:
+				article.edit: policy.article.edit
+				not.matching.privilege: policy.article.edit
+				invalid.class: policy.invalid.class
