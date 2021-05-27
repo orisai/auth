@@ -13,6 +13,8 @@ use function is_array;
 class PrivilegeAuthorizer implements Authorizer
 {
 
+	public bool $throwOnUnknownRolePrivilege = false;
+
 	/** @var array<string, null> */
 	protected array $roles = [];
 
@@ -95,7 +97,15 @@ class PrivilegeAuthorizer implements Authorizer
 		}
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = $this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
+		$privilegeValue = $this->getPrivilege($privilege, $privilegeParts);
+
+		if ($privilegeValue === null) {
+			if ($this->throwOnUnknownRolePrivilege) {
+				$this->unknownPrivilege($privilege, __FUNCTION__);
+			}
+
+			return;
+		}
 
 		$rolePrivilegesCurrent = &$this->rolePrivileges[$role];
 
@@ -113,7 +123,15 @@ class PrivilegeAuthorizer implements Authorizer
 		}
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
+		$privilegeValue = $this->getPrivilege($privilege, $privilegeParts);
+
+		if ($privilegeValue === null) {
+			if ($this->throwOnUnknownRolePrivilege) {
+				$this->unknownPrivilege($privilege, __FUNCTION__);
+			}
+
+			return;
+		}
 
 		$this->removeKey($this->rolePrivileges[$role], $privilegeParts);
 	}
@@ -121,7 +139,11 @@ class PrivilegeAuthorizer implements Authorizer
 	public function isAllowed(Identity $identity, string $privilege): bool
 	{
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$requiredPrivileges = $this->getCheckedPrivilege($privilege, $privilegeParts, __FUNCTION__);
+		$requiredPrivileges = $this->getPrivilege($privilege, $privilegeParts);
+
+		if ($requiredPrivileges === null) {
+			$this->unknownPrivilege($privilege, __FUNCTION__);
+		}
 
 		foreach ($identity->getRoles() as $role) {
 			if (!array_key_exists($role, $this->rolePrivileges)) {
@@ -165,20 +187,23 @@ class PrivilegeAuthorizer implements Authorizer
 
 	/**
 	 * @param array<string> $privilegeParts
-	 * @return array<mixed>
+	 * @return array<mixed>|null
 	 */
-	private function getCheckedPrivilege(string $privilege, array $privilegeParts, string $function): array
+	private function getPrivilege(string $privilege, array $privilegeParts): ?array
 	{
 		if ($privilege === self::ALL_PRIVILEGES) {
 			return $this->privileges;
 		}
 
-		$privilegeValue = $this->getKey($this->privileges, $privilegeParts);
+		return $this->getKey($this->privileges, $privilegeParts);
+	}
 
-		if ($privilegeValue !== null) {
-			return $privilegeValue;
-		}
-
+	/**
+	 * @phpstan-return never-return
+	 * @throws InvalidState
+	 */
+	private function unknownPrivilege(string $privilege, string $function): void
+	{
 		$class = static::class;
 
 		throw InvalidState::create()

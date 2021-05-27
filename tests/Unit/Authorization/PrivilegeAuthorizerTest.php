@@ -606,6 +606,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 	public function testAllowChecksPrivilege(): void
 	{
 		$authorizer = new PrivilegeAuthorizer();
+		$authorizer->throwOnUnknownRolePrivilege = true;
 		$authorizer->addRole('role');
 
 		$this->expectException(InvalidState::class);
@@ -619,6 +620,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 	public function testDenyChecksPrivilege(): void
 	{
 		$authorizer = new PrivilegeAuthorizer();
+		$authorizer->throwOnUnknownRolePrivilege = true;
 		$authorizer->addRole('role');
 
 		$this->expectException(InvalidState::class);
@@ -626,6 +628,18 @@ final class PrivilegeAuthorizerTest extends TestCase
 			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PrivilegeAuthorizer->deny()',
 		);
 
+		$authorizer->deny('role', 'unknown');
+	}
+
+	/**
+	 * @doesNotPerformAssertions
+	 */
+	public function testAssigningUnknownRolePrivilegeDoesNotFailByDefault(): void
+	{
+		$authorizer = new PrivilegeAuthorizer();
+		$authorizer->addRole('role');
+
+		$authorizer->allow('role', 'unknown');
 		$authorizer->deny('role', 'unknown');
 	}
 
