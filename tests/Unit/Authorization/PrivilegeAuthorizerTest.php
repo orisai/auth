@@ -7,6 +7,7 @@ use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\TestingPrivilegeAuthorizer;
+use Throwable;
 
 final class PrivilegeAuthorizerTest extends TestCase
 {
@@ -631,16 +632,20 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->deny('role', 'unknown');
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
 	public function testAssigningUnknownRolePrivilegeDoesNotFailByDefault(): void
 	{
 		$authorizer = new PrivilegeAuthorizer();
 		$authorizer->addRole('role');
 
-		$authorizer->allow('role', 'unknown');
-		$authorizer->deny('role', 'unknown');
+		$exception = null;
+		try {
+			$authorizer->allow('role', 'unknown');
+			$authorizer->deny('role', 'unknown');
+		} catch (Throwable $exception) {
+			// Handled below
+		}
+
+		self::assertNull($exception);
 	}
 
 	public function testIsAllowedChecksPrivilege(): void

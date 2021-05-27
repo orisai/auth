@@ -29,6 +29,7 @@ use Tests\Orisai\Auth\Doubles\TestingFirewall;
 use Tests\Orisai\Auth\Doubles\User;
 use Tests\Orisai\Auth\Doubles\UserAwareFirewall;
 use Tests\Orisai\Auth\Doubles\UserGetter;
+use Throwable;
 use function array_keys;
 
 final class BaseFirewallTest extends TestCase
@@ -534,18 +535,22 @@ MSG);
 		self::assertFalse($firewall->hasPrivilege('admin'));
 	}
 
-	/**
-	 * @doesNotPerformAssertions
-	 */
 	public function testRemovalMethodsSoftFail(): void
 	{
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
 
-		$firewall->logout();
-		$firewall->removeExpiration();
-		$firewall->removeExpiredLogin(123);
-		$firewall->removeExpiredLogins();
+		$exception = null;
+		try {
+			$firewall->logout();
+			$firewall->removeExpiration();
+			$firewall->removeExpiredLogin(123);
+			$firewall->removeExpiredLogins();
+		} catch (Throwable $exception) {
+			// Handled below
+		}
+
+		self::assertNull($exception);
 	}
 
 	public function testIsAllowedWithoutPolicyForbidsRequirements(): void
