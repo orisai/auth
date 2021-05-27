@@ -538,7 +538,15 @@ MSG);
 	public function testRemovalMethodsSoftFail(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$namespace = 'test';
+		$firewall = new TestingFirewall(
+			$storage,
+			$this->renewer(),
+			$this->authorizer(),
+			$this->policies(),
+			null,
+			$namespace,
+		);
 
 		$exception = null;
 		try {
@@ -546,6 +554,21 @@ MSG);
 			$firewall->removeExpiration();
 			$firewall->removeExpiredLogin(123);
 			$firewall->removeExpiredLogins();
+		} catch (Throwable $exception) {
+			// Handled below
+		}
+
+		self::assertNull($exception);
+
+		// Tests a case in which unauthenticate() is called with existing logins and no current login
+
+		self::assertFalse($storage->alreadyExists($namespace));
+		$storage->getLogins($namespace); // Triggers storage creation
+		self::assertTrue($storage->alreadyExists($namespace));
+
+		$exception = null;
+		try {
+			$firewall->logout();
 		} catch (Throwable $exception) {
 			// Handled below
 		}
