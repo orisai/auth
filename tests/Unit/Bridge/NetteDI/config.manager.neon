@@ -5,7 +5,7 @@ services:
 	auth.policyManager:
 		factory: Orisai\Auth\Bridge\NetteDI\LazyPolicyManager
 		arguments:
-			servicesMap:
+			serviceMap:
 				article.edit: policy.article.edit
 				not.matching.privilege: policy.article.edit
 				invalid.class: policy.invalid.class

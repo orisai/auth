@@ -15,7 +15,7 @@ services:
 	auth.policyManager:
 		factory: Orisai\Auth\Bridge\NetteDI\LazyPolicyManager
 		arguments:
-			servicesMap:
+			serviceMap:
 				article.edit: policy.article.edit
 				article.edit.owned: policy.article.edit.owned
 
