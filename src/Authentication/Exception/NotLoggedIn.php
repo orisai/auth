@@ -5,8 +5,7 @@ namespace Orisai\Auth\Authentication\Exception;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Exceptions\LogicalException;
 use Orisai\Exceptions\Message;
-use function array_pop;
-use function explode;
+use Orisai\Utils\Classes;
 
 final class NotLoggedIn extends LogicalException
 {
@@ -17,8 +16,7 @@ final class NotLoggedIn extends LogicalException
 	 */
 	public static function create(string $class, string $function): self
 	{
-		$parts = explode('\\', $class);
-		$className = array_pop($parts);
+		$className = Classes::getShortName($class);
 
 		$message = Message::create()
 			->withContext("Calling {$class}->{$function}().")
