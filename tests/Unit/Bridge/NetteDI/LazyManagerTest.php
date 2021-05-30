@@ -38,7 +38,8 @@ final class LazyManagerTest extends TestCase
 Context: Service policy.invalid.class returns instance of stdClass.
 Problem: Orisai\Auth\Bridge\NetteDI\LazyPolicyManager supports only instances of
          Orisai\Auth\Authorization\Policy.
-Solution: Remove service from LazyPolicyManager or return supported object type.
+Solution: Remove service from LazyPolicyManager or make the service return
+          supported object type.
 MSG,
 		);
 

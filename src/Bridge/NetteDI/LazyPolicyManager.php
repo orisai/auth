@@ -2,47 +2,31 @@
 
 namespace Orisai\Auth\Bridge\NetteDI;
 
-use Nette\DI\Container;
+use OriNette\DI\Services\ServiceManager;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
-use Orisai\Utils\Classes;
 use function get_class;
 
-final class LazyPolicyManager implements PolicyManager
+final class LazyPolicyManager extends ServiceManager implements PolicyManager
 {
-
-	/** @var array<string, string> */
-	private array $servicesMap;
-
-	private Container $container;
-
-	/**
-	 * @param array<string, string> $servicesMap
-	 */
-	public function __construct(array $servicesMap, Container $container)
-	{
-		$this->servicesMap = $servicesMap;
-		$this->container = $container;
-	}
 
 	public function get(string $privilege): ?Policy
 	{
-		$serviceName = $this->servicesMap[$privilege] ?? null;
-		if ($serviceName === null) {
+		$service = $this->getService($privilege);
+
+		if ($service === null) {
 			return null;
 		}
 
-		$service = $this->container->getService($serviceName);
-
 		if (!$service instanceof Policy) {
-			$this->throwNotAPolicy($service, $serviceName);
+			$this->throwInvalidServiceType($privilege, Policy::class, $service);
 		}
 
 		$servicePrivilege = $service::getPrivilege();
 		if ($servicePrivilege !== $privilege) {
-			$this->throwPolicyNameMismatch($service, $serviceName, $servicePrivilege, $privilege);
+			$this->throwPolicyNameMismatch($service, $servicePrivilege, $privilege);
 		}
 
 		return $service;
@@ -51,33 +35,14 @@ final class LazyPolicyManager implements PolicyManager
 	/**
 	 * @return never-return
 	 */
-	private function throwNotAPolicy(object $service, string $serviceName): void
-	{
-		$serviceClass = get_class($service);
-		$expectedClass = Policy::class;
-		$selfClass = self::class;
-		$className = Classes::getShortName($selfClass);
-
-		$message = Message::create()
-			->withContext("Service $serviceName returns instance of $serviceClass.")
-			->withProblem("$selfClass supports only instances of $expectedClass.")
-			->withSolution("Remove service from $className or return supported object type.");
-
-		throw InvalidArgument::create()
-			->withMessage($message);
-	}
-
-	/**
-	 * @return never-return
-	 */
 	private function throwPolicyNameMismatch(
 		object $service,
-		string $serviceName,
 		string $servicePrivilege,
 		string $privilege
 	): void
 	{
 		$serviceClass = get_class($service);
+		$serviceName = $this->getServiceName($privilege);
 		$selfClass = self::class;
 		$message = Message::create()
 			->withContext("Class $serviceClass returns privilege $servicePrivilege.")
