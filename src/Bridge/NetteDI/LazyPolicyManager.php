@@ -7,8 +7,7 @@ use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
-use function array_pop;
-use function explode;
+use Orisai\Utils\Classes;
 use function get_class;
 
 final class LazyPolicyManager implements PolicyManager
@@ -57,8 +56,7 @@ final class LazyPolicyManager implements PolicyManager
 		$serviceClass = get_class($service);
 		$expectedClass = Policy::class;
 		$selfClass = self::class;
-		$parts = explode('\\', self::class);
-		$className = array_pop($parts);
+		$className = Classes::getShortName($selfClass);
 
 		$message = Message::create()
 			->withContext("Service $serviceName returns instance of $serviceClass.")
