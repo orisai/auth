@@ -54,22 +54,22 @@ final class PrivilegeAuthorizerTest extends TestCase
 	{
 		$authorizer = new PrivilegeAuthorizer();
 
-		self::assertTrue($authorizer->hasPrivilege($authorizer::ALL_PRIVILEGES));
-		self::assertFalse($authorizer->hasPrivilege('article'));
-		self::assertFalse($authorizer->hasPrivilege('article.edit'));
-		self::assertFalse($authorizer->hasPrivilege('article.edit.all'));
+		self::assertTrue($authorizer->privilegeExists($authorizer::ALL_PRIVILEGES));
+		self::assertFalse($authorizer->privilegeExists('article'));
+		self::assertFalse($authorizer->privilegeExists('article.edit'));
+		self::assertFalse($authorizer->privilegeExists('article.edit.all'));
 
 		$authorizer->addPrivilege('article');
-		self::assertTrue($authorizer->hasPrivilege('article'));
-		self::assertFalse($authorizer->hasPrivilege('article.edit'));
-		self::assertFalse($authorizer->hasPrivilege('article.edit.all'));
+		self::assertTrue($authorizer->privilegeExists('article'));
+		self::assertFalse($authorizer->privilegeExists('article.edit'));
+		self::assertFalse($authorizer->privilegeExists('article.edit.all'));
 
 		$authorizer->addPrivilege('article.edit.all');
-		self::assertTrue($authorizer->hasPrivilege('article'));
-		self::assertTrue($authorizer->hasPrivilege('article.edit'));
-		self::assertTrue($authorizer->hasPrivilege('article.edit.all'));
+		self::assertTrue($authorizer->privilegeExists('article'));
+		self::assertTrue($authorizer->privilegeExists('article.edit'));
+		self::assertTrue($authorizer->privilegeExists('article.edit.all'));
 
-		self::assertTrue($authorizer->hasPrivilege($authorizer::ALL_PRIVILEGES));
+		self::assertTrue($authorizer->privilegeExists($authorizer::ALL_PRIVILEGES));
 	}
 
 	public function testRolesData(): void
