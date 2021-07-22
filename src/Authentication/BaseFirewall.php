@@ -221,7 +221,7 @@ abstract class BaseFirewall implements Firewall
 	{
 		$privilege = $policy::getPrivilege();
 		$class = static::class;
-		if (!$this->authorizer->hasPrivilege($privilege)) {
+		if (!$this->authorizer->privilegeExists($privilege)) {
 			$authorizerClass = get_class($this->authorizer);
 			$message = Message::create()
 				->withContext("Trying to check privilege $privilege via $class->$method().")
