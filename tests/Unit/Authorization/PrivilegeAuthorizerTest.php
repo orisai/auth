@@ -316,6 +316,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->addPrivilege('article.view');
 		$authorizer->addPrivilege('something');
 
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
+		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
@@ -331,6 +335,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->addRole($role);
 
 		// Edge case - no privileges are equal to all privileges
+		self::assertTrue($authorizer->hasPrivilege($identity, $authorizer::ALL_PRIVILEGES));
 		self::assertTrue($authorizer->isAllowed($identity, $authorizer::ALL_PRIVILEGES));
 	}
 
@@ -346,6 +351,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->allow('supervisor', $authorizer::ALL_PRIVILEGES);
 
+		self::assertTrue($authorizer->hasPrivilege($identity, 'foo'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'something.else'));
+		self::assertTrue($authorizer->hasPrivilege($identity, $authorizer::ALL_PRIVILEGES));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
@@ -354,6 +364,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->deny('supervisor', 'foo.bar');
 
+		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'something.else'));
+		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
@@ -362,6 +377,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->deny('supervisor', $authorizer::ALL_PRIVILEGES);
 
+		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'something.else'));
+		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
@@ -382,9 +402,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->allow('supervisor', $authorizer::ALL_PRIVILEGES);
 
+		self::assertTrue($authorizer->hasPrivilege($supervisor, 'foo'));
+		self::assertTrue($authorizer->hasPrivilege($supervisor, $authorizer::ALL_PRIVILEGES));
 		self::assertTrue($authorizer->isAllowed($supervisor, 'foo'));
 		self::assertTrue($authorizer->isAllowed($supervisor, $authorizer::ALL_PRIVILEGES));
 
+		self::assertFalse($authorizer->hasPrivilege($admin, 'foo'));
+		self::assertFalse($authorizer->hasPrivilege($admin, $authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->isAllowed($admin, 'foo'));
 		self::assertFalse($authorizer->isAllowed($admin, $authorizer::ALL_PRIVILEGES));
 	}
@@ -412,6 +436,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->allow('editor-in-chief', 'article.delete');
 
 		// requires privileges from one of roles
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.owned'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.all'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.publish'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.owned'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.all'));
@@ -419,7 +448,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
 
 		// requires mix of privileges from both roles
-		//self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article'));
 	}
 
@@ -436,9 +467,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->allow('supervisor', 'foo');
 
+		self::assertTrue($authorizer->hasPrivilege($supervisor, $authorizer::ALL_PRIVILEGES));
+		self::assertTrue($authorizer->hasPrivilege($supervisor, 'foo'));
 		self::assertTrue($authorizer->isAllowed($supervisor, $authorizer::ALL_PRIVILEGES));
 		self::assertTrue($authorizer->isAllowed($supervisor, 'foo'));
 
+		self::assertFalse($authorizer->hasPrivilege($admin, $authorizer::ALL_PRIVILEGES));
+		self::assertFalse($authorizer->hasPrivilege($admin, 'foo'));
 		self::assertFalse($authorizer->isAllowed($admin, $authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->isAllowed($admin, 'foo'));
 	}
@@ -455,11 +490,14 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->addRole($role);
 
+		self::assertFalse($authorizer->hasPrivilege($identity, 'front'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'admin'));
 		self::assertFalse($authorizer->isAllowed($identity, 'front'));
 		self::assertFalse($authorizer->isAllowed($identity, 'admin'));
 
 		$authorizer->allow($role, 'front');
-
+		self::assertTrue($authorizer->hasPrivilege($identity, 'front'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'admin'));
 		self::assertTrue($authorizer->isAllowed($identity, 'front'));
 		self::assertFalse($authorizer->isAllowed($identity, 'admin'));
 	}
@@ -477,6 +515,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->addRole($role);
 
 		$authorizer->allow($role, 'article');
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
@@ -484,6 +526,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->allow($role, 'article.view');
 		$authorizer->allow($role, 'article.edit');
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
@@ -491,14 +537,20 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->deny($role, 'article.edit');
 		$authorizer->deny($role, 'article.delete');
-
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
 		$authorizer->deny($role, 'article');
-
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
@@ -518,6 +570,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->addRole($role);
 
 		$authorizer->deny($role, 'article');
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
@@ -525,6 +581,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->allow($role, 'article.view');
 		$authorizer->allow($role, 'article.edit');
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
@@ -532,6 +592,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->deny($role, 'article.edit');
 		$authorizer->allow($role, 'article.delete');
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
@@ -552,18 +616,30 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->allow($role, 'article.view');
 		$authorizer->allow($role, 'article.edit');
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
 		$authorizer->deny($role, 'article.edit');
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
 		$authorizer->deny($role, 'article');
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.edit'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
@@ -577,6 +653,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$authorizer->addPrivilege('something');
 
+		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
 	}
 
@@ -661,6 +738,21 @@ final class PrivilegeAuthorizerTest extends TestCase
 		);
 
 		$authorizer->isAllowed($identity, 'unknown');
+	}
+
+	public function testHasPrivilegeChecksPrivilege(): void
+	{
+		$authorizer = new PrivilegeAuthorizer();
+		$authorizer->addRole('role');
+
+		$identity = new IntIdentity(1, ['role']);
+
+		$this->expectException(InvalidState::class);
+		$this->expectExceptionMessage(
+			'Privilege unknown is unknown, add with addPrivilege() before calling Orisai\Auth\Authorization\PrivilegeAuthorizer->hasPrivilege()',
+		);
+
+		$authorizer->hasPrivilege($identity, 'unknown');
 	}
 
 }

@@ -136,13 +136,18 @@ class PrivilegeAuthorizer implements Authorizer
 		$this->removeKey($this->rolePrivileges[$role], $privilegeParts);
 	}
 
-	public function isAllowed(Identity $identity, string $privilege): bool
+	public function hasPrivilege(Identity $identity, string $privilege): bool
+	{
+		return $this->hasPrivilegeInternal($identity, $privilege, __FUNCTION__);
+	}
+
+	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$requiredPrivileges = $this->getPrivilege($privilege, $privilegeParts);
 
 		if ($requiredPrivileges === null) {
-			$this->unknownPrivilege($privilege, __FUNCTION__);
+			$this->unknownPrivilege($privilege, $function);
 		}
 
 		foreach ($identity->getRoles() as $role) {
@@ -158,6 +163,11 @@ class PrivilegeAuthorizer implements Authorizer
 		}
 
 		return false;
+	}
+
+	public function isAllowed(Identity $identity, string $privilege): bool
+	{
+		return $this->hasPrivilegeInternal($identity, $privilege, __FUNCTION__);
 	}
 
 	/**
