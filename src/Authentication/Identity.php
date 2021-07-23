@@ -6,7 +6,7 @@ interface Identity
 {
 
 	/**
-	 * @return mixed
+	 * @return int|string
 	 */
 	public function getId();
 
