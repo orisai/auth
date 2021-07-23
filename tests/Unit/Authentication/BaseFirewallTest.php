@@ -8,27 +8,15 @@ use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
-use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\NoRequirements;
+use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
-use Tests\Orisai\Auth\Doubles\Article;
-use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
-use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
-use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
-use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
-use Tests\Orisai\Auth\Doubles\NullableRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
-use Tests\Orisai\Auth\Doubles\User;
-use Tests\Orisai\Auth\Doubles\UserAwareFirewall;
-use Tests\Orisai\Auth\Doubles\UserGetter;
 use Throwable;
 use function array_keys;
 
@@ -40,9 +28,11 @@ final class BaseFirewallTest extends TestCase
 		return new AlwaysPassIdentityRenewer();
 	}
 
-	private function authorizer(): PrivilegeAuthorizer
+	private function authorizer(?PolicyManager $policyManager = null): PrivilegeAuthorizer
 	{
-		return new PrivilegeAuthorizer();
+		return new PrivilegeAuthorizer(
+			$policyManager ?? $this->policies(),
+		);
 	}
 
 	private function policies(): SimplePolicyManager
@@ -53,7 +43,7 @@ final class BaseFirewallTest extends TestCase
 	public function testBase(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -84,7 +74,6 @@ final class BaseFirewallTest extends TestCase
 			$storage,
 			$this->renewer(),
 			$this->authorizer(),
-			$this->policies(),
 			null,
 			'one',
 		);
@@ -92,7 +81,6 @@ final class BaseFirewallTest extends TestCase
 			$storage,
 			$this->renewer(),
 			$this->authorizer(),
-			$this->policies(),
 			null,
 			'two',
 		);
@@ -127,7 +115,6 @@ final class BaseFirewallTest extends TestCase
 			$storage,
 			new NewIdentityIdentityRenewer($renewedIdentity),
 			$this->authorizer(),
-			$this->policies(),
 		);
 
 		$firewall->login($originalIdentity);
@@ -140,7 +127,7 @@ final class BaseFirewallTest extends TestCase
 		$identity = new IntIdentity(123, ['foo']);
 
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		self::assertFalse($firewall->hasRole('foo'));
 
@@ -152,7 +139,7 @@ final class BaseFirewallTest extends TestCase
 	public function testExpiredIdentities(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$firewall->setExpiredIdentitiesLimit(3);
 		$identity1 = new IntIdentity(1, []);
 
@@ -215,7 +202,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -232,7 +219,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentityFailure(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$this->expectException(NotLoggedIn::class);
@@ -252,7 +239,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$renewer = new AlwaysPassIdentityRenewer();
-		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
@@ -271,7 +258,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$renewer = new NewIdentityIdentityRenewer($newIdentity);
-		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($originalIdentity);
 		self::assertSame($originalIdentity, $firewall->getIdentity());
@@ -289,7 +276,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$renewer = new NeverPassIdentityRenewer();
-		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
@@ -306,7 +293,7 @@ MSG);
 	{
 		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies(), $clock);
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -330,7 +317,7 @@ MSG);
 	public function testNotTimeExpiredIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -347,7 +334,7 @@ MSG);
 	{
 		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies(), $clock);
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -365,7 +352,7 @@ MSG);
 	public function testExpirationTimeInThePast(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -383,7 +370,7 @@ MSG);
 	public function testExpirationCannotBeSet(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -399,7 +386,7 @@ MSG);
 	public function testNotLoggedInGetIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -419,7 +406,6 @@ MSG);
 			$storage,
 			$this->renewer(),
 			$this->authorizer(),
-			$this->policies(),
 			new FixedClock(Instant::of(1)),
 		);
 
@@ -431,7 +417,7 @@ MSG);
 	public function testNotLoggedInGetAuthTime(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $this->policies());
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -457,7 +443,6 @@ MSG);
 			$storage,
 			$this->renewer(),
 			$this->authorizer(),
-			$this->policies(),
 			null,
 			$namespace,
 		);
@@ -511,8 +496,8 @@ MSG);
 	public function testIsAllowed(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$authorizer = new PrivilegeAuthorizer();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, $this->policies(), null, 'test');
+		$authorizer = $this->authorizer();
+		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
 
 		$authorizer->addPrivilege('admin');
 		$authorizer->addPrivilege('front');
@@ -543,7 +528,6 @@ MSG);
 			$storage,
 			$this->renewer(),
 			$this->authorizer(),
-			$this->policies(),
 			null,
 			$namespace,
 		);
@@ -574,246 +558,6 @@ MSG);
 		}
 
 		self::assertNull($exception);
-	}
-
-	public function testIsAllowedWithoutPolicyForbidsRequirements(): void
-	{
-		$firewall = new UserAwareFirewall(
-			new UserGetter(),
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$this->authorizer(),
-			$this->policies(),
-		);
-
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
-         Tests\Orisai\Auth\Doubles\UserAwareFirewall->isAllowed().
-Problem: Passed requirement object (type of stdClass) which is not allowed by
-         privilege without policy.
-Solution: Do not pass the requirement object or define policy which can handle
-          it.
-MSG);
-
-		$firewall->isAllowed('article.edit', new stdClass());
-	}
-
-	/**
-	 * @todo - all methods should check privilege exists - hasPrivilege, isAllowed without policy
-	 */
-	public function testIsAllowedRequiresPrivilegeRegistered(): void
-	{
-		$authorizer = $this->authorizer();
-
-		$policyManager = $this->policies();
-		$policyManager->add(new ArticleEditPolicy());
-
-		$firewall = new UserAwareFirewall(
-			new UserGetter(),
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$authorizer,
-			$policyManager,
-		);
-
-		$this->expectException(InvalidState::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
-         Tests\Orisai\Auth\Doubles\UserAwareFirewall->isAllowed().
-Problem: Privilege article.edit is not known by underlying authorizer (type of
-         Orisai\Auth\Authorization\PrivilegeAuthorizer).
-Solution: Add privilege to authorizer first.
-MSG);
-
-		$firewall->isAllowed(ArticleEditPolicy::getPrivilege());
-	}
-
-	public function testPolicyRequirementsOfInvalidType(): void
-	{
-		$authorizer = $this->authorizer();
-		$authorizer->addPrivilege(ArticleEditPolicy::getPrivilege());
-
-		$policyManager = $this->policies();
-		$policyManager->add(new ArticleEditPolicy());
-
-		$firewall = new UserAwareFirewall(
-			new UserGetter(),
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$authorizer,
-			$policyManager,
-		);
-
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
-         Tests\Orisai\Auth\Doubles\UserAwareFirewall->isAllowed().
-Problem: Passed requirements are of type stdClass, which is not supported by
-         Tests\Orisai\Auth\Doubles\ArticleEditPolicy.
-Solution: Pass requirements of type Tests\Orisai\Auth\Doubles\Article or change
-          policy or its requirements.
-MSG);
-
-		$firewall->isAllowed(ArticleEditPolicy::getPrivilege(), new stdClass());
-	}
-
-	public function testPolicyWithNoRequirements(): void
-	{
-		$authorizer = $this->authorizer();
-		$authorizer->addPrivilege(NoRequirementsPolicy::getPrivilege());
-
-		$policyManager = $this->policies();
-		$policyManager->add(new NoRequirementsPolicy());
-
-		$firewall = new UserAwareFirewall(
-			new UserGetter(),
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$authorizer,
-			$policyManager,
-		);
-
-		self::assertFalse($firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), null));
-		self::assertFalse($firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), new NoRequirements()));
-	}
-
-	public function testPolicyNullableRequirementWithNull(): void
-	{
-		$authorizer = $this->authorizer();
-		$authorizer->addPrivilege(NullableRequirementsPolicy::getPrivilege());
-
-		$policyManager = $this->policies();
-		$policyManager->add(new NullableRequirementsPolicy());
-
-		$firewall = new UserAwareFirewall(
-			new UserGetter(),
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$authorizer,
-			$policyManager,
-		);
-
-		self::assertFalse($firewall->isAllowed(NullableRequirementsPolicy::getPrivilege(), null));
-	}
-
-	public function testPolicyNonNullableRequirementWithNull(): void
-	{
-		$authorizer = $this->authorizer();
-		$authorizer->addPrivilege(ArticleEditPolicy::getPrivilege());
-
-		$policyManager = $this->policies();
-		$policyManager->add(new ArticleEditPolicy());
-
-		$firewall = new UserAwareFirewall(
-			new UserGetter(),
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$authorizer,
-			$policyManager,
-		);
-
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
-         Tests\Orisai\Auth\Doubles\UserAwareFirewall->isAllowed().
-Problem: Policy requirements are missing, which is not supported by
-         Tests\Orisai\Auth\Doubles\ArticleEditPolicy.
-Solution: Pass requirements of type Tests\Orisai\Auth\Doubles\Article or mark
-          policy requirements nullable or change them to
-          Orisai\Auth\Authorization\NoRequirements.
-MSG);
-
-		$firewall->isAllowed(ArticleEditPolicy::getPrivilege(), null);
-	}
-
-	public function testPolicyResourceOwner(): void
-	{
-		$getter = new UserGetter();
-		$authorizer = $this->authorizer();
-
-		$policyManager = $this->policies();
-		$policyManager->add(new ArticleEditPolicy());
-		$policyManager->add(new ArticleEditOwnedPolicy());
-		$policyManager->add(new NeverPassPolicy());
-
-		$firewall = new UserAwareFirewall(
-			$getter,
-			new ArrayLoginStorage(),
-			$this->renewer(),
-			$authorizer,
-			$policyManager,
-		);
-
-		$authorizer->addPrivilege('article.edit.all');
-		$authorizer->addPrivilege('article.edit.owned');
-		$authorizer->addPrivilege('article.view');
-		$authorizer->addPrivilege(NeverPassPolicy::getPrivilege());
-
-		$authorizer->addRole('owner');
-		$authorizer->addRole('editor');
-		$authorizer->addRole('supervisor');
-
-		$authorizer->allow('editor', 'article.edit.all');
-		$authorizer->allow('owner', 'article.edit.owned');
-		$authorizer->allow('supervisor', Authorizer::ALL_PRIVILEGES);
-
-		$user1 = new User(1);
-		$getter->addUser($user1);
-
-		$article1 = new Article($user1);
-
-		// Not logged in
-		self::assertFalse($firewall->isAllowed(...ArticleEditPolicy::get($article1)));
-		self::assertFalse($firewall->isAllowed(...ArticleEditOwnedPolicy::get($article1)));
-
-		// Logged in, don't have privileges
-		$identity1 = new IntIdentity($user1->getId(), []);
-		$firewall->login($identity1);
-
-		self::assertFalse($firewall->isAllowed(...ArticleEditPolicy::get($article1)));
-		self::assertFalse($firewall->isAllowed(...ArticleEditOwnedPolicy::get($article1)));
-
-		// Logged in, has access to owned resources
-		$identity1 = new IntIdentity($user1->getId(), ['owner']);
-		$firewall->login($identity1);
-
-		self::assertTrue($firewall->hasPrivilege('article.edit.owned'));
-		self::assertTrue($firewall->isAllowed(...ArticleEditPolicy::get($article1)));
-		self::assertTrue($firewall->isAllowed(...ArticleEditOwnedPolicy::get($article1)));
-
-		// Logged in, does not have access to resource of another user
-		$user2 = new User(2);
-		$getter->addUser($user2);
-
-		$article2 = new Article($user2);
-		self::assertTrue($firewall->hasPrivilege('article.edit.owned'));
-		self::assertFalse($firewall->isAllowed(...ArticleEditPolicy::get($article2)));
-
-		// Logged in, has access to resources of all users
-		$identity1 = new IntIdentity($user1->getId(), ['owner', 'editor']);
-		$firewall->login($identity1);
-
-		self::assertTrue($firewall->isAllowed(...ArticleEditPolicy::get($article2)));
-
-		// - but not other resources
-		self::assertFalse($firewall->isAllowed('article.view'));
-		self::assertFalse($firewall->isAllowed('article'));
-		self::assertFalse($firewall->isAllowed(Authorizer::ALL_PRIVILEGES));
-
-		// Logged in, has access to all resources
-		$identity1 = new IntIdentity($user1->getId(), ['supervisor']);
-		$firewall->login($identity1);
-
-		self::assertTrue($firewall->isAllowed(...ArticleEditPolicy::get($article2)));
-
-		self::assertTrue($firewall->isAllowed('article.view'));
-		self::assertTrue($firewall->isAllowed('article'));
-		self::assertTrue($firewall->isAllowed(Authorizer::ALL_PRIVILEGES));
-
-		// - except these which have defined policy which does not allow it
-		self::assertTrue($firewall->hasPrivilege(NeverPassPolicy::getPrivilege()));
-		self::assertFalse($firewall->isAllowed(...NeverPassPolicy::get()));
 	}
 
 }

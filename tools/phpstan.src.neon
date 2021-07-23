@@ -15,13 +15,9 @@ parameters:
 		- message: '#^Method (.+)BaseFirewall\:\:getIdentity\(\) should return I of (.+)Identity but returns (.+)Identity\.$#'
 		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
 
-		# Private method, I don't really care enough to solve it myself
-		- message: '#^Method (.+)\:\:isAllowedByPolicy\(\) has parameter \$policy with generic interface (.+)Policy but does not specify its types(.+)#'
-		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
-
 		# Parameter nullability is expected from implementing class and checked
 		- message: '#^Parameter \#2 \$requirements of method (.+)Policy(.+)\:\:isAllowed\(\) expects object, object\|null given\.#'
-		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
+		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
 
 		# Arrays are checked before usage

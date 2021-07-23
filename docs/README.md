@@ -198,7 +198,7 @@ Create firewall
 use Orisai\Auth\Authentication\BaseFirewall;
 
 /**
- * @phpstan-extends BaseFirewall<IntIdentity, Firewall>
+ * @phpstan-extends BaseFirewall<IntIdentity>
  */
 final class AdminFirewall extends BaseFirewall
 {
@@ -341,8 +341,10 @@ Represent your app permissions with privilege hierarchy
 
 ```php
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimplePolicyManager;
 
-$authorizer = new PrivilegeAuthorizer();
+$policyManager = new SimplePolicyManager();
+$authorizer = new PrivilegeAuthorizer($policyManager);
 
 // Add roles
 $authorizer->addRole('editor');
@@ -370,16 +372,18 @@ $firewall->isAllowed('article'); // shortcut to $authorizer->isAllowed(), but al
 
 ## Policies
 
-To check whether user has privilege to edit an article, you have to call `$firewall->isAllowed('article.edit')` and
-firewall performs checks if user has that privilege and, if any are defined, all child privileges like `article.edit.owned` and `article.edit.all`.
+To check whether user has privilege to edit an article, you have to call `$firewall->isAllowed('article.edit')`.
+Firewall then (via authorizer) performs checks if user has that privilege and, if any are defined,
+also all child privileges like `article.edit.owned` and `article.edit.all`.
 This approach is safe but may impractical. To customize that behavior, define a policy:
 
 ```php
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<UserAwareFirewall, Article>
+ * @phpstan-implements Policy<Article>
  */
 final class ArticleEditPolicy implements Policy
 {
@@ -397,14 +401,13 @@ final class ArticleEditPolicy implements Policy
 	}
 
 	/**
-	 * @param UserAwareFirewall $firewall
-	 * @param Article           $requirements
+	 * @param Article $requirements
 	 */
-	public function isAllowed(Firewall $firewall, object $requirements): bool
+	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
 	{
 		// User is allowed to edit an article, if is allowed to edit all of them or is the article author
-		return $firewall->isAllowed(self::EDIT_ALL)
-			|| $firewall->isAllowed(...ArticleEditOwnedPolicy::get($requirements));
+		return $authorizer->isAllowed($identity, self::EDIT_ALL)
+			|| $authorizer->isAllowed($identity, ...ArticleEditOwnedPolicy::get($requirements));
 	}
 
 	/**
@@ -419,11 +422,11 @@ final class ArticleEditPolicy implements Policy
 ```
 
 ```php
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<UserAwareFirewall, Article>
+ * @phpstan-implements Policy<Article>
  */
 final class ArticleEditOwnedPolicy implements Policy
 {
@@ -439,13 +442,12 @@ final class ArticleEditOwnedPolicy implements Policy
 	}
 
 	/**
-	 * @param UserAwareFirewall $firewall
-	 * @param Article           $requirements
+	 * @param Article $requirements
 	 */
-	public function isAllowed(Firewall $firewall, object $requirements): bool
+	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
 	{
-		return $firewall->hasPrivilege(self::getPrivilege())
-			&& $firewall->getUser()->getId() === $requirements->getAuthor()->getId();
+		return $authorizer->hasPrivilege($identity, self::getPrivilege())
+			&& $identity->getId() === $requirements->getAuthor()->getId();
 	}
 
 	/**

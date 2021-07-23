@@ -2,13 +2,13 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-template F of Firewall
- * @phpstan-implements Policy<F, NoRequirements>
+ * @phpstan-implements Policy<NoRequirements>
  */
 final class NeverPassPolicy implements Policy
 {
@@ -23,7 +23,7 @@ final class NeverPassPolicy implements Policy
 		return NoRequirements::class;
 	}
 
-	public function isAllowed(Firewall $firewall, object $requirements): bool
+	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
 	{
 		return false;
 	}
