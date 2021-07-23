@@ -30,7 +30,7 @@ final class TestingFirewall extends BaseFirewall
 		$this->namespace = $namespace;
 	}
 
-	protected function getNamespace(): string
+	public function getNamespace(): string
 	{
 		return $this->namespace;
 	}

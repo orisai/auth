@@ -663,15 +663,21 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 	}
 
-	public function testAuthorizerDontDefineAllIdentityRoles(): void
+	public function testSkipUnknownRoles(): void
 	{
 		$authorizer = new PrivilegeAuthorizer($this->policies());
-		$identity = new IntIdentity(1, ['not-defined-by-authorizer']);
+		$identity = new IntIdentity(1, ['unknown']);
 
+		$authorizer->addRole('known');
 		$authorizer->addPrivilege('something');
+		$authorizer->allow('known', 'something');
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
+
+		$identity = new IntIdentity(1, ['unknown', 'known']);
+		self::assertTrue($authorizer->hasPrivilege($identity, 'something'));
+		self::assertTrue($authorizer->isAllowed($identity, 'something'));
 	}
 
 	public function testAllowChecksRole(): void

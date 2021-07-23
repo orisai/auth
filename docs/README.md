@@ -273,6 +273,7 @@ $firewall->login($identity);
 $firewall->isLoggedIn(); // true
 $firewall->getIdentity(); // $identity
 $firewall->getAuthenticationTime(); // Instant
+$firewall->getExpirationTime(); // Instant|null
 $firewall->hasRole($role); // bool
 $firewall->isAllowed($privilege); // bool
 ```
