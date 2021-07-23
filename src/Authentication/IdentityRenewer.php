@@ -9,8 +9,9 @@ interface IdentityRenewer
 {
 
 	/**
-	 * @phpstan-return T|null
+	 * @phpstan-return T
+	 * @throws IdentityExpired
 	 */
-	public function renewIdentity(Identity $identity): ?Identity;
+	public function renewIdentity(Identity $identity): Identity;
 
 }

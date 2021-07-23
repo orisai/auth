@@ -92,13 +92,13 @@ abstract class BaseFirewall implements Firewall
 			return;
 		}
 
-		$this->unauthenticate(self::REASON_MANUAL, $this->getLogins());
+		$this->unauthenticate($this->getLogins(), self::REASON_MANUAL, null);
 	}
 
 	/**
 	 * @phpstan-param self::REASON_* $reason
 	 */
-	private function unauthenticate(int $reason, Logins $logins): void
+	private function unauthenticate(Logins $logins, int $reason, ?string $logoutReasonDescription): void
 	{
 		$login = $logins->getCurrentLogin();
 
@@ -107,7 +107,7 @@ abstract class BaseFirewall implements Firewall
 		}
 
 		$logins->removeCurrentLogin();
-		$this->addExpiredLogin(new ExpiredLogin($login, $reason));
+		$this->addExpiredLogin(new ExpiredLogin($login, $reason, $logoutReasonDescription));
 
 		$this->storage->regenerateSecurityToken($this->getNamespace());
 	}
@@ -254,7 +254,7 @@ abstract class BaseFirewall implements Firewall
 		$now = $this->clock->getTime();
 
 		if ($expiration->getTime()->isBefore($now)) {
-			$this->unauthenticate(self::REASON_INACTIVITY, $logins);
+			$this->unauthenticate($logins, self::REASON_INACTIVITY, null);
 		} else {
 			$expiration->setTime($now->plusSeconds($expiration->getDelta()->toSeconds()));
 		}
@@ -268,13 +268,15 @@ abstract class BaseFirewall implements Firewall
 			return;
 		}
 
-		$identity = $this->renewer->renewIdentity($login->getIdentity());
+		try {
+			$identity = $this->renewer->renewIdentity($login->getIdentity());
+		} catch (IdentityExpired $exception) {
+			$this->unauthenticate($logins, self::REASON_INVALID_IDENTITY, $exception->getLogoutReasonDescription());
 
-		if ($identity === null) {
-			$this->unauthenticate(self::REASON_INVALID_IDENTITY, $logins);
-		} else {
-			$login->setIdentity($identity);
+			return;
 		}
+
+		$login->setIdentity($identity);
 	}
 
 	/**

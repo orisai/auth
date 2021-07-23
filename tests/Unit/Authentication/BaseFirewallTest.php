@@ -4,6 +4,7 @@ namespace Tests\Orisai\Auth\Unit\Authentication;
 
 use Brick\DateTime\Clock\FixedClock;
 use Brick\DateTime\Instant;
+use Generator;
 use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
@@ -61,6 +62,7 @@ final class BaseFirewallTest extends TestCase
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame($firewall::REASON_MANUAL, $expired->getLogoutReason());
+		self::assertNull($expired->getLogoutReasonDescription());
 
 		$this->expectException(NotLoggedIn::class);
 		$firewall->getIdentity();
@@ -271,12 +273,15 @@ MSG);
 		self::assertSame([], $firewall->getExpiredLogins());
 	}
 
-	public function testRenewerRemovedIdentity(): void
+	/**
+	 * @dataProvider provideRenewerRemovedIdentity
+	 */
+	public function testRenewerRemovedIdentity(?string $reasonDescription): void
 	{
 		$identity = new IntIdentity(123, []);
 
 		$storage = new ArrayLoginStorage();
-		$renewer = new NeverPassIdentityRenewer();
+		$renewer = new NeverPassIdentityRenewer($reasonDescription);
 		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
 
 		$firewall->login($identity);
@@ -288,6 +293,16 @@ MSG);
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame($firewall::REASON_INVALID_IDENTITY, $expired->getLogoutReason());
+		self::assertSame($reasonDescription, $expired->getLogoutReasonDescription());
+	}
+
+	/**
+	 * @return Generator<array<mixed>>
+	 */
+	public function provideRenewerRemovedIdentity(): Generator
+	{
+		yield [null];
+		yield ['reason description'];
 	}
 
 	public function testSecurityTokenRegenerates(): void
@@ -346,6 +361,7 @@ MSG);
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame($firewall::REASON_INACTIVITY, $expired->getLogoutReason());
+		self::assertNull($expired->getLogoutReasonDescription());
 
 		$firewall->login($identity);
 		self::assertTrue($firewall->isLoggedIn());

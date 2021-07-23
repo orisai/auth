@@ -212,11 +212,12 @@ final class AdminFirewall extends BaseFirewall
 ```
 
 Create an identity renewer
-- allows you to log out user on each request at which firewall is used - return null
+- allows you to log out user on each request at which firewall is used - throw `IdentityExpired` exception
 - renews identity on each request so data in user Identity and class itself are always actual
 
 ```php
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authentication\IdentityExpired;
 use Orisai\Auth\Authentication\IdentityRenewer;
 use Orisai\Auth\Authentication\IntIdentity;
 
@@ -233,12 +234,13 @@ final class AdminIdentityRenewer implements IdentityRenewer
         $this->userRepository = $userRepository;
     }
 
-    public function renewIdentity(Identity $identity): ?Identity
+    public function renewIdentity(Identity $identity): Identity
     {
         $user = $this->userRepository->getById($identity->getId());
 
         if ($user === null) {
-            return null;
+            throw IdentityExpired::create();
+            //throw IdentityExpired::create('logout reason description');
         }
 
         return new IntIdentity($user->getId(), $user->getRoles());
@@ -315,6 +317,7 @@ $firewall->getIdentity(); // exception
 $firewall->removeExpiredLogins();
 $firewall->setExpiredIdentitiesLimit($count); // Maximum number of expired logins to store, defaults to 3
 
+$firewall->getLastExpiredLogin(); // ExpiredLogin|null
 $firewall->getExpiredLogins(); // array<ExpiredLogin>
 foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
     $firewall->removeExpiredLogin($identityId);
@@ -322,6 +325,7 @@ foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
     $expiredLogin->getIdentity(); // Identity
     $expiredLogin->getAuthenticationTime(); // Instant
     $expiredLogin->getLogoutReason(); // $firewall::REASON_* - REASON_MANUAL | REASON_INACTIVITY | REASON_INVALID_IDENTITY
+    $expiredLogin->getLogoutReasonDescription(); // string|null
     $expiredLogin->getExpiration(); // Expiration|null
 }
 ```
