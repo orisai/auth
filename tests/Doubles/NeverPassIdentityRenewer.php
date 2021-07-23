@@ -3,6 +3,7 @@
 namespace Tests\Orisai\Auth\Doubles;
 
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authentication\IdentityExpired;
 use Orisai\Auth\Authentication\IdentityRenewer;
 
 /**
@@ -11,9 +12,16 @@ use Orisai\Auth\Authentication\IdentityRenewer;
 final class NeverPassIdentityRenewer implements IdentityRenewer
 {
 
-	public function renewIdentity(Identity $identity): ?Identity
+	private ?string $reason;
+
+	public function __construct(?string $reason = null)
 	{
-		return null;
+		$this->reason = $reason;
+	}
+
+	public function renewIdentity(Identity $identity): Identity
+	{
+		throw IdentityExpired::create($this->reason);
 	}
 
 }

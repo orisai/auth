@@ -22,13 +22,19 @@ final class ExpiredLoginTest extends TestCase
 	{
 		$identity = new IntIdentity(1, []);
 		$authTime = Instant::of(2);
-		$login = new ExpiredLogin(new CurrentLogin($identity, $authTime), Firewall::REASON_MANUAL);
+		$currentLogin = new CurrentLogin($identity, $authTime);
+		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
 
 		self::assertSame($identity, $login->getIdentity());
 		self::assertSame($authTime, $login->getAuthenticationTime());
 		self::assertNull($login->getExpiration());
 		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutReason());
+		self::assertNull($login->getLogoutReasonDescription());
 
+		self::assertEquals($login, unserialize(serialize($login)));
+
+		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL, 'description');
+		self::assertSame('description', $login->getLogoutReasonDescription());
 		self::assertEquals($login, unserialize(serialize($login)));
 	}
 

@@ -12,10 +12,12 @@ final class ExpiredLogin extends BaseLogin
 	/** @phpstan-var Firewall::REASON_* */
 	private int $logoutReason;
 
+	private ?string $logoutReasonDescription;
+
 	/**
 	 * @phpstan-param Firewall::REASON_* $logoutReason
 	 */
-	public function __construct(CurrentLogin $currentLogin, int $logoutReason)
+	public function __construct(CurrentLogin $currentLogin, int $logoutReason, ?string $logoutReasonDescription = null)
 	{
 		parent::__construct($currentLogin->getIdentity(), $currentLogin->getAuthenticationTime());
 
@@ -25,6 +27,7 @@ final class ExpiredLogin extends BaseLogin
 		}
 
 		$this->logoutReason = $logoutReason;
+		$this->logoutReasonDescription = $logoutReasonDescription;
 	}
 
 	public function getExpiration(): ?Expiration
@@ -40,6 +43,11 @@ final class ExpiredLogin extends BaseLogin
 		return $this->logoutReason;
 	}
 
+	public function getLogoutReasonDescription(): ?string
+	{
+		return $this->logoutReasonDescription;
+	}
+
 	/**
 	 * @return array<mixed>
 	 */
@@ -47,6 +55,7 @@ final class ExpiredLogin extends BaseLogin
 	{
 		$data = parent::__serialize();
 		$data['logoutReason'] = $this->logoutReason;
+		$data['logoutReasonDescription'] = $this->logoutReasonDescription;
 		$data['expiration'] = $this->expiration;
 
 		return $data;
@@ -59,6 +68,7 @@ final class ExpiredLogin extends BaseLogin
 	{
 		parent::__unserialize($data);
 		$this->logoutReason = $data['logoutReason'];
+		$this->logoutReasonDescription = $data['logoutReasonDescription'] ?? null;
 		$this->expiration = $data['expiration'];
 	}
 
