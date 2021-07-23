@@ -2,10 +2,9 @@
 
 namespace Orisai\Auth\Authorization;
 
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\Identity;
 
 /**
- * @phpstan-template F of Firewall
  * @phpstan-template R of object
  */
 interface Policy
@@ -20,9 +19,8 @@ interface Policy
 	public static function getRequirementsClass(): string;
 
 	/**
-	 * @phpstan-param F $firewall
 	 * @phpstan-param R $requirements
 	 */
-	public function isAllowed(Firewall $firewall, object $requirements): bool;
+	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool;
 
 }

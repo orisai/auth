@@ -2,14 +2,15 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
+use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 
 final class PrivilegeAuthorizerCreator
 {
 
-	public function create(): PrivilegeAuthorizer
+	public function create(PolicyManager $policyManager): PrivilegeAuthorizer
 	{
-		return new PrivilegeAuthorizer();
+		return new PrivilegeAuthorizer($policyManager);
 	}
 
 }

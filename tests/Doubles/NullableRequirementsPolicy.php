@@ -2,12 +2,12 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-template F of Firewall
- * @phpstan-implements Policy<F, Article>
+ * @phpstan-implements Policy<Article>
  */
 final class NullableRequirementsPolicy implements Policy
 {
@@ -22,7 +22,7 @@ final class NullableRequirementsPolicy implements Policy
 		return Article::class;
 	}
 
-	public function isAllowed(Firewall $firewall, ?object $requirements): bool
+	public function isAllowed(Identity $identity, ?object $requirements, Authorizer $authorizer): bool
 	{
 		return false;
 	}

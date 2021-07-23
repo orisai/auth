@@ -2,11 +2,12 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Policy;
 
 /**
- * @phpstan-implements Policy<UserAwareFirewall, Article>
+ * @phpstan-implements Policy<Article>
  */
 final class ArticleEditPolicy implements Policy
 {
@@ -24,13 +25,12 @@ final class ArticleEditPolicy implements Policy
 	}
 
 	/**
-	 * @param UserAwareFirewall $firewall
-	 * @param Article           $requirements
+	 * @param Article $requirements
 	 */
-	public function isAllowed(Firewall $firewall, object $requirements): bool
+	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
 	{
-		return $firewall->isAllowed(self::EDIT_ALL)
-			|| $firewall->isAllowed(...ArticleEditOwnedPolicy::get($requirements));
+		return $authorizer->isAllowed($identity, self::EDIT_ALL)
+			|| $authorizer->isAllowed($identity, ...ArticleEditOwnedPolicy::get($requirements));
 	}
 
 	/**

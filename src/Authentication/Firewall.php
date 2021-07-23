@@ -8,7 +8,6 @@ use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 
 /**
  * @phpstan-template I of Identity
- * @phpstan-template-covariant F of Firewall
  */
 interface Firewall
 {
