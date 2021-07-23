@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\TestingArrayLoginStorage;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
 use Throwable;
 use function array_keys;
@@ -289,6 +290,44 @@ MSG);
 		self::assertSame($firewall::REASON_INVALID_IDENTITY, $expired->getLogoutReason());
 	}
 
+	public function testSecurityTokenRegenerates(): void
+	{
+		$storage = new TestingArrayLoginStorage();
+		$renewer = new NeverPassIdentityRenewer();
+		$firewall = new TestingFirewall(
+			$storage,
+			$renewer,
+			$this->authorizer(),
+		);
+		$namespace = $firewall->getNamespace();
+		$identity = new IntIdentity(123, []);
+
+		$token1 = $storage->getToken($namespace);
+		$token2 = $storage->getToken($namespace);
+		self::assertSame($token1, $token2);
+
+		$firewall->login($identity);
+		$token3 = $storage->getToken($namespace);
+		self::assertNotSame($token2, $token3);
+
+		$firewall->login($identity);
+		$token4 = $storage->getToken($namespace);
+		self::assertNotSame($token3, $token4);
+
+		$firewall->logout();
+		$token5 = $storage->getToken($namespace);
+		self::assertNotSame($token4, $token5);
+
+		$firewall->login($identity);
+		$token6 = $storage->getToken($namespace);
+
+		$firewall->resetLoginsChecks();
+		self::assertFalse($firewall->isLoggedIn());
+
+		$token7 = $storage->getToken($namespace);
+		self::assertNotSame($token6, $token7);
+	}
+
 	public function testTimeExpiredIdentity(): void
 	{
 		$clock = new FixedClock(Instant::now());
@@ -367,6 +406,30 @@ MSG);
 		$firewall->setExpiration(Instant::now()->minusSeconds(10));
 	}
 
+	public function testExpirationTimeIsRightNow(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$clock = new FixedClock(Instant::of(1));
+		$firewall = new TestingFirewall(
+			$storage,
+			$this->renewer(),
+			$this->authorizer(),
+			$clock,
+		);
+		$identity = new IntIdentity(123, []);
+
+		$firewall->login($identity);
+
+		$this->expectException(InvalidArgument::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to set login expiration time.
+Problem: Expiration time is lower than current time.
+Solution: Choose expiration time which is in future.
+MSG);
+
+		$firewall->setExpiration($clock->getTime());
+	}
+
 	public function testExpirationCannotBeSet(): void
 	{
 		$storage = new ArrayLoginStorage();
@@ -381,6 +444,47 @@ Solution: Login with TestingFirewall->login($identity) or check with
 MSG);
 
 		$firewall->setExpiration(Instant::now()->minusSeconds(10));
+	}
+
+	public function testGetExpirationTime(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$clock = new FixedClock(Instant::of(1));
+		$firewall = new TestingFirewall(
+			$storage,
+			$this->renewer(),
+			$this->authorizer(),
+			$clock,
+		);
+
+		$identity = new IntIdentity(123, []);
+
+		$firewall->login($identity);
+		self::assertNull($firewall->getExpirationTime());
+
+		$expiration = Instant::of(5);
+		$firewall->setExpiration($expiration);
+		self::assertSame(5, $firewall->getExpirationTime()->getEpochSecond());
+
+		$firewall->resetLoginsChecks();
+		$clock->move(1);
+		self::assertSame(6, $firewall->getExpirationTime()->getEpochSecond());
+	}
+
+	public function testNotLoggedInGetExpirationTime(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+
+		$this->expectException(NotLoggedIn::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->getExpirationTime().
+Problem: User is not logged in firewall.
+Solution: Login with TestingFirewall->login($identity) or check with
+          TestingFirewall->isLoggedIn().
+MSG);
+
+		$firewall->getExpirationTime();
 	}
 
 	public function testNotLoggedInGetIdentity(): void
