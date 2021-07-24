@@ -77,7 +77,7 @@ class PrivilegeAuthorizer implements Authorizer
 		$this->addKeyValue($privilegesCurrent, $privilegeParts, []);
 	}
 
-	protected function privilegeExists(string $privilege): bool
+	public function privilegeExists(string $privilege): bool
 	{
 		if ($privilege === self::ALL_PRIVILEGES) {
 			return true;
