@@ -373,6 +373,9 @@ $authorizer->deny('editor', 'article');
 // Check if user has privilege
 $authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
 $firewall->isAllowed('article'); // shortcut to $authorizer->isAllowed(), but also checks whether user is logged in
+
+// Check privilege is registered
+$authorizer->privilegeExists('article'); // bool
 ```
 
 ## Policies
@@ -427,6 +430,7 @@ final class ArticleEditPolicy implements Policy
 ```
 
 ```php
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\Policy;
 
@@ -483,7 +487,7 @@ $firewall->isAllowed(...ArticleEditPolicy::get($article));
 
 Be aware that in case of policy firewall itself don't perform any checks except the logged-in check, so you have to do
 all the required privilege checks yourself in the policy. It is possible to fallback to default behavior with
-`$firewall->hasPrivilege(self::getPrivilege())`
+`$authorizer->hasPrivilege($identity, self::getPrivilege())`
 
 Once the policy is registered, firewall will require you to pass policy requirements.
 You may choose to make requirements nullable and change `object $requirements` to `?object $requirements`.
