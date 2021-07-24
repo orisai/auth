@@ -7,11 +7,6 @@ use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 final class TestingPrivilegeAuthorizer extends PrivilegeAuthorizer
 {
 
-	public function privilegeExists(string $privilege): bool
-	{
-		return parent::privilegeExists($privilege);
-	}
-
 	/**
 	 * @return array<string, array<mixed>>
 	 */

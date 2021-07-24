@@ -69,7 +69,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testHasPrivilege(): void
 	{
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies());
+		$authorizer = new PrivilegeAuthorizer($this->policies());
 
 		self::assertTrue($authorizer->privilegeExists($authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->privilegeExists('article'));
