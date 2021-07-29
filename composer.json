@@ -28,7 +28,7 @@
 	"require-dev": {
 		"ext-sodium": "*",
 		"brianium/paratest": "^6.3.0",
-		"infection/infection": "^0.22.1",
+		"infection/infection": "^0.24.0",
 		"nette/di": "^3.0.0",
 		"nette/http": "^3.0.1",
 		"orisai/coding-standard": "^2.0.0",
