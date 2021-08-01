@@ -54,8 +54,9 @@ final class PrivilegeProcessorTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider privilegeParentsProvider
 	 * @param array<string> $expected
+	 *
+	 * @dataProvider privilegeParentsProvider
 	 */
 	public function testPrivilegeParents(string $privilege, bool $includePowerUser, array $expected): void
 	{
