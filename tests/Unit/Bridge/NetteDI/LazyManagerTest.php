@@ -3,6 +3,7 @@
 namespace Tests\Orisai\Auth\Unit\Bridge\NetteDI;
 
 use OriNette\DI\Boot\ManualConfigurator;
+use OriNette\DI\Services\MissingService;
 use Orisai\Auth\Bridge\NetteDI\LazyPolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
@@ -27,11 +28,11 @@ final class LazyManagerTest extends TestCase
 		$e = null;
 		try {
 			$manager->get('invalid.class');
-		} catch (InvalidArgument $e) {
+		} catch (MissingService $e) {
 			// Handled below
 		}
 
-		self::assertInstanceOf(InvalidArgument::class, $e);
+		self::assertInstanceOf(MissingService::class, $e);
 		self::assertSame(
 			$e->getMessage(),
 			<<<'MSG'
