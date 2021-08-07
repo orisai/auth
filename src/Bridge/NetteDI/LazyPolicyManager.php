@@ -33,7 +33,7 @@ final class LazyPolicyManager extends ServiceManager implements PolicyManager
 	}
 
 	/**
-	 * @return never-return
+	 * @return never
 	 */
 	private function throwPolicyNameMismatch(
 		object $service,
