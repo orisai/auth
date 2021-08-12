@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use function dirname;
 
-final class LazyManagerTest extends TestCase
+final class LazyPolicyManagerTest extends TestCase
 {
 
 	public function test(): void
