@@ -14,14 +14,10 @@ final class LazyPolicyManager extends ServiceManager implements PolicyManager
 
 	public function get(string $privilege): ?Policy
 	{
-		$service = $this->getService($privilege);
+		$service = $this->getTypedService($privilege, Policy::class);
 
 		if ($service === null) {
 			return null;
-		}
-
-		if (!$service instanceof Policy) {
-			$this->throwInvalidServiceType($privilege, Policy::class, $service);
 		}
 
 		$servicePrivilege = $service::getPrivilege();
