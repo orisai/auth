@@ -216,8 +216,8 @@ Create an identity renewer
 - renews identity on each request so data in user Identity and class itself are always actual
 
 ```php
+use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authentication\IdentityExpired;
 use Orisai\Auth\Authentication\IdentityRenewer;
 use Orisai\Auth\Authentication\IntIdentity;
 

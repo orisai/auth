@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
+use Orisai\Auth\Authentication\Exception\IdentityExpired;
+
 /**
  * @phpstan-template T of Identity
  */
