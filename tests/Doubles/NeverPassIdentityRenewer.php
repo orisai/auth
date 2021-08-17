@@ -2,8 +2,8 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
+use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authentication\IdentityExpired;
 use Orisai\Auth\Authentication\IdentityRenewer;
 
 /**

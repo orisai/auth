@@ -10,6 +10,7 @@ use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
+use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Exceptions\Logic\InvalidArgument;
