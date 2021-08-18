@@ -5,7 +5,7 @@ namespace Orisai\Auth\Authentication\Exception;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Exceptions\LogicalException;
 use Orisai\Exceptions\Message;
-use Orisai\Utils\Classes;
+use Orisai\Utils\Reflection\Classes;
 
 final class NotLoggedIn extends LogicalException
 {
