@@ -5,8 +5,8 @@ namespace Tests\Orisai\Auth\Unit\Passwords;
 use Generator;
 use Orisai\Auth\Passwords\SodiumPasswordEncoder;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\Utils\Dependencies\DependenciesTester;
 use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
-use Orisai\Utils\Tester\DependenciesTester;
 use PHPUnit\Framework\TestCase;
 
 final class SodiumPasswordEncoderTest extends TestCase
