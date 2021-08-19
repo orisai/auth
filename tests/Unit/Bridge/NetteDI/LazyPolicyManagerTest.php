@@ -3,7 +3,6 @@
 namespace Tests\Orisai\Auth\Unit\Bridge\NetteDI;
 
 use OriNette\DI\Boot\ManualConfigurator;
-use OriNette\DI\Services\MissingService;
 use Orisai\Auth\Bridge\NetteDI\LazyPolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
@@ -24,25 +23,6 @@ final class LazyPolicyManagerTest extends TestCase
 		$manager = $container->getByType(LazyPolicyManager::class);
 
 		self::assertInstanceOf(ArticleEditPolicy::class, $manager->get(ArticleEditPolicy::getPrivilege()));
-
-		$e = null;
-		try {
-			$manager->get('invalid.class');
-		} catch (MissingService $e) {
-			// Handled below
-		}
-
-		self::assertInstanceOf(MissingService::class, $e);
-		self::assertSame(
-			$e->getMessage(),
-			<<<'MSG'
-Context: Service policy.invalid.class returns instance of stdClass.
-Problem: Orisai\Auth\Bridge\NetteDI\LazyPolicyManager supports only instances of
-         Orisai\Auth\Authorization\Policy.
-Solution: Remove service from LazyPolicyManager or make the service return
-          supported object type.
-MSG,
-		);
 
 		$e = null;
 		try {
