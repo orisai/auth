@@ -5,7 +5,7 @@ namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 use Brick\DateTime\Duration;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
-use PHPStan\Testing\TestCase;
+use PHPUnit\Framework\TestCase;
 
 final class CurrentExpirationTest extends TestCase
 {
