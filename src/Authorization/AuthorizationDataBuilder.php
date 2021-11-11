@@ -5,7 +5,6 @@ namespace Orisai\Auth\Authorization;
 use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidState;
 use function array_key_exists;
-use function get_class;
 
 final class AuthorizationDataBuilder
 {
@@ -18,6 +17,8 @@ final class AuthorizationDataBuilder
 
 	/** @var array<string, array<mixed>> */
 	protected array $roleAllowedPrivileges = [];
+
+	public bool $throwOnUnknownRolePrivilege = false;
 
 	private PrivilegeAuthorizer $authorizer;
 
@@ -55,7 +56,7 @@ final class AuthorizationDataBuilder
 		$privilegeValue = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $this->privileges);
 
 		if ($privilegeValue === null) {
-			if ($this->authorizer->throwOnUnknownRolePrivilege) {
+			if ($this->throwOnUnknownRolePrivilege) {
 				$this->authorizer->unknownPrivilege($privilege, __FUNCTION__);
 			}
 
@@ -81,7 +82,7 @@ final class AuthorizationDataBuilder
 		$privilegeValue = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $this->privileges);
 
 		if ($privilegeValue === null) {
-			if ($this->authorizer->throwOnUnknownRolePrivilege) {
+			if ($this->throwOnUnknownRolePrivilege) {
 				$this->authorizer->unknownPrivilege($privilege, __FUNCTION__);
 			}
 
@@ -94,7 +95,7 @@ final class AuthorizationDataBuilder
 	private function checkRole(string $role): void
 	{
 		if (!array_key_exists($role, $this->roles)) {
-			$class = get_class($this->authorizer);
+			$class = self::class;
 
 			throw InvalidState::create()
 				->withMessage("Role {$role} does not exist, add it with {$class}->addRole(\$role)");

@@ -352,23 +352,23 @@ $policyManager = new SimplePolicyManager();
 $authorizer = new PrivilegeAuthorizer($policyManager);
 
 // Add roles
-$authorizer->addRole('editor');
+$authorizer->getBuilder()->addRole('editor');
 
 // Add privileges
 //	- they support hierarchy via dot (e.g article.view is part of article)
-$authorizer->addPrivilege('article.view');
-$authorizer->addPrivilege('article.publish');
-$authorizer->addPrivilege('article.delete');
-$authorizer->addPrivilege('article.edit.owned');
-$authorizer->addPrivilege('article.edit.all');
+$authorizer->getBuilder()->addPrivilege('article.view');
+$authorizer->getBuilder()->addPrivilege('article.publish');
+$authorizer->getBuilder()->addPrivilege('article.delete');
+$authorizer->getBuilder()->addPrivilege('article.edit.owned');
+$authorizer->getBuilder()->addPrivilege('article.edit.all');
 
 // Allow role to work with specified privileges
-$authorizer->allow('editor', $authorizer::ALL_PRIVILEGES); // Everything
-$authorizer->allow('editor', 'article.edit'); // Everything from article.edit
-$authorizer->allow('editor', 'article'); // Everything from article
+$authorizer->getBuilder()->allow('editor', $authorizer::ALL_PRIVILEGES); // Everything
+$authorizer->getBuilder()->allow('editor', 'article.edit'); // Everything from article.edit
+$authorizer->getBuilder()->allow('editor', 'article'); // Everything from article
 
 // Deny role to work with privileges (you shouldn't need to do this explicitly, everything is disallowed by default)
-$authorizer->deny('editor', 'article');
+$authorizer->getBuilder()->deny('editor', 'article');
 
 // Check if user has privilege
 $authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
