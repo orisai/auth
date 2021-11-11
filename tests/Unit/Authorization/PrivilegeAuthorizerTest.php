@@ -125,11 +125,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 		);
 		self::assertSame(
 			[],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$authorizer->addRole($role);
@@ -144,11 +144,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 		);
 		self::assertSame(
 			[],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$authorizer->allow($role, 'article.view');
@@ -170,11 +170,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 				'article.view',
 				'article.edit',
 			],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$authorizer->allow($role, 'something');
@@ -200,13 +200,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 				'article.edit',
 				'something',
 			],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[
 				'something',
 			],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$authorizer->deny($role, 'article.edit');
@@ -229,13 +229,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 				'article.view',
 				'something',
 			],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[
 				'something',
 			],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$authorizer->allow($role, 'article');
@@ -262,13 +262,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 				'article.delete',
 				'something',
 			],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[
 				'something',
 			],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$authorizer->deny($role, 'article');
@@ -287,13 +287,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 			[
 				'something',
 			],
-			$authorizer->getRolePrivileges($role),
+			$authorizer->getAllowedPrivilegesForRole($role),
 		);
 		self::assertSame(
 			[
 				'something',
 			],
-			$authorizer->getRolePrivileges('another-role'),
+			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 	}
 
