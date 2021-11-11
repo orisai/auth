@@ -23,10 +23,10 @@ services:
 	auth.front.authorizer:
 		factory: Orisai\Auth\Authorization\PrivilegeAuthorizer
 		setup:
-			- addRole(editor)
-			- addPrivilege(article.edit.all)
-			- addPrivilege(article.edit.owned)
-			- allow(editor, article)
+			- @self::getBuilder()::addRole(editor)
+			- @self::getBuilder()::addPrivilege(article.edit.all)
+			- @self::getBuilder()::addPrivilege(article.edit.owned)
+			- @self::getBuilder()::allow(editor, article)
 	auth.front.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
 	auth.front.firewall:
 		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
