@@ -12,7 +12,7 @@ final class TestingPrivilegeAuthorizer extends PrivilegeAuthorizer
 	 */
 	public function getDebugRolePrivileges(): array
 	{
-		return $this->rolePrivileges;
+		return $this->roleAllowedPrivileges;
 	}
 
 	/**
