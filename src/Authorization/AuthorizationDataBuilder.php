@@ -20,13 +20,6 @@ final class AuthorizationDataBuilder
 
 	public bool $throwOnUnknownRolePrivilege = false;
 
-	private PrivilegeAuthorizer $authorizer;
-
-	public function __construct(PrivilegeAuthorizer $authorizer)
-	{
-		$this->authorizer = $authorizer;
-	}
-
 	public function addRole(string $role): void
 	{
 		$this->roles[$role] = null;
@@ -57,7 +50,7 @@ final class AuthorizationDataBuilder
 
 		if ($privilegeValue === null) {
 			if ($this->throwOnUnknownRolePrivilege) {
-				$this->authorizer->unknownPrivilege($privilege, __FUNCTION__);
+				throw UnknownPrivilege::forPrivilege($privilege, self::class, __FUNCTION__);
 			}
 
 			return;
@@ -83,7 +76,7 @@ final class AuthorizationDataBuilder
 
 		if ($privilegeValue === null) {
 			if ($this->throwOnUnknownRolePrivilege) {
-				$this->authorizer->unknownPrivilege($privilege, __FUNCTION__);
+				throw UnknownPrivilege::forPrivilege($privilege, self::class, __FUNCTION__);
 			}
 
 			return;

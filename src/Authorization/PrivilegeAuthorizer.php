@@ -5,7 +5,6 @@ namespace Orisai\Auth\Authorization;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\Exceptions\Logic\InvalidState;
 use Orisai\Exceptions\Message;
 use ReflectionClass;
 use function array_key_exists;
@@ -23,7 +22,7 @@ class PrivilegeAuthorizer implements Authorizer
 	public function __construct(PolicyManager $policyManager)
 	{
 		$this->policyManager = $policyManager;
-		$this->builder = new AuthorizationDataBuilder($this);
+		$this->builder = new AuthorizationDataBuilder();
 	}
 
 	public function getBuilder(): AuthorizationDataBuilder
@@ -80,7 +79,7 @@ class PrivilegeAuthorizer implements Authorizer
 		return $this->hasPrivilegeInternal($identity, $privilege, __FUNCTION__);
 	}
 
-	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $method): bool
+	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
 		$privileges = $this->builder->build()->getPrivileges();
 
@@ -88,7 +87,7 @@ class PrivilegeAuthorizer implements Authorizer
 		$requiredPrivileges = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $privileges);
 
 		if ($requiredPrivileges === null) {
-			$this->unknownPrivilege($privilege, $method);
+			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
 		}
 
 		foreach ($identity->getRoles() as $role) {
@@ -120,14 +119,14 @@ class PrivilegeAuthorizer implements Authorizer
 		Identity $identity,
 		string $privilege,
 		?object $requirements,
-		string $method
+		string $function
 	): bool
 	{
 		if ($requirements !== null) {
 			$class = static::class;
 			$requirementsType = get_class($requirements);
 			$message = Message::create()
-				->withContext("Trying to check privilege $privilege via $class->$method().")
+				->withContext("Trying to check privilege $privilege via $class->$function().")
 				->withProblem(
 					"Passed requirement object (type of $requirementsType) which is not allowed by privilege without policy.",
 				)
@@ -137,17 +136,22 @@ class PrivilegeAuthorizer implements Authorizer
 				->withMessage($message);
 		}
 
-		return $this->hasPrivilegeInternal($identity, $privilege, $method);
+		return $this->hasPrivilegeInternal($identity, $privilege, $function);
 	}
 
 	/**
 	 * @phpstan-param Policy<object> $policy
 	 */
-	private function isAllowedByPolicy(Identity $identity, Policy $policy, ?object $requirements, string $method): bool
+	private function isAllowedByPolicy(
+		Identity $identity,
+		Policy $policy,
+		?object $requirements,
+		string $function
+	): bool
 	{
 		$privilege = $policy::getPrivilege();
 		if (!$this->privilegeExists($privilege)) {
-			$this->unknownPrivilege($privilege, $method);
+			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
 		}
 
 		$requirementsClass = $policy::getRequirementsClass();
@@ -157,7 +161,7 @@ class PrivilegeAuthorizer implements Authorizer
 				$policyClass = get_class($policy);
 				$passedRequirementsClass = get_class($requirements);
 				$message = Message::create()
-					->withContext("Trying to check privilege $privilege via $class->$method().")
+					->withContext("Trying to check privilege $privilege via $class->$function().")
 					->withProblem(
 						"Passed requirements are of type $passedRequirementsClass, which is not supported by $policyClass.",
 					)
@@ -178,7 +182,7 @@ class PrivilegeAuthorizer implements Authorizer
 				$policyClass = get_class($policy);
 				$noRequirementsClass = NoRequirements::class;
 				$message = Message::create()
-					->withContext("Trying to check privilege $privilege via $class->$method().")
+					->withContext("Trying to check privilege $privilege via $class->$function().")
 					->withProblem("Policy requirements are missing, which is not supported by $policyClass.")
 					->withSolution(
 						"Pass requirements of type $requirementsClass or mark policy requirements nullable or change them to $noRequirementsClass.",
@@ -215,25 +219,6 @@ class PrivilegeAuthorizer implements Authorizer
 		Arrays::removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingRolePrivileges);
 
 		return $requiredPrivileges === [];
-	}
-
-	/**
-	 * @phpstan-return never-return
-	 * @throws InvalidState
-	 *
-	 * @internal
-	 */
-	public function unknownPrivilege(string $privilege, string $method): void
-	{
-		$class = static::class;
-
-		$message = Message::create()
-			->withContext("Trying to call $class->$method().")
-			->withProblem("Privilege $privilege is unknown.")
-			->withSolution('Add privilege to authorizer first via addPrivilege().');
-
-		throw InvalidState::create()
-			->withMessage($message);
 	}
 
 }

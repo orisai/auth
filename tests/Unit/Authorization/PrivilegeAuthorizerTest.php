@@ -7,6 +7,7 @@ use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
+use Orisai\Auth\Authorization\UnknownPrivilege;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
@@ -710,9 +711,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer->getBuilder()->throwOnUnknownRolePrivilege = true;
 		$authorizer->getBuilder()->addRole('role');
 
-		$this->expectException(InvalidState::class);
+		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call Orisai\Auth\Authorization\PrivilegeAuthorizer->allow().
+Context: Trying to call
+         Orisai\Auth\Authorization\AuthorizationDataBuilder->allow().
 Problem: Privilege unknown is unknown.
 Solution: Add privilege to authorizer first via addPrivilege().
 MSG);
@@ -726,9 +728,10 @@ MSG);
 		$authorizer->getBuilder()->throwOnUnknownRolePrivilege = true;
 		$authorizer->getBuilder()->addRole('role');
 
-		$this->expectException(InvalidState::class);
+		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call Orisai\Auth\Authorization\PrivilegeAuthorizer->deny().
+Context: Trying to call
+         Orisai\Auth\Authorization\AuthorizationDataBuilder->deny().
 Problem: Privilege unknown is unknown.
 Solution: Add privilege to authorizer first via addPrivilege().
 MSG);
@@ -759,7 +762,7 @@ MSG);
 
 		$identity = new IntIdentity(1, ['role']);
 
-		$this->expectException(InvalidState::class);
+		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
 Context: Trying to call
          Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
@@ -777,7 +780,7 @@ MSG);
 
 		$authorizer = new PrivilegeAuthorizer($policyManager);
 
-		$this->expectException(InvalidState::class);
+		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
 Context: Trying to call
          Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
@@ -795,7 +798,7 @@ MSG);
 
 		$identity = new IntIdentity(1, ['role']);
 
-		$this->expectException(InvalidState::class);
+		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
 Context: Trying to call
          Orisai\Auth\Authorization\PrivilegeAuthorizer->hasPrivilege().
