@@ -3,6 +3,7 @@
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\IntIdentity;
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
@@ -32,14 +33,16 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testPrivilegesData(): void
 	{
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 
-		$authorizer->getBuilder()->addPrivilege('article');
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('article.edit.owned');
-		$authorizer->getBuilder()->addPrivilege('article.edit.all');
-		$authorizer->getBuilder()->addPrivilege('article.edit');
-		$authorizer->getBuilder()->addPrivilege('account.create');
+		$builder->addPrivilege('article');
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit.owned');
+		$builder->addPrivilege('article.edit.all');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('account.create');
+
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertSame(
 			[
@@ -70,19 +73,22 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testHasPrivilege(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertTrue($authorizer->privilegeExists($authorizer::ALL_PRIVILEGES));
 		self::assertFalse($authorizer->privilegeExists('article'));
 		self::assertFalse($authorizer->privilegeExists('article.edit'));
 		self::assertFalse($authorizer->privilegeExists('article.edit.all'));
 
-		$authorizer->getBuilder()->addPrivilege('article');
+		$builder->addPrivilege('article');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->privilegeExists('article'));
 		self::assertFalse($authorizer->privilegeExists('article.edit'));
 		self::assertFalse($authorizer->privilegeExists('article.edit.all'));
 
-		$authorizer->getBuilder()->addPrivilege('article.edit.all');
+		$builder->addPrivilege('article.edit.all');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->privilegeExists('article'));
 		self::assertTrue($authorizer->privilegeExists('article.edit'));
 		self::assertTrue($authorizer->privilegeExists('article.edit.all'));
@@ -92,13 +98,15 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testRolesData(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 
-		$authorizer->getBuilder()->addRole('supervisor');
-		$authorizer->getBuilder()->addRole('admin');
-		$authorizer->getBuilder()->addRole('guest');
-		$authorizer->getBuilder()->addRole('supervisor');
-		$authorizer->getBuilder()->addRole('guest');
+		$builder->addRole('supervisor');
+		$builder->addRole('admin');
+		$builder->addRole('guest');
+		$builder->addRole('supervisor');
+		$builder->addRole('guest');
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertSame(
 			[
@@ -112,13 +120,15 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testRolePrivilegesData(): void
 	{
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies());
-		$role = 'editor';
+		$builder = new AuthorizationDataBuilder();
 
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('article.edit');
-		$authorizer->getBuilder()->addPrivilege('article.delete');
-		$authorizer->getBuilder()->addPrivilege('something');
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('article.delete');
+		$builder->addPrivilege('something');
+
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
+		$role = 'editor';
 
 		self::assertSame(
 			[],
@@ -133,8 +143,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
-		$authorizer->getBuilder()->addRole($role);
-		$authorizer->getBuilder()->addRole('another-role');
+		$builder->addRole($role);
+		$builder->addRole('another-role');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertSame(
 			[
@@ -152,8 +163,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
-		$authorizer->getBuilder()->allow($role, 'article.view');
-		$authorizer->getBuilder()->allow($role, 'article.edit');
+		$builder->allow($role, 'article.view');
+		$builder->allow($role, 'article.edit');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertSame(
 			[
 				'editor' => [
@@ -178,8 +190,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
-		$authorizer->getBuilder()->allow($role, 'something');
-		$authorizer->getBuilder()->allow('another-role', 'something');
+		$builder->allow($role, 'something');
+		$builder->allow('another-role', 'something');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertSame(
 			[
 				'editor' => [
@@ -210,7 +223,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
-		$authorizer->getBuilder()->deny($role, 'article.edit');
+		$builder->deny($role, 'article.edit');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertSame(
 			[
 				'editor' => [
@@ -239,7 +253,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
-		$authorizer->getBuilder()->allow($role, 'article');
+		$builder->allow($role, 'article');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertSame(
 			[
 				'editor' => [
@@ -272,7 +287,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$authorizer->getAllowedPrivilegesForRole('another-role'),
 		);
 
-		$authorizer->getBuilder()->deny($role, 'article');
+		$builder->deny($role, 'article');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertSame(
 			[
 				'editor' => [
@@ -300,11 +316,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testRolesPrivilegesNotOverridden(): void
 	{
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 
-		$authorizer->getBuilder()->addRole('role');
-		$authorizer->getBuilder()->addPrivilege('privilege');
-		$authorizer->getBuilder()->allow('role', 'privilege');
+		$builder->addRole('role');
+		$builder->addPrivilege('privilege');
+		$builder->allow('role', 'privilege');
+
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 
 		$rolePrivilegesData = $authorizer->getDebugRolePrivileges();
 		self::assertSame(
@@ -316,7 +334,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 			$rolePrivilegesData,
 		);
 
-		$authorizer->getBuilder()->addRole('role');
+		$builder->addRole('role');
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertSame(
 			$rolePrivilegesData,
 			$authorizer->getDebugRolePrivileges(),
@@ -325,14 +344,16 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testNothingSet(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+
 		$role = 'role';
+		$builder->addRole($role);
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('something');
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, [$role]);
-
-		$authorizer->getBuilder()->addRole($role);
-
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('something');
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
@@ -346,11 +367,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testNoPrivilegesEqualToAllPrivileges(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
 		$role = 'role';
-		$identity = new IntIdentity(1, [$role]);
 
-		$authorizer->getBuilder()->addRole($role);
+		$builder = new AuthorizationDataBuilder();
+		$builder->addRole($role);
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
+		$identity = new IntIdentity(1, [$role]);
 
 		// Edge case - no privileges are equal to all privileges
 		self::assertTrue($authorizer->hasPrivilege($identity, $authorizer::ALL_PRIVILEGES));
@@ -359,15 +382,17 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testAllAllowed(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('foo.bar.baz');
+		$builder->addPrivilege('something.else');
+
+		$builder->addRole('supervisor');
+
+		$builder->allow('supervisor', Authorizer::ALL_PRIVILEGES);
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['supervisor']);
-
-		$authorizer->getBuilder()->addPrivilege('foo.bar.baz');
-		$authorizer->getBuilder()->addPrivilege('something.else');
-
-		$authorizer->getBuilder()->addRole('supervisor');
-
-		$authorizer->getBuilder()->allow('supervisor', $authorizer::ALL_PRIVILEGES);
 
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar'));
@@ -380,7 +405,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
 		self::assertTrue($authorizer->isAllowed($identity, $authorizer::ALL_PRIVILEGES));
 
-		$authorizer->getBuilder()->deny('supervisor', 'foo.bar');
+		$builder->deny('supervisor', 'foo.bar');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
@@ -393,7 +419,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
 		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ALL_PRIVILEGES));
 
-		$authorizer->getBuilder()->deny('supervisor', $authorizer::ALL_PRIVILEGES);
+		$builder->deny('supervisor', $authorizer::ALL_PRIVILEGES);
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
@@ -409,16 +436,18 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testAllAllowedRolesNotMixed(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('foo');
+
+		$builder->addRole('supervisor');
+		$builder->addRole('admin');
+
+		$builder->allow('supervisor', Authorizer::ALL_PRIVILEGES);
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$supervisor = new IntIdentity(1, ['supervisor']);
 		$admin = new IntIdentity(2, ['admin']);
-
-		$authorizer->getBuilder()->addPrivilege('foo');
-
-		$authorizer->getBuilder()->addRole('supervisor');
-		$authorizer->getBuilder()->addRole('admin');
-
-		$authorizer->getBuilder()->allow('supervisor', $authorizer::ALL_PRIVILEGES);
 
 		self::assertTrue($authorizer->hasPrivilege($supervisor, 'foo'));
 		self::assertTrue($authorizer->hasPrivilege($supervisor, $authorizer::ALL_PRIVILEGES));
@@ -433,25 +462,27 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testPrivilegesFromMultipleRoles(): void
 	{
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit.owned');
+		$builder->addPrivilege('article.edit.all');
+		$builder->addPrivilege('article.publish');
+		$builder->addPrivilege('article.delete');
+
+		$builder->addRole('editor');
+		$builder->addRole('editor-in-chief');
+
+		$builder->allow('editor', 'article.view');
+		$builder->allow('editor', 'article.edit.owned');
+
+		$builder->allow('editor-in-chief', 'article.view');
+		$builder->allow('editor-in-chief', 'article.edit.all');
+		$builder->allow('editor-in-chief', 'article.publish');
+		$builder->allow('editor-in-chief', 'article.delete');
+
+		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['editor', 'editor-in-chief']);
-
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('article.edit.owned');
-		$authorizer->getBuilder()->addPrivilege('article.edit.all');
-		$authorizer->getBuilder()->addPrivilege('article.publish');
-		$authorizer->getBuilder()->addPrivilege('article.delete');
-
-		$authorizer->getBuilder()->addRole('editor');
-		$authorizer->getBuilder()->addRole('editor-in-chief');
-
-		$authorizer->getBuilder()->allow('editor', 'article.view');
-		$authorizer->getBuilder()->allow('editor', 'article.edit.owned');
-
-		$authorizer->getBuilder()->allow('editor-in-chief', 'article.view');
-		$authorizer->getBuilder()->allow('editor-in-chief', 'article.edit.all');
-		$authorizer->getBuilder()->allow('editor-in-chief', 'article.publish');
-		$authorizer->getBuilder()->allow('editor-in-chief', 'article.delete');
 
 		// requires privileges from one of roles
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
@@ -474,16 +505,18 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testRolesNotMixed(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('foo');
+
+		$builder->addRole('supervisor');
+		$builder->addRole('admin');
+
+		$builder->allow('supervisor', 'foo');
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$supervisor = new IntIdentity(1, ['supervisor']);
 		$admin = new IntIdentity(2, ['admin']);
-
-		$authorizer->getBuilder()->addPrivilege('foo');
-
-		$authorizer->getBuilder()->addRole('supervisor');
-		$authorizer->getBuilder()->addRole('admin');
-
-		$authorizer->getBuilder()->allow('supervisor', 'foo');
 
 		self::assertTrue($authorizer->hasPrivilege($supervisor, $authorizer::ALL_PRIVILEGES));
 		self::assertTrue($authorizer->hasPrivilege($supervisor, 'foo'));
@@ -498,22 +531,25 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testActionsNotMixed(): void
 	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('admin');
+		$builder->addPrivilege('front');
+
 		$role = 'guest';
+		$builder->addRole($role);
+
 		$identity = new IntIdentity(1, [$role]);
 
-		$authorizer = new PrivilegeAuthorizer($this->policies());
-
-		$authorizer->getBuilder()->addPrivilege('admin');
-		$authorizer->getBuilder()->addPrivilege('front');
-
-		$authorizer->getBuilder()->addRole($role);
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'front'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'admin'));
 		self::assertFalse($authorizer->isAllowed($identity, 'front'));
 		self::assertFalse($authorizer->isAllowed($identity, 'admin'));
 
-		$authorizer->getBuilder()->allow($role, 'front');
+		$builder->allow($role, 'front');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'front'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'admin'));
 		self::assertTrue($authorizer->isAllowed($identity, 'front'));
@@ -522,17 +558,18 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testOverrideAllowThenDenyFromLeastSpecific(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('article.edit');
-		$authorizer->getBuilder()->addPrivilege('article.delete');
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('article.delete');
 
-		$authorizer->getBuilder()->addRole($role);
+		$builder->addRole($role);
 
-		$authorizer->getBuilder()->allow($role, 'article');
+		$builder->allow($role, 'article');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -542,8 +579,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->allow($role, 'article.view');
-		$authorizer->getBuilder()->allow($role, 'article.edit');
+		$builder->allow($role, 'article.view');
+		$builder->allow($role, 'article.edit');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -553,8 +591,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->deny($role, 'article.edit');
-		$authorizer->getBuilder()->deny($role, 'article.delete');
+		$builder->deny($role, 'article.edit');
+		$builder->deny($role, 'article.delete');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -564,7 +603,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->deny($role, 'article');
+		$builder->deny($role, 'article');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -577,17 +617,18 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testOverrideDenyThenAllowFromLeastSpecific(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('article.edit');
-		$authorizer->getBuilder()->addPrivilege('article.delete');
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('article.delete');
 
-		$authorizer->getBuilder()->addRole($role);
+		$builder->addRole($role);
 
-		$authorizer->getBuilder()->deny($role, 'article');
+		$builder->deny($role, 'article');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -597,8 +638,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->allow($role, 'article.view');
-		$authorizer->getBuilder()->allow($role, 'article.edit');
+		$builder->allow($role, 'article.view');
+		$builder->allow($role, 'article.edit');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -608,8 +650,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->deny($role, 'article.edit');
-		$authorizer->getBuilder()->allow($role, 'article.delete');
+		$builder->deny($role, 'article.edit');
+		$builder->allow($role, 'article.delete');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -622,18 +665,19 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testOverrideAllowThenDenyFromMostSpecific(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 		$role = 'role';
 		$identity = new IntIdentity(1, [$role]);
 
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege('article.edit');
-		$authorizer->getBuilder()->addPrivilege('article.delete');
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('article.delete');
 
-		$authorizer->getBuilder()->addRole($role);
+		$builder->addRole($role);
 
-		$authorizer->getBuilder()->allow($role, 'article.view');
-		$authorizer->getBuilder()->allow($role, 'article.edit');
+		$builder->allow($role, 'article.view');
+		$builder->allow($role, 'article.edit');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -643,7 +687,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->deny($role, 'article.edit');
+		$builder->deny($role, 'article.edit');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -653,7 +698,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$authorizer->getBuilder()->deny($role, 'article');
+		$builder->deny($role, 'article');
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.delete'));
@@ -666,13 +712,14 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testSkipUnknownRoles(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 		$identity = new IntIdentity(1, ['unknown']);
 
-		$authorizer->getBuilder()->addRole('known');
-		$authorizer->getBuilder()->addPrivilege('something');
-		$authorizer->getBuilder()->allow('known', 'something');
+		$builder->addRole('known');
+		$builder->addPrivilege('something');
+		$builder->allow('known', 'something');
 
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
 
@@ -683,33 +730,33 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testAllowChecksRole(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
 			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
 		);
 
-		$authorizer->getBuilder()->allow('role', 'article');
+		$builder->allow('role', 'article');
 	}
 
 	public function testDenyChecksRole(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
 
 		$this->expectException(InvalidState::class);
 		$this->expectExceptionMessage(
 			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
 		);
 
-		$authorizer->getBuilder()->deny('role', 'article');
+		$builder->deny('role', 'article');
 	}
 
 	public function testAllowChecksPrivilege(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
-		$authorizer->getBuilder()->throwOnUnknownRolePrivilege = true;
-		$authorizer->getBuilder()->addRole('role');
+		$builder = new AuthorizationDataBuilder();
+		$builder->throwOnUnknownRolePrivilege = true;
+		$builder->addRole('role');
 
 		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -719,14 +766,14 @@ Problem: Privilege unknown is unknown.
 Solution: Add privilege to authorizer first via addPrivilege().
 MSG);
 
-		$authorizer->getBuilder()->allow('role', 'unknown');
+		$builder->allow('role', 'unknown');
 	}
 
 	public function testDenyChecksPrivilege(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
-		$authorizer->getBuilder()->throwOnUnknownRolePrivilege = true;
-		$authorizer->getBuilder()->addRole('role');
+		$builder = new AuthorizationDataBuilder();
+		$builder->throwOnUnknownRolePrivilege = true;
+		$builder->addRole('role');
 
 		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -736,18 +783,18 @@ Problem: Privilege unknown is unknown.
 Solution: Add privilege to authorizer first via addPrivilege().
 MSG);
 
-		$authorizer->getBuilder()->deny('role', 'unknown');
+		$builder->deny('role', 'unknown');
 	}
 
 	public function testAssigningUnknownRolePrivilegeDoesNotFailByDefault(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
-		$authorizer->getBuilder()->addRole('role');
+		$builder = new AuthorizationDataBuilder();
+		$builder->addRole('role');
 
 		$exception = null;
 		try {
-			$authorizer->getBuilder()->allow('role', 'unknown');
-			$authorizer->getBuilder()->deny('role', 'unknown');
+			$builder->allow('role', 'unknown');
+			$builder->deny('role', 'unknown');
 		} catch (Throwable $exception) {
 			// Handled below
 		}
@@ -757,9 +804,10 @@ MSG);
 
 	public function testIsAllowedWithPrivilegeChecksPrivilege(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
-		$authorizer->getBuilder()->addRole('role');
+		$builder = new AuthorizationDataBuilder();
+		$builder->addRole('role');
 
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['role']);
 
 		$this->expectException(UnknownPrivilege::class);
@@ -778,7 +826,9 @@ MSG);
 		$policyManager = $this->policies();
 		$policyManager->add(new ArticleEditPolicy());
 
-		$authorizer = new PrivilegeAuthorizer($policyManager);
+		$builder = new AuthorizationDataBuilder();
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
 		$this->expectException(UnknownPrivilege::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -793,9 +843,10 @@ MSG);
 
 	public function testHasPrivilegeChecksPrivilege(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
-		$authorizer->getBuilder()->addRole('role');
+		$builder = new AuthorizationDataBuilder();
+		$builder->addRole('role');
 
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['role']);
 
 		$this->expectException(UnknownPrivilege::class);
@@ -811,7 +862,9 @@ MSG);
 
 	public function testIsAllowedWithoutPolicyForbidsRequirements(): void
 	{
-		$authorizer = new PrivilegeAuthorizer($this->policies());
+		$builder = new AuthorizationDataBuilder();
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -831,8 +884,10 @@ MSG);
 		$policyManager = $this->policies();
 		$policyManager->add(new ArticleEditPolicy());
 
-		$authorizer = new PrivilegeAuthorizer($policyManager);
-		$authorizer->getBuilder()->addPrivilege(ArticleEditPolicy::getPrivilege());
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(ArticleEditPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -852,8 +907,10 @@ MSG);
 		$policyManager = $this->policies();
 		$policyManager->add(new NoRequirementsPolicy());
 
-		$authorizer = new PrivilegeAuthorizer($policyManager);
-		$authorizer->getBuilder()->addPrivilege(NoRequirementsPolicy::getPrivilege());
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
 		self::assertFalse($authorizer->isAllowed(new IntIdentity(1, []), NoRequirementsPolicy::getPrivilege(), null));
 		self::assertFalse(
@@ -866,8 +923,10 @@ MSG);
 		$policyManager = $this->policies();
 		$policyManager->add(new NullableRequirementsPolicy());
 
-		$authorizer = new PrivilegeAuthorizer($policyManager);
-		$authorizer->getBuilder()->addPrivilege(NullableRequirementsPolicy::getPrivilege());
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(NullableRequirementsPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
 		self::assertFalse(
 			$authorizer->isAllowed(new IntIdentity(1, []), NullableRequirementsPolicy::getPrivilege(), null),
@@ -879,8 +938,10 @@ MSG);
 		$policyManager = $this->policies();
 		$policyManager->add(new ArticleEditPolicy());
 
-		$authorizer = new PrivilegeAuthorizer($policyManager);
-		$authorizer->getBuilder()->addPrivilege(ArticleEditPolicy::getPrivilege());
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(ArticleEditPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -903,20 +964,22 @@ MSG);
 		$policyManager->add(new ArticleEditOwnedPolicy());
 		$policyManager->add(new NeverPassPolicy());
 
-		$authorizer = new PrivilegeAuthorizer($policyManager);
+		$builder = new AuthorizationDataBuilder();
 
-		$authorizer->getBuilder()->addPrivilege('article.edit.all');
-		$authorizer->getBuilder()->addPrivilege('article.edit.owned');
-		$authorizer->getBuilder()->addPrivilege('article.view');
-		$authorizer->getBuilder()->addPrivilege(NeverPassPolicy::getPrivilege());
+		$builder->addPrivilege('article.edit.all');
+		$builder->addPrivilege('article.edit.owned');
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege(NeverPassPolicy::getPrivilege());
 
-		$authorizer->getBuilder()->addRole('owner');
-		$authorizer->getBuilder()->addRole('editor');
-		$authorizer->getBuilder()->addRole('supervisor');
+		$builder->addRole('owner');
+		$builder->addRole('editor');
+		$builder->addRole('supervisor');
 
-		$authorizer->getBuilder()->allow('editor', 'article.edit.all');
-		$authorizer->getBuilder()->allow('owner', 'article.edit.owned');
-		$authorizer->getBuilder()->allow('supervisor', Authorizer::ALL_PRIVILEGES);
+		$builder->allow('editor', 'article.edit.all');
+		$builder->allow('owner', 'article.edit.owned');
+		$builder->allow('supervisor', Authorizer::ALL_PRIVILEGES);
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
 		$user1 = new User(1);
 		$article1 = new Article($user1);

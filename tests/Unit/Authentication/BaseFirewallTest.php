@@ -9,6 +9,7 @@ use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
@@ -30,10 +31,16 @@ final class BaseFirewallTest extends TestCase
 		return new AlwaysPassIdentityRenewer();
 	}
 
-	private function authorizer(?PolicyManager $policyManager = null): PrivilegeAuthorizer
+	private function authorizer(
+		?PolicyManager $policyManager = null,
+		?AuthorizationDataBuilder $builder = null
+	): PrivilegeAuthorizer
 	{
+		$builder ??= new AuthorizationDataBuilder();
+
 		return new PrivilegeAuthorizer(
 			$policyManager ?? $this->policies(),
+			$builder->build(),
 		);
 	}
 
@@ -615,16 +622,18 @@ MSG);
 
 	public function testIsAllowed(): void
 	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('admin');
+		$builder->addPrivilege('front');
+
+		$builder->addRole('guest');
+
+		$builder->allow('guest', 'front');
+
 		$storage = new ArrayLoginStorage();
-		$authorizer = $this->authorizer();
+		$authorizer = $this->authorizer(null, $builder);
 		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
-
-		$authorizer->getBuilder()->addPrivilege('admin');
-		$authorizer->getBuilder()->addPrivilege('front');
-
-		$authorizer->getBuilder()->addRole('guest');
-
-		$authorizer->getBuilder()->allow('guest', 'front');
 
 		self::assertFalse($firewall->isAllowed('front'));
 		self::assertFalse($firewall->hasPrivilege('front'));
