@@ -40,7 +40,7 @@ final class Arrays
 	 * @param non-empty-array<string> $keys
 	 * @return array<mixed>|null
 	 */
-	public static function getKey(array &$array, array $keys): ?array
+	public static function getKey(array $array, array $keys): ?array
 	{
 		$currentKey = array_shift($keys);
 
