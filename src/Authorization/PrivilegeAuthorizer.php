@@ -3,17 +3,15 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use Orisai\Exceptions\Message;
 use ReflectionClass;
 use function array_key_exists;
 use function array_keys;
-use function array_merge;
-use function array_shift;
 use function get_class;
 use function is_a;
-use function is_array;
 
 class PrivilegeAuthorizer implements Authorizer
 {
@@ -65,7 +63,7 @@ class PrivilegeAuthorizer implements Authorizer
 	 */
 	public function getPrivileges(): array
 	{
-		return $this->keysToStrings($this->privileges);
+		return Arrays::keysToStrings($this->privileges);
 	}
 
 	public function addPrivilege(string $privilege): void
@@ -74,7 +72,7 @@ class PrivilegeAuthorizer implements Authorizer
 
 		$privilegesCurrent = &$this->privileges;
 
-		$this->addKeyValue($privilegesCurrent, $privilegeParts, []);
+		Arrays::addKeyValue($privilegesCurrent, $privilegeParts, []);
 	}
 
 	public function privilegeExists(string $privilege): bool
@@ -83,7 +81,7 @@ class PrivilegeAuthorizer implements Authorizer
 			return true;
 		}
 
-		$privilegeValue = $this->getKey($this->privileges, PrivilegeProcessor::parsePrivilege($privilege));
+		$privilegeValue = Arrays::getKey($this->privileges, PrivilegeProcessor::parsePrivilege($privilege));
 
 		return $privilegeValue !== null;
 	}
@@ -95,7 +93,7 @@ class PrivilegeAuthorizer implements Authorizer
 	{
 		$privileges = $this->rolePrivileges[$role] ?? [];
 
-		return $this->keysToStrings($privileges);
+		return Arrays::keysToStrings($privileges);
 	}
 
 	public function allow(string $role, string $privilege): void
@@ -121,7 +119,7 @@ class PrivilegeAuthorizer implements Authorizer
 
 		$rolePrivilegesCurrent = &$this->rolePrivileges[$role];
 
-		$this->addKeyValue($rolePrivilegesCurrent, $privilegeParts, $privilegeValue);
+		Arrays::addKeyValue($rolePrivilegesCurrent, $privilegeParts, $privilegeValue);
 	}
 
 	public function deny(string $role, string $privilege): void
@@ -145,7 +143,7 @@ class PrivilegeAuthorizer implements Authorizer
 			return;
 		}
 
-		$this->removeKey($this->rolePrivileges[$role], $privilegeParts);
+		Arrays::removeKey($this->rolePrivileges[$role], $privilegeParts);
 	}
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool
@@ -263,9 +261,9 @@ class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
-	 * @param array<mixed> $requiredPrivileges
-	 * @param array<mixed> $rolePrivileges
-	 * @param array<string> $privilegeParts
+	 * @param array<mixed>            $requiredPrivileges
+	 * @param array<mixed>            $rolePrivileges
+	 * @param non-empty-array<string> $privilegeParts
 	 */
 	private function isAllowedByRole(
 		array &$requiredPrivileges,
@@ -276,19 +274,19 @@ class PrivilegeAuthorizer implements Authorizer
 	{
 		$matchingRolePrivileges = $privilege === self::ALL_PRIVILEGES
 			? $rolePrivileges
-			: $this->getKey($rolePrivileges, $privilegeParts);
+			: Arrays::getKey($rolePrivileges, $privilegeParts);
 
 		if ($matchingRolePrivileges === null) {
 			return false;
 		}
 
-		$this->removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingRolePrivileges);
+		Arrays::removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingRolePrivileges);
 
 		return $requiredPrivileges === [];
 	}
 
 	/**
-	 * @param array<string> $privilegeParts
+	 * @param non-empty-array<string> $privilegeParts
 	 * @return array<mixed>|null
 	 */
 	private function getPrivilege(string $privilege, array $privilegeParts): ?array
@@ -297,7 +295,7 @@ class PrivilegeAuthorizer implements Authorizer
 			return $this->privileges;
 		}
 
-		return $this->getKey($this->privileges, $privilegeParts);
+		return Arrays::getKey($this->privileges, $privilegeParts);
 	}
 
 	/**
@@ -315,113 +313,6 @@ class PrivilegeAuthorizer implements Authorizer
 
 		throw InvalidState::create()
 			->withMessage($message);
-	}
-
-	/**
-	 * @param array<mixed>  $array
-	 * @param array<string> $keys
-	 * @param array<mixed>  $value
-	 */
-	private function addKeyValue(array &$array, array $keys, array $value): void
-	{
-		$currentKey = array_shift($keys);
-
-		if (!array_key_exists($currentKey, $array)) {
-			$array[$currentKey] = [];
-		}
-
-		if ($keys !== []) {
-			$this->addKeyValue($array[$currentKey], $keys, $value);
-
-			return;
-		}
-
-		$array[$currentKey] = array_merge($value, $array[$currentKey]);
-	}
-
-	/**
-	 * @param array<mixed>  $array
-	 * @param array<string> $keys
-	 * @return array<mixed>|null
-	 */
-	private function getKey(array &$array, array $keys): ?array
-	{
-		$currentKey = array_shift($keys);
-
-		if (!array_key_exists($currentKey, $array)) {
-			return null;
-		}
-
-		if ($keys !== []) {
-			return $this->getKey($array[$currentKey], $keys);
-		}
-
-		return $array[$currentKey];
-	}
-
-	/**
-	 * @param array<mixed>  $array
-	 * @param array<string> $keys
-	 */
-	private function removeKey(array &$array, array $keys): void
-	{
-		$currentKey = array_shift($keys);
-
-		// Key was already removed
-		if (!array_key_exists($currentKey, $array)) {
-			return;
-		}
-
-		// Remove recursively if there are more keys left
-		if ($keys !== []) {
-			$this->removeKey($array[$currentKey], $keys);
-
-			return;
-		}
-
-		unset($array[$currentKey]);
-	}
-
-	/**
-	 * @param array<mixed> $first
-	 * @param array<mixed> $second
-	 */
-	private function removeMatchingPartsFromFromFirstArray(array &$first, array $second): void
-	{
-		foreach ($second as $key => $value) {
-			if (!array_key_exists($key, $first)) {
-				continue;
-			}
-
-			if (is_array($value) && $value !== [] && is_array($first[$key]) && $first[$key] !== []) {
-				$this->removeMatchingPartsFromFromFirstArray($first[$key], $value);
-			}
-
-			if ($value === $first[$key] || ($first[$key] === [] && is_array($value))) {
-				unset($first[$key]);
-			}
-		}
-	}
-
-	/**
-	 * @param array<mixed> $array
-	 * @return array<string>
-	 */
-	private function keysToStrings(array $array, ?string $baseKey = null): array
-	{
-		$stringsByKey = [];
-
-		foreach ($array as $key => $value) {
-			$compositeKey = $baseKey !== null
-				? "$baseKey.$key"
-				: $key;
-
-			$stringsByKey[] = is_array($value) && $value !== []
-				? $this->keysToStrings($value, $compositeKey)
-				: [$compositeKey];
-		}
-
-		return array_merge(...$stringsByKey);
 	}
 
 }
