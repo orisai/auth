@@ -27,7 +27,7 @@ class PrivilegeAuthorizer implements Authorizer
 	protected array $privileges = [];
 
 	/** @var array<string, array<mixed>> */
-	protected array $rolePrivileges = [];
+	protected array $roleAllowedPrivileges = [];
 
 	public function __construct(PolicyManager $policyManager)
 	{
@@ -45,7 +45,7 @@ class PrivilegeAuthorizer implements Authorizer
 	public function addRole(string $role): void
 	{
 		$this->roles[$role] = null;
-		$this->rolePrivileges[$role] ??= [];
+		$this->roleAllowedPrivileges[$role] ??= [];
 	}
 
 	private function checkRole(string $role): void
@@ -89,9 +89,9 @@ class PrivilegeAuthorizer implements Authorizer
 	/**
 	 * @return array<string>
 	 */
-	public function getRolePrivileges(string $role): array
+	public function getAllowedPrivilegesForRole(string $role): array
 	{
-		$privileges = $this->rolePrivileges[$role] ?? [];
+		$privileges = $this->roleAllowedPrivileges[$role] ?? [];
 
 		return Arrays::keysToStrings($privileges);
 	}
@@ -101,7 +101,7 @@ class PrivilegeAuthorizer implements Authorizer
 		$this->checkRole($role);
 
 		if ($privilege === self::ALL_PRIVILEGES) {
-			$this->rolePrivileges[$role] = $this->privileges;
+			$this->roleAllowedPrivileges[$role] = $this->privileges;
 
 			return;
 		}
@@ -117,7 +117,7 @@ class PrivilegeAuthorizer implements Authorizer
 			return;
 		}
 
-		$rolePrivilegesCurrent = &$this->rolePrivileges[$role];
+		$rolePrivilegesCurrent = &$this->roleAllowedPrivileges[$role];
 
 		Arrays::addKeyValue($rolePrivilegesCurrent, $privilegeParts, $privilegeValue);
 	}
@@ -127,7 +127,7 @@ class PrivilegeAuthorizer implements Authorizer
 		$this->checkRole($role);
 
 		if ($privilege === self::ALL_PRIVILEGES) {
-			$this->rolePrivileges[$role] = [];
+			$this->roleAllowedPrivileges[$role] = [];
 
 			return;
 		}
@@ -143,7 +143,7 @@ class PrivilegeAuthorizer implements Authorizer
 			return;
 		}
 
-		Arrays::removeKey($this->rolePrivileges[$role], $privilegeParts);
+		Arrays::removeKey($this->roleAllowedPrivileges[$role], $privilegeParts);
 	}
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool
@@ -161,11 +161,11 @@ class PrivilegeAuthorizer implements Authorizer
 		}
 
 		foreach ($identity->getRoles() as $role) {
-			if (!array_key_exists($role, $this->rolePrivileges)) {
+			if (!array_key_exists($role, $this->roleAllowedPrivileges)) {
 				continue;
 			}
 
-			$rolePrivileges = &$this->rolePrivileges[$role];
+			$rolePrivileges = &$this->roleAllowedPrivileges[$role];
 
 			if ($this->isAllowedByRole($requiredPrivileges, $rolePrivileges, $privilege, $privilegeParts)) {
 				return true;
