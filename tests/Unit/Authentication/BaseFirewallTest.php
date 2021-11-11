@@ -619,12 +619,12 @@ MSG);
 		$authorizer = $this->authorizer();
 		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
 
-		$authorizer->addPrivilege('admin');
-		$authorizer->addPrivilege('front');
+		$authorizer->getBuilder()->addPrivilege('admin');
+		$authorizer->getBuilder()->addPrivilege('front');
 
-		$authorizer->addRole('guest');
+		$authorizer->getBuilder()->addRole('guest');
 
-		$authorizer->allow('guest', 'front');
+		$authorizer->getBuilder()->allow('guest', 'front');
 
 		self::assertFalse($firewall->isAllowed('front'));
 		self::assertFalse($firewall->hasPrivilege('front'));

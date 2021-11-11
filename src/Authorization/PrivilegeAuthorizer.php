@@ -18,14 +18,17 @@ class PrivilegeAuthorizer implements Authorizer
 
 	private PolicyManager $policyManager;
 
-	public bool $throwOnUnknownRolePrivilege = false;
-
 	protected AuthorizationDataBuilder $builder;
 
 	public function __construct(PolicyManager $policyManager)
 	{
 		$this->policyManager = $policyManager;
 		$this->builder = new AuthorizationDataBuilder($this);
+	}
+
+	public function getBuilder(): AuthorizationDataBuilder
+	{
+		return $this->builder;
 	}
 
 	/**
@@ -38,11 +41,6 @@ class PrivilegeAuthorizer implements Authorizer
 		return array_keys($roles);
 	}
 
-	public function addRole(string $role): void
-	{
-		$this->builder->addRole($role);
-	}
-
 	/**
 	 * @return array<string>
 	 */
@@ -51,11 +49,6 @@ class PrivilegeAuthorizer implements Authorizer
 		$privileges = $this->builder->build()->getPrivileges();
 
 		return Arrays::keysToStrings($privileges);
-	}
-
-	public function addPrivilege(string $privilege): void
-	{
-		$this->builder->addPrivilege($privilege);
 	}
 
 	public function privilegeExists(string $privilege): bool
@@ -80,16 +73,6 @@ class PrivilegeAuthorizer implements Authorizer
 		$privileges = $roleAllowedPrivileges[$role] ?? [];
 
 		return Arrays::keysToStrings($privileges);
-	}
-
-	public function allow(string $role, string $privilege): void
-	{
-		$this->builder->allow($role, $privilege);
-	}
-
-	public function deny(string $role, string $privilege): void
-	{
-		$this->builder->deny($role, $privilege);
 	}
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool
