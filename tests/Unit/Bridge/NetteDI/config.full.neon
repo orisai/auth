@@ -20,13 +20,17 @@ services:
 				article.edit.owned: policy.article.edit.owned
 
 	# front firewall
+	auth.front.dataBuilder:
+		factory: Orisai\Auth\Authorization\AuthorizationDataBuilder
+		setup:
+			- addRole(editor)
+			- addPrivilege(article.edit.all)
+			- addPrivilege(article.edit.owned)
+			- allow(editor, article)
 	auth.front.authorizer:
 		factory: Orisai\Auth\Authorization\PrivilegeAuthorizer
-		setup:
-			- @self::getBuilder()::addRole(editor)
-			- @self::getBuilder()::addPrivilege(article.edit.all)
-			- @self::getBuilder()::addPrivilege(article.edit.owned)
-			- @self::getBuilder()::allow(editor, article)
+		arguments:
+			data: @auth.front.dataBuilder::build()
 	auth.front.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
 	auth.front.firewall:
 		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
@@ -37,7 +41,11 @@ services:
 			namespace: front
 
 	# admin firewall
-	auth.admin.authorizer: Orisai\Auth\Authorization\PrivilegeAuthorizer
+	auth.admin.dataBuilder: Orisai\Auth\Authorization\AuthorizationDataBuilder
+	auth.admin.authorizer:
+		factory: Orisai\Auth\Authorization\PrivilegeAuthorizer
+		arguments:
+			data: @auth.admin.dataBuilder::build()
 	auth.admin.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
 	auth.admin.firewall:
 		factory: Tests\Orisai\Auth\Doubles\TestingFirewall
@@ -48,8 +56,9 @@ services:
 			namespace: admin
 
 	# api firewall
+	auth.api.dataBuilder: Orisai\Auth\Authorization\AuthorizationDataBuilder
 	auth.api.authorizerCreator: Tests\Orisai\Auth\Doubles\PrivilegeAuthorizerCreator
-	auth.api.authorizer: @auth.api.authorizerCreator::create()
+	auth.api.authorizer: @auth.api.authorizerCreator::create(builder: @auth.api.dataBuilder)
 	auth.api.renewer: Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer
 	auth.api.firewall:
 		factory: Tests\Orisai\Auth\Doubles\TestingFirewall

@@ -17,17 +17,12 @@ class PrivilegeAuthorizer implements Authorizer
 
 	private PolicyManager $policyManager;
 
-	protected AuthorizationDataBuilder $builder;
+	protected AuthorizationData $data;
 
-	public function __construct(PolicyManager $policyManager)
+	public function __construct(PolicyManager $policyManager, AuthorizationData $data)
 	{
 		$this->policyManager = $policyManager;
-		$this->builder = new AuthorizationDataBuilder();
-	}
-
-	public function getBuilder(): AuthorizationDataBuilder
-	{
-		return $this->builder;
+		$this->data = $data;
 	}
 
 	/**
@@ -35,9 +30,7 @@ class PrivilegeAuthorizer implements Authorizer
 	 */
 	public function getRoles(): array
 	{
-		$roles = $this->builder->build()->getRoles();
-
-		return array_keys($roles);
+		return array_keys($this->data->getRoles());
 	}
 
 	/**
@@ -45,9 +38,7 @@ class PrivilegeAuthorizer implements Authorizer
 	 */
 	public function getPrivileges(): array
 	{
-		$privileges = $this->builder->build()->getPrivileges();
-
-		return Arrays::keysToStrings($privileges);
+		return Arrays::keysToStrings($this->data->getPrivileges());
 	}
 
 	public function privilegeExists(string $privilege): bool
@@ -56,7 +47,7 @@ class PrivilegeAuthorizer implements Authorizer
 			return true;
 		}
 
-		$privileges = $this->builder->build()->getPrivileges();
+		$privileges = $this->data->getPrivileges();
 		$privilegeValue = Arrays::getKey($privileges, PrivilegeProcessor::parsePrivilege($privilege));
 
 		return $privilegeValue !== null;
@@ -67,8 +58,7 @@ class PrivilegeAuthorizer implements Authorizer
 	 */
 	public function getAllowedPrivilegesForRole(string $role): array
 	{
-		$roleAllowedPrivileges = $this->builder->build()->getRoleAllowedPrivileges();
-
+		$roleAllowedPrivileges = $this->data->getRoleAllowedPrivileges();
 		$privileges = $roleAllowedPrivileges[$role] ?? [];
 
 		return Arrays::keysToStrings($privileges);
@@ -81,7 +71,7 @@ class PrivilegeAuthorizer implements Authorizer
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
-		$privileges = $this->builder->build()->getPrivileges();
+		$privileges = $this->data->getPrivileges();
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$requiredPrivileges = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $privileges);
@@ -90,8 +80,8 @@ class PrivilegeAuthorizer implements Authorizer
 			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
 		}
 
+		$roleAllowedPrivileges = $this->data->getRoleAllowedPrivileges();
 		foreach ($identity->getRoles() as $role) {
-			$roleAllowedPrivileges = $this->builder->build()->getRoleAllowedPrivileges();
 			if (!array_key_exists($role, $roleAllowedPrivileges)) {
 				continue;
 			}
