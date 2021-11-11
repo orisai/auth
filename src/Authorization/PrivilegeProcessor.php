@@ -12,7 +12,7 @@ final class PrivilegeProcessor
 {
 
 	/**
-	 * @return array<string>
+	 * @return non-empty-array<string>
 	 */
 	public static function parsePrivilege(string $privilege): array
 	{
