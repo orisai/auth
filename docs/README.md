@@ -345,30 +345,32 @@ Represent your app permissions with privilege hierarchy
 ```
 
 ```php
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 
 $policyManager = new SimplePolicyManager();
 $authorizer = new PrivilegeAuthorizer($policyManager);
+$builder = new AuthorizationDataBuilder();
 
 // Add roles
-$authorizer->getBuilder()->addRole('editor');
+$builder->addRole('editor');
 
 // Add privileges
 //	- they support hierarchy via dot (e.g article.view is part of article)
-$authorizer->getBuilder()->addPrivilege('article.view');
-$authorizer->getBuilder()->addPrivilege('article.publish');
-$authorizer->getBuilder()->addPrivilege('article.delete');
-$authorizer->getBuilder()->addPrivilege('article.edit.owned');
-$authorizer->getBuilder()->addPrivilege('article.edit.all');
+$builder->addPrivilege('article.view');
+$builder->addPrivilege('article.publish');
+$builder->addPrivilege('article.delete');
+$builder->addPrivilege('article.edit.owned');
+$builder->addPrivilege('article.edit.all');
 
 // Allow role to work with specified privileges
-$authorizer->getBuilder()->allow('editor', $authorizer::ALL_PRIVILEGES); // Everything
-$authorizer->getBuilder()->allow('editor', 'article.edit'); // Everything from article.edit
-$authorizer->getBuilder()->allow('editor', 'article'); // Everything from article
+$builder->allow('editor', $authorizer::ALL_PRIVILEGES); // Everything
+$builder->allow('editor', 'article.edit'); // Everything from article.edit
+$builder->allow('editor', 'article'); // Everything from article
 
 // Deny role to work with privileges (you shouldn't need to do this explicitly, everything is disallowed by default)
-$authorizer->getBuilder()->deny('editor', 'article');
+$builder->deny('editor', 'article');
 
 // Check if user has privilege
 $authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
