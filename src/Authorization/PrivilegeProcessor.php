@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use function explode;
 use function str_contains;
@@ -63,6 +64,20 @@ final class PrivilegeProcessor
 		}
 
 		return $all;
+	}
+
+	/**
+	 * @param array<mixed>            $privileges
+	 * @param non-empty-array<string> $privilegeParts
+	 * @return array<mixed>|null
+	 */
+	public static function getPrivilege(string $privilege, array $privilegeParts, array $privileges): ?array
+	{
+		if ($privilege === Authorizer::ALL_PRIVILEGES) {
+			return $privileges;
+		}
+
+		return Arrays::getKey($privileges, $privilegeParts);
 	}
 
 }
