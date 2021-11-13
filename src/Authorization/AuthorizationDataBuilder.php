@@ -39,50 +39,30 @@ final class AuthorizationDataBuilder
 	{
 		$this->checkRole($role);
 
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			$this->roleAllowedPrivileges[$role] = $this->privileges;
-
-			return;
-		}
-
-		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $this->privileges);
-
-		if ($privilegeValue === null) {
-			if ($this->throwOnUnknownRolePrivilege) {
-				throw UnknownPrivilege::forPrivilege($privilege, self::class, __FUNCTION__);
-			}
-
-			return;
-		}
-
-		$rolePrivilegesCurrent = &$this->roleAllowedPrivileges[$role];
-
-		Arrays::addKeyValue($rolePrivilegesCurrent, $privilegeParts, $privilegeValue);
+		PrivilegeProcessor::allow(
+			$privilege,
+			$role,
+			$this->roleAllowedPrivileges,
+			$this->privileges,
+			$this->throwOnUnknownRolePrivilege,
+			self::class,
+			__FUNCTION__,
+		);
 	}
 
 	public function deny(string $role, string $privilege): void
 	{
 		$this->checkRole($role);
 
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			$this->roleAllowedPrivileges[$role] = [];
-
-			return;
-		}
-
-		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $this->privileges);
-
-		if ($privilegeValue === null) {
-			if ($this->throwOnUnknownRolePrivilege) {
-				throw UnknownPrivilege::forPrivilege($privilege, self::class, __FUNCTION__);
-			}
-
-			return;
-		}
-
-		Arrays::removeKey($this->roleAllowedPrivileges[$role], $privilegeParts);
+		PrivilegeProcessor::deny(
+			$privilege,
+			$role,
+			$this->roleAllowedPrivileges,
+			$this->privileges,
+			$this->throwOnUnknownRolePrivilege,
+			self::class,
+			__FUNCTION__,
+		);
 	}
 
 	private function checkRole(string $role): void
