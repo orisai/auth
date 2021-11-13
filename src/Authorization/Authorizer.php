@@ -9,7 +9,7 @@ interface Authorizer
 
 	public const ALL_PRIVILEGES = '*';
 
-	public function privilegeExists(string $privilege): bool;
+	public function getData(): AuthorizationData;
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 
