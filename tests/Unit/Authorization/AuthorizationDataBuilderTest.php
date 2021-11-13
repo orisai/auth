@@ -4,7 +4,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\UnknownPrivilege;
+use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -350,15 +350,14 @@ final class AuthorizationDataBuilderTest extends TestCase
 		$builder->throwOnUnknownRolePrivilege = true;
 		$builder->addRole('role');
 
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\AuthorizationDataBuilder->allow().
-Problem: Privilege unknown is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
+		$e = null;
+		try {
+			$builder->allow('role', 'unknown');
+		} catch (UnknownPrivilege $e) {
+			self::assertSame($e->getPrivilege(), 'unknown');
+		}
 
-		$builder->allow('role', 'unknown');
+		self::assertNotNull($e);
 	}
 
 	public function testDenyChecksPrivilege(): void
@@ -367,15 +366,14 @@ MSG);
 		$builder->throwOnUnknownRolePrivilege = true;
 		$builder->addRole('role');
 
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\AuthorizationDataBuilder->deny().
-Problem: Privilege unknown is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
+		$e = null;
+		try {
+			$builder->deny('role', 'unknown');
+		} catch (UnknownPrivilege $e) {
+			self::assertSame($e->getPrivilege(), 'unknown');
+		}
 
-		$builder->deny('role', 'unknown');
+		self::assertNotNull($e);
 	}
 
 	public function testAssigningUnknownRolePrivilegeDoesNotFailByDefault(): void

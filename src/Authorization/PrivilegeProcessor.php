@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use function explode;
@@ -107,7 +108,7 @@ final class PrivilegeProcessor
 
 		if ($privilegeValue === null) {
 			if ($throwOnUnknownRolePrivilege) {
-				throw UnknownPrivilege::forPrivilege($privilege, $class, $function);
+				throw UnknownPrivilege::forFunction($privilege, $class, $function);
 			}
 
 			return;
@@ -145,7 +146,7 @@ final class PrivilegeProcessor
 
 		if ($privilegeValue === null) {
 			if ($throwOnUnknownRolePrivilege) {
-				throw UnknownPrivilege::forPrivilege($privilege, $class, $function);
+				throw UnknownPrivilege::forFunction($privilege, $class, $function);
 			}
 
 			return;
