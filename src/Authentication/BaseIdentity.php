@@ -23,4 +23,22 @@ abstract class BaseIdentity implements Identity
 		return in_array($role, $this->roles, true);
 	}
 
+	/**
+	 * @return array<mixed>
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'roles' => $this->roles,
+		];
+	}
+
+	/**
+	 * @param array<mixed> $data
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->roles = $data['roles'];
+	}
+
 }
