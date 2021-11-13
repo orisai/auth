@@ -86,9 +86,9 @@ class PrivilegeAuthorizer implements Authorizer
 				continue;
 			}
 
-			$rolePrivileges = &$roleAllowedPrivileges[$role];
+			$allowedPrivileges = &$roleAllowedPrivileges[$role];
 
-			if ($this->isAllowedByRole($requiredPrivileges, $rolePrivileges, $privilege, $privilegeParts)) {
+			if ($this->isAllowedMatchSubset($requiredPrivileges, $allowedPrivileges, $privilege, $privilegeParts)) {
 				return true;
 			}
 		}
@@ -188,25 +188,25 @@ class PrivilegeAuthorizer implements Authorizer
 
 	/**
 	 * @param array<mixed>            $requiredPrivileges
-	 * @param array<mixed>            $rolePrivileges
+	 * @param array<mixed>            $allowedPrivileges
 	 * @param non-empty-array<string> $privilegeParts
 	 */
-	private function isAllowedByRole(
+	private function isAllowedMatchSubset(
 		array &$requiredPrivileges,
-		array $rolePrivileges,
+		array $allowedPrivileges,
 		string $privilege,
 		array $privilegeParts
 	): bool
 	{
-		$matchingRolePrivileges = $privilege === self::ALL_PRIVILEGES
-			? $rolePrivileges
-			: Arrays::getKey($rolePrivileges, $privilegeParts);
+		$matchingAllowedPrivileges = $privilege === self::ALL_PRIVILEGES
+			? $allowedPrivileges
+			: Arrays::getKey($allowedPrivileges, $privilegeParts);
 
-		if ($matchingRolePrivileges === null) {
+		if ($matchingAllowedPrivileges === null) {
 			return false;
 		}
 
-		Arrays::removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingRolePrivileges);
+		Arrays::removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingAllowedPrivileges);
 
 		return $requiredPrivileges === [];
 	}
