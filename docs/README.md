@@ -349,8 +349,7 @@ use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 
-$policyManager = new SimplePolicyManager();
-$authorizer = new PrivilegeAuthorizer($policyManager);
+// Create data builder
 $builder = new AuthorizationDataBuilder();
 
 // Add roles
@@ -372,12 +371,19 @@ $builder->allow('editor', 'article'); // Everything from article
 // Deny role to work with privileges (you shouldn't need to do this explicitly, everything is disallowed by default)
 $builder->deny('editor', 'article');
 
+// Create data object
+$data = $builder->build();
+
+// Create authorizer
+$policyManager = new SimplePolicyManager();
+$authorizer = new PrivilegeAuthorizer($policyManager, $data);
+
 // Check if user has privilege
 $authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
 $firewall->isAllowed('article'); // shortcut to $authorizer->isAllowed(), but also checks whether user is logged in
 
 // Check privilege is registered
-$authorizer->privilegeExists('article'); // bool
+$data->privilegeExists('article'); // bool
 ```
 
 ## Policies

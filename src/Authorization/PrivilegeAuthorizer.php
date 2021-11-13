@@ -8,7 +8,6 @@ use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 use ReflectionClass;
 use function array_key_exists;
-use function array_keys;
 use function get_class;
 use function is_a;
 
@@ -25,43 +24,9 @@ class PrivilegeAuthorizer implements Authorizer
 		$this->data = $data;
 	}
 
-	/**
-	 * @return array<string>
-	 */
-	public function getRoles(): array
+	public function getData(): AuthorizationData
 	{
-		return array_keys($this->data->getRoles());
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	public function getPrivileges(): array
-	{
-		return Arrays::keysToStrings($this->data->getPrivileges());
-	}
-
-	public function privilegeExists(string $privilege): bool
-	{
-		if ($privilege === self::ALL_PRIVILEGES) {
-			return true;
-		}
-
-		$privileges = $this->data->getPrivileges();
-		$privilegeValue = Arrays::getKey($privileges, PrivilegeProcessor::parsePrivilege($privilege));
-
-		return $privilegeValue !== null;
-	}
-
-	/**
-	 * @return array<string>
-	 */
-	public function getAllowedPrivilegesForRole(string $role): array
-	{
-		$roleAllowedPrivileges = $this->data->getRoleAllowedPrivileges();
-		$privileges = $roleAllowedPrivileges[$role] ?? [];
-
-		return Arrays::keysToStrings($privileges);
+		return $this->data;
 	}
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool
@@ -71,7 +36,7 @@ class PrivilegeAuthorizer implements Authorizer
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
-		$privileges = $this->data->getPrivileges();
+		$privileges = $this->data->getRawPrivileges();
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$requiredPrivileges = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $privileges);
@@ -80,7 +45,7 @@ class PrivilegeAuthorizer implements Authorizer
 			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
 		}
 
-		$roleAllowedPrivileges = $this->data->getRoleAllowedPrivileges();
+		$roleAllowedPrivileges = $this->data->getRawRoleAllowedPrivileges();
 		foreach ($identity->getRoles() as $role) {
 			if (!array_key_exists($role, $roleAllowedPrivileges)) {
 				continue;
@@ -140,7 +105,7 @@ class PrivilegeAuthorizer implements Authorizer
 	): bool
 	{
 		$privilege = $policy::getPrivilege();
-		if (!$this->privilegeExists($privilege)) {
+		if (!$this->data->privilegeExists($privilege)) {
 			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
 		}
 
