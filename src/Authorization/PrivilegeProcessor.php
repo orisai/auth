@@ -80,4 +80,78 @@ final class PrivilegeProcessor
 		return Arrays::getKey($privileges, $privilegeParts);
 	}
 
+	/**
+	 * @param int|string                      $allowedKey
+	 * @param array<int|string, array<mixed>> $allowed
+	 * @param array<mixed>                    $allPrivileges
+	 * @param class-string                    $class
+	 */
+	public static function allow(
+		string $privilege,
+		$allowedKey,
+		array &$allowed,
+		array $allPrivileges,
+		bool $throwOnUnknownRolePrivilege,
+		string $class,
+		string $function
+	): void
+	{
+		if ($privilege === Authorizer::ALL_PRIVILEGES) {
+			$allowed[$allowedKey] = $allPrivileges;
+
+			return;
+		}
+
+		$privilegeParts = self::parsePrivilege($privilege);
+		$privilegeValue = self::getPrivilege($privilege, $privilegeParts, $allPrivileges);
+
+		if ($privilegeValue === null) {
+			if ($throwOnUnknownRolePrivilege) {
+				throw UnknownPrivilege::forPrivilege($privilege, $class, $function);
+			}
+
+			return;
+		}
+
+		$rolePrivilegesCurrent = &$allowed[$allowedKey];
+
+		Arrays::addKeyValue($rolePrivilegesCurrent, $privilegeParts, $privilegeValue);
+	}
+
+	/**
+	 * @param int|string                      $deniedKey
+	 * @param array<int|string, array<mixed>> $denied
+	 * @param array<mixed>                    $allPrivileges
+	 * @param class-string                    $class
+	 */
+	public static function deny(
+		string $privilege,
+		$deniedKey,
+		array &$denied,
+		array $allPrivileges,
+		bool $throwOnUnknownRolePrivilege,
+		string $class,
+		string $function
+	): void
+	{
+		if ($privilege === Authorizer::ALL_PRIVILEGES) {
+			$denied[$deniedKey] = [];
+
+			return;
+		}
+
+		$privilegeParts = self::parsePrivilege($privilege);
+		$privilegeValue = self::getPrivilege($privilege, $privilegeParts, $allPrivileges);
+
+		if ($privilegeValue === null) {
+			if ($throwOnUnknownRolePrivilege) {
+				throw UnknownPrivilege::forPrivilege($privilege, $class, $function);
+			}
+
+			return;
+		}
+
+		Arrays::removeKey($denied[$deniedKey], $privilegeParts);
+	}
+
 }
