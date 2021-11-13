@@ -3,6 +3,7 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
@@ -42,7 +43,7 @@ class PrivilegeAuthorizer implements Authorizer
 		$requiredPrivileges = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $privileges);
 
 		if ($requiredPrivileges === null) {
-			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
+			throw UnknownPrivilege::forFunction($privilege, static::class, $function);
 		}
 
 		$roleAllowedPrivileges = $this->data->getRawRoleAllowedPrivileges();
@@ -106,7 +107,7 @@ class PrivilegeAuthorizer implements Authorizer
 	{
 		$privilege = $policy::getPrivilege();
 		if (!$this->data->privilegeExists($privilege)) {
-			throw UnknownPrivilege::forPrivilege($privilege, static::class, $function);
+			throw UnknownPrivilege::forFunction($privilege, static::class, $function);
 		}
 
 		$requirementsClass = $policy::getRequirementsClass();

@@ -5,10 +5,10 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
-use Orisai\Auth\Authorization\UnknownPrivilege;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -431,15 +431,14 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['role']);
 
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
-Problem: Privilege unknown is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
+		$e = null;
+		try {
+			$authorizer->isAllowed($identity, 'unknown');
+		} catch (UnknownPrivilege $e) {
+			self::assertSame($e->getPrivilege(), 'unknown');
+		}
 
-		$authorizer->isAllowed($identity, 'unknown');
+		self::assertNotNull($e);
 	}
 
 	public function testIsAllowedWithPolicyChecksPrivilege(): void
@@ -451,15 +450,14 @@ MSG);
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
-Problem: Privilege article.edit is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
+		$e = null;
+		try {
+			$authorizer->isAllowed(new IntIdentity(1, []), ArticleEditPolicy::getPrivilege());
+		} catch (UnknownPrivilege $e) {
+			self::assertSame($e->getPrivilege(), ArticleEditPolicy::getPrivilege());
+		}
 
-		$authorizer->isAllowed(new IntIdentity(1, []), ArticleEditPolicy::getPrivilege());
+		self::assertNotNull($e);
 	}
 
 	public function testHasPrivilegeChecksPrivilege(): void
@@ -470,15 +468,14 @@ MSG);
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['role']);
 
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\PrivilegeAuthorizer->hasPrivilege().
-Problem: Privilege unknown is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
+		$e = null;
+		try {
+			$authorizer->hasPrivilege($identity, 'unknown');
+		} catch (UnknownPrivilege $e) {
+			self::assertSame($e->getPrivilege(), 'unknown');
+		}
 
-		$authorizer->hasPrivilege($identity, 'unknown');
+		self::assertNotNull($e);
 	}
 
 	public function testIsAllowedWithoutPolicyForbidsRequirements(): void
