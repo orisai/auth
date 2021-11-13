@@ -13,14 +13,9 @@ final class SimplePolicyManager implements PolicyManager
 		return $this->policies[$privilege] ?? null;
 	}
 
-	/**
-	 * @return $this
-	 */
-	public function add(Policy $policy): self
+	public function add(Policy $policy): void
 	{
 		$this->policies[$policy::getPrivilege()] = $policy;
-
-		return $this;
 	}
 
 }
