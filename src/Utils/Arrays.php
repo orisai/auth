@@ -101,7 +101,7 @@ final class Arrays
 
 	/**
 	 * @param array<mixed> $array
-	 * @return array<string>
+	 * @return array<int, string>
 	 */
 	public static function keysToStrings(array $array, ?string $baseKey = null): array
 	{

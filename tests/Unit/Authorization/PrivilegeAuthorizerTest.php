@@ -10,7 +10,6 @@ use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Auth\Authorization\UnknownPrivilege;
 use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Tests\Orisai\Auth\Doubles\Article;
@@ -19,9 +18,7 @@ use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\NullableRequirementsPolicy;
-use Tests\Orisai\Auth\Doubles\TestingPrivilegeAuthorizer;
 use Tests\Orisai\Auth\Doubles\User;
-use Throwable;
 
 final class PrivilegeAuthorizerTest extends TestCase
 {
@@ -31,315 +28,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 		return new SimplePolicyManager();
 	}
 
-	public function testPrivilegesData(): void
+	public function testGetData(): void
 	{
 		$builder = new AuthorizationDataBuilder();
+		$data = $builder->build();
 
-		$builder->addPrivilege('article');
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit.owned');
-		$builder->addPrivilege('article.edit.all');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('account.create');
-
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-
-		self::assertSame(
-			[
-				'article' => [
-					'view' => [],
-					'edit' => [
-						'owned' => [],
-						'all' => [],
-					],
-				],
-				'account' => [
-					'create' => [],
-				],
-			],
-			$authorizer->getDebugPrivileges(),
-		);
-
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit.owned',
-				'article.edit.all',
-				'account.create',
-			],
-			$authorizer->getPrivileges(),
-		);
-	}
-
-	public function testHasPrivilege(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
-
-		self::assertTrue($authorizer->privilegeExists($authorizer::ALL_PRIVILEGES));
-		self::assertFalse($authorizer->privilegeExists('article'));
-		self::assertFalse($authorizer->privilegeExists('article.edit'));
-		self::assertFalse($authorizer->privilegeExists('article.edit.all'));
-
-		$builder->addPrivilege('article');
-		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertTrue($authorizer->privilegeExists('article'));
-		self::assertFalse($authorizer->privilegeExists('article.edit'));
-		self::assertFalse($authorizer->privilegeExists('article.edit.all'));
-
-		$builder->addPrivilege('article.edit.all');
-		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertTrue($authorizer->privilegeExists('article'));
-		self::assertTrue($authorizer->privilegeExists('article.edit'));
-		self::assertTrue($authorizer->privilegeExists('article.edit.all'));
-
-		self::assertTrue($authorizer->privilegeExists($authorizer::ALL_PRIVILEGES));
-	}
-
-	public function testRolesData(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addRole('supervisor');
-		$builder->addRole('admin');
-		$builder->addRole('guest');
-		$builder->addRole('supervisor');
-		$builder->addRole('guest');
-
-		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
-
-		self::assertSame(
-			[
-				'supervisor',
-				'admin',
-				'guest',
-			],
-			$authorizer->getRoles(),
-		);
-	}
-
-	public function testRolePrivilegesData(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('article.delete');
-		$builder->addPrivilege('something');
-
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		$role = 'editor';
-
-		self::assertSame(
-			[],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-
-		$builder->addRole($role);
-		$builder->addRole('another-role');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-
-		self::assertSame(
-			[
-				'editor' => [],
-				'another-role' => [],
-			],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-
-		$builder->allow($role, 'article.view');
-		$builder->allow($role, 'article.edit');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
-				],
-				'another-role' => [],
-			],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit',
-			],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-
-		$builder->allow($role, 'something');
-		$builder->allow('another-role', 'something');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
-					'something' => [],
-				],
-				'another-role' => [
-					'something' => [],
-				],
-			],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit',
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-
-		$builder->deny($role, 'article.edit');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-					],
-					'something' => [],
-				],
-				'another-role' => [
-					'something' => [],
-				],
-			],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-
-		$builder->allow($role, 'article');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-						'delete' => [],
-					],
-					'something' => [],
-				],
-				'another-role' => [
-					'something' => [],
-				],
-			],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit',
-				'article.delete',
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-
-		$builder->deny($role, 'article');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertSame(
-			[
-				'editor' => [
-					'something' => [],
-				],
-				'another-role' => [
-					'something' => [],
-				],
-			],
-			$authorizer->getDebugRolePrivileges(),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$authorizer->getAllowedPrivilegesForRole('another-role'),
-		);
-	}
-
-	public function testRolesPrivilegesNotOverridden(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addRole('role');
-		$builder->addPrivilege('privilege');
-		$builder->allow('role', 'privilege');
-
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-
-		$rolePrivilegesData = $authorizer->getDebugRolePrivileges();
-		self::assertSame(
-			[
-				'role' => [
-					'privilege' => [],
-				],
-			],
-			$rolePrivilegesData,
-		);
-
-		$builder->addRole('role');
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
-		self::assertSame(
-			$rolePrivilegesData,
-			$authorizer->getDebugRolePrivileges(),
-		);
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
+		self::assertSame($data, $authorizer->getData());
 	}
 
 	public function testNothingSet(): void
@@ -481,7 +176,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$builder->allow('editor-in-chief', 'article.publish');
 		$builder->allow('editor-in-chief', 'article.delete');
 
-		$authorizer = new TestingPrivilegeAuthorizer($this->policies(), $builder->build());
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['editor', 'editor-in-chief']);
 
 		// requires privileges from one of roles
@@ -726,80 +421,6 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$identity = new IntIdentity(1, ['unknown', 'known']);
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something'));
-	}
-
-	public function testAllowChecksRole(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$this->expectException(InvalidState::class);
-		$this->expectExceptionMessage(
-			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
-		);
-
-		$builder->allow('role', 'article');
-	}
-
-	public function testDenyChecksRole(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$this->expectException(InvalidState::class);
-		$this->expectExceptionMessage(
-			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
-		);
-
-		$builder->deny('role', 'article');
-	}
-
-	public function testAllowChecksPrivilege(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownRolePrivilege = true;
-		$builder->addRole('role');
-
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\AuthorizationDataBuilder->allow().
-Problem: Privilege unknown is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
-
-		$builder->allow('role', 'unknown');
-	}
-
-	public function testDenyChecksPrivilege(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownRolePrivilege = true;
-		$builder->addRole('role');
-
-		$this->expectException(UnknownPrivilege::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to call
-         Orisai\Auth\Authorization\AuthorizationDataBuilder->deny().
-Problem: Privilege unknown is unknown.
-Solution: Add privilege to authorizer first via addPrivilege().
-MSG);
-
-		$builder->deny('role', 'unknown');
-	}
-
-	public function testAssigningUnknownRolePrivilegeDoesNotFailByDefault(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-		$builder->addRole('role');
-
-		$exception = null;
-		try {
-			$builder->allow('role', 'unknown');
-			$builder->deny('role', 'unknown');
-		} catch (Throwable $exception) {
-			// Handled below
-		}
-
-		self::assertNull($exception);
 	}
 
 	public function testIsAllowedWithPrivilegeChecksPrivilege(): void
