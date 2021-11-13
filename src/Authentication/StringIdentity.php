@@ -26,10 +26,10 @@ class StringIdentity extends BaseIdentity
 	 */
 	public function __serialize(): array
 	{
-		return [
-			'id' => $this->id,
-			'roles' => $this->roles,
-		];
+		$data = parent::__serialize();
+		$data['id'] = $this->id;
+
+		return $data;
 	}
 
 	/**
@@ -37,8 +37,8 @@ class StringIdentity extends BaseIdentity
 	 */
 	public function __unserialize(array $data): void
 	{
+		parent::__unserialize($data);
 		$this->id = $data['id'];
-		$this->roles = $data['roles'];
 	}
 
 }
