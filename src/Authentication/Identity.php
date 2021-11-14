@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
+use Orisai\Auth\Authorization\IdentityAuthorizationData;
+
 interface Identity
 {
 
@@ -16,6 +18,8 @@ interface Identity
 	public function getRoles(): array;
 
 	public function hasRole(string $role): bool;
+
+	public function getAuthData(): ?IdentityAuthorizationData;
 
 	/**
 	 * @return array<mixed>

@@ -10,27 +10,27 @@ final class AuthorizationDataBuilder
 {
 
 	/** @var array<string, null> */
-	protected array $roles = [];
+	protected array $rawRoles = [];
 
 	/** @var array<mixed> */
-	protected array $privileges = [];
+	protected array $rawPrivileges = [];
 
 	/** @var array<string, array<mixed>> */
-	protected array $roleAllowedPrivileges = [];
+	protected array $rawRoleAllowedPrivileges = [];
 
-	public bool $throwOnUnknownRolePrivilege = false;
+	public bool $throwOnUnknownPrivilege = false;
 
 	public function addRole(string $role): void
 	{
-		$this->roles[$role] = null;
-		$this->roleAllowedPrivileges[$role] ??= [];
+		$this->rawRoles[$role] = null;
+		$this->rawRoleAllowedPrivileges[$role] ??= [];
 	}
 
 	public function addPrivilege(string $privilege): void
 	{
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 
-		$privilegesCurrent = &$this->privileges;
+		$privilegesCurrent = &$this->rawPrivileges;
 
 		Arrays::addKeyValue($privilegesCurrent, $privilegeParts, []);
 	}
@@ -42,9 +42,9 @@ final class AuthorizationDataBuilder
 		PrivilegeProcessor::allow(
 			$privilege,
 			$role,
-			$this->roleAllowedPrivileges,
-			$this->privileges,
-			$this->throwOnUnknownRolePrivilege,
+			$this->rawRoleAllowedPrivileges,
+			$this->rawPrivileges,
+			$this->throwOnUnknownPrivilege,
 			self::class,
 			__FUNCTION__,
 		);
@@ -57,9 +57,9 @@ final class AuthorizationDataBuilder
 		PrivilegeProcessor::deny(
 			$privilege,
 			$role,
-			$this->roleAllowedPrivileges,
-			$this->privileges,
-			$this->throwOnUnknownRolePrivilege,
+			$this->rawRoleAllowedPrivileges,
+			$this->rawPrivileges,
+			$this->throwOnUnknownPrivilege,
 			self::class,
 			__FUNCTION__,
 		);
@@ -67,7 +67,7 @@ final class AuthorizationDataBuilder
 
 	private function checkRole(string $role): void
 	{
-		if (!array_key_exists($role, $this->roles)) {
+		if (!array_key_exists($role, $this->rawRoles)) {
 			$class = self::class;
 
 			throw InvalidState::create()
@@ -78,9 +78,10 @@ final class AuthorizationDataBuilder
 	public function build(): AuthorizationData
 	{
 		return new AuthorizationData(
-			$this->roles,
-			$this->privileges,
-			$this->roleAllowedPrivileges,
+			$this->rawRoles,
+			$this->rawPrivileges,
+			$this->rawRoleAllowedPrivileges,
+			$this->throwOnUnknownPrivilege,
 		);
 	}
 

@@ -3,6 +3,8 @@
 namespace Tests\Orisai\Auth\Unit\Authentication;
 
 use Orisai\Auth\Authentication\IntIdentity;
+use Orisai\Auth\Authorization\IdentityAuthorizationData;
+use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use function serialize;
 use function unserialize;
@@ -10,7 +12,7 @@ use function unserialize;
 final class IntIdentityTest extends TestCase
 {
 
-	public function test(): void
+	public function testBase(): void
 	{
 		$identity = new IntIdentity(123, ['foo', 'bar']);
 
@@ -21,8 +23,26 @@ final class IntIdentityTest extends TestCase
 		self::assertTrue($identity->hasRole('bar'));
 		self::assertFalse($identity->hasRole('baz'));
 
+		self::assertNull($identity->getAuthData());
+
+		$data = new IdentityAuthorizationData($identity->getId(), []);
+		$identity->setAuthData($data);
+		self::assertSame($data, $identity->getAuthData());
+
 		$serialized = serialize($identity);
 		self::assertEquals($identity, unserialize($serialized));
+	}
+
+	public function testSetDataException(): void
+	{
+		$identity = new IntIdentity(123, []);
+
+		$this->expectException(InvalidArgument::class);
+		$this->expectExceptionMessage(
+			"Identity data with identity ID '456' can't be used with identity with ID '123'.",
+		);
+
+		$identity->setAuthData(new IdentityAuthorizationData(456, []));
 	}
 
 }

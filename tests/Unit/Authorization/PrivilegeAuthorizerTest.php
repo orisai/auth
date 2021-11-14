@@ -6,6 +6,7 @@ use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
+use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
@@ -192,6 +193,55 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
 
 		// requires mix of privileges from both roles
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article'));
+	}
+
+	public function testPrivilegesFromIdentityAndRole(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit.owned');
+		$builder->addPrivilege('article.edit.all');
+		$builder->addPrivilege('article.publish');
+		$builder->addPrivilege('article.delete');
+
+		$builder->addRole('editor');
+
+		$builder->allow('editor', 'article.view');
+		$builder->allow('editor', 'article.edit.owned');
+
+		$data = $builder->build();
+
+		$identity = new IntIdentity(1, ['editor']);
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identityBuilder->allow($identity, 'article.view');
+		$identityBuilder->allow($identity, 'article.edit.all');
+		$identityBuilder->allow($identity, 'article.publish');
+		$identityBuilder->allow($identity, 'article.delete');
+
+		$identityData = $identityBuilder->build($identity);
+		$identity->setAuthData($identityData);
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
+
+		// requires privileges from role or identity
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.owned'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.all'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.publish'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.delete'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.owned'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.all'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.publish'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
+
+		// requires mix of privileges from both
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit'));
