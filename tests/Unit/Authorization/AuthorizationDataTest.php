@@ -27,7 +27,10 @@ final class AuthorizationDataTest extends TestCase
 					],
 				],
 			],
+			false,
 		);
+
+		self::assertFalse($data->isThrowOnUnknownPrivilege());
 
 		self::assertSame($roles, $data->getRawRoles());
 		self::assertSame(

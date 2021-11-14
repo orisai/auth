@@ -17,6 +17,8 @@ final class AuthorizationData
 	/** @var array<string, array<mixed>> */
 	protected array $rawRoleAllowedPrivileges = [];
 
+	private bool $throwOnUnknownPrivilege;
+
 	/**
 	 * Accepts preprocessed data from builder
 	 *
@@ -26,11 +28,17 @@ final class AuthorizationData
 	 *
 	 * @internal
 	 */
-	public function __construct(array $rawRoles, array $rawPrivileges, array $rawRoleAllowedPrivileges)
+	public function __construct(
+		array $rawRoles,
+		array $rawPrivileges,
+		array $rawRoleAllowedPrivileges,
+		bool $throwOnUnknownPrivilege
+	)
 	{
 		$this->rawRoles = $rawRoles;
 		$this->rawPrivileges = $rawPrivileges;
 		$this->rawRoleAllowedPrivileges = $rawRoleAllowedPrivileges;
+		$this->throwOnUnknownPrivilege = $throwOnUnknownPrivilege;
 	}
 
 	/**
@@ -94,6 +102,11 @@ final class AuthorizationData
 		$privileges = $roleAllowedPrivileges[$role] ?? [];
 
 		return Arrays::keysToStrings($privileges);
+	}
+
+	public function isThrowOnUnknownPrivilege(): bool
+	{
+		return $this->throwOnUnknownPrivilege;
 	}
 
 }
