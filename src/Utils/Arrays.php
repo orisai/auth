@@ -71,11 +71,12 @@ final class Arrays
 		// Remove recursively if there are more keys left
 		if ($keys !== []) {
 			self::removeKey($array[$currentKey], $keys);
-
-			return;
 		}
 
-		unset($array[$currentKey]);
+		// Remove if current key should be removed or is empty
+		if ($keys === [] || $array[$currentKey] === []) {
+			unset($array[$currentKey]);
+		}
 	}
 
 	/**

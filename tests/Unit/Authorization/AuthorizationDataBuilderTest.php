@@ -97,104 +97,6 @@ final class AuthorizationDataBuilderTest extends TestCase
 		);
 	}
 
-	public function testRoleAllowedPrivileges(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('article.delete');
-		$builder->addPrivilege('something');
-		$data = $builder->build();
-
-		self::assertSame(
-			[],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$role = 'editor';
-		$builder->addRole($role);
-		$data = $builder->build();
-
-		self::assertSame(
-			[
-				'editor' => [],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$builder->allow($role, 'article.view');
-		$builder->allow($role, 'article.edit');
-		$data = $builder->build();
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$builder->allow($role, 'something');
-		$data = $builder->build();
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
-					'something' => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$builder->deny($role, 'article.edit');
-		$data = $builder->build();
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-					],
-					'something' => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$builder->allow($role, 'article');
-		$data = $builder->build();
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-						'delete' => [],
-					],
-					'something' => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$builder->deny($role, 'article');
-		$data = $builder->build();
-		self::assertSame(
-			[
-				'editor' => [
-					'something' => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-	}
-
 	public function testRolesDataSeparated(): void
 	{
 		$builder = new AuthorizationDataBuilder();
@@ -203,12 +105,6 @@ final class AuthorizationDataBuilderTest extends TestCase
 		$builder->addPrivilege('article.edit');
 		$builder->addPrivilege('article.delete');
 		$builder->addPrivilege('something');
-		$data = $builder->build();
-
-		self::assertSame(
-			[],
-			$data->getRawRoleAllowedPrivileges(),
-		);
 
 		$role = 'editor';
 		$role2 = 'another-role';
@@ -239,6 +135,203 @@ final class AuthorizationDataBuilderTest extends TestCase
 				'another-role' => [
 					'article' => [
 						'delete' => [],
+					],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyA(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+
+		$role = 'editor';
+		$builder->addRole($role);
+
+		$builder->allow($role, 'article.view');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+					],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		$builder->deny($role, 'article.view');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyB(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+
+		$role = 'editor';
+		$builder->addRole($role);
+
+		$builder->allow($role, 'article.view');
+		$builder->allow($role, 'article.edit');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		$builder->deny($role, 'article.view');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'edit' => [],
+					],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyC(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+
+		$role = 'editor';
+		$builder->addRole($role);
+
+		$builder->allow($role, 'article');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		$builder->deny($role, 'article');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyD(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+
+		$role = 'editor';
+		$builder->addRole($role);
+
+		$builder->allow($role, 'article');
+		$builder->allow($role, 'something');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+					'something' => [],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		$builder->deny($role, Authorizer::ALL_PRIVILEGES);
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyE(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+
+		$role = 'editor';
+		$builder->addRole($role);
+
+		$builder->allow($role, Authorizer::ALL_PRIVILEGES);
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+					'something' => [],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		$builder->deny($role, 'something');
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
 					],
 				],
 			],
