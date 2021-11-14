@@ -4,6 +4,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use PHPUnit\Framework\TestCase;
@@ -11,88 +12,6 @@ use Throwable;
 
 final class IdentityAuthorizationDataBuilderTest extends TestCase
 {
-
-	public function testIdentityAllowedPrivileges(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('article.delete');
-		$builder->addPrivilege('something');
-
-		$data = $builder->build();
-		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
-		$identity = new IntIdentity(1, []);
-
-		$identityData = $identityBuilder->build($identity);
-
-		self::assertSame(
-			[],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		$identityBuilder->allow($identity, 'article.view');
-		$identityBuilder->allow($identity, 'article.edit');
-		$identityData = $identityBuilder->build($identity);
-		self::assertSame(
-			[
-				'article' => [
-					'view' => [],
-					'edit' => [],
-				],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		$identityBuilder->allow($identity, 'something');
-		$identityData = $identityBuilder->build($identity);
-		self::assertSame(
-			[
-				'article' => [
-					'view' => [],
-					'edit' => [],
-				],
-				'something' => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		$identityBuilder->deny($identity, 'article.edit');
-		$identityData = $identityBuilder->build($identity);
-		self::assertSame(
-			[
-				'article' => [
-					'view' => [],
-				],
-				'something' => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		$identityBuilder->allow($identity, 'article');
-		$identityData = $identityBuilder->build($identity);
-		self::assertSame(
-			[
-				'article' => [
-					'view' => [],
-					'edit' => [],
-					'delete' => [],
-				],
-				'something' => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		$identityBuilder->deny($identity, 'article');
-		$identityData = $identityBuilder->build($identity);
-		self::assertSame(
-			[
-				'something' => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-	}
 
 	public function testEdenTittiesDataSeparated(): void
 	{
@@ -142,6 +61,189 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 				],
 			],
 			$identity2Data->getRawAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyA(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+		$data = $builder->build();
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identity = new IntIdentity(1, []);
+
+		$identityBuilder->allow($identity, 'article.view');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'view' => [],
+				],
+			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+
+		$identityBuilder->deny($identity, 'article.view');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[],
+			$identityData->getRawAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyB(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+		$data = $builder->build();
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identity = new IntIdentity(1, []);
+
+		$identityBuilder->allow($identity, 'article.view');
+		$identityBuilder->allow($identity, 'article.edit');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'view' => [],
+					'edit' => [],
+				],
+			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+
+		$identityBuilder->deny($identity, 'article.view');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'edit' => [],
+				],
+			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyC(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+		$data = $builder->build();
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identity = new IntIdentity(1, []);
+
+		$identityBuilder->allow($identity, 'article');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'view' => [],
+					'edit' => [],
+				],
+			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+
+		$identityBuilder->deny($identity, 'article');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[],
+			$identityData->getRawAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyD(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+		$data = $builder->build();
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identity = new IntIdentity(1, []);
+
+		$identityBuilder->allow($identity, 'article');
+		$identityBuilder->allow($identity, 'something');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'view' => [],
+					'edit' => [],
+				],
+				'something' => [],
+			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+
+		$identityBuilder->deny($identity, Authorizer::ALL_PRIVILEGES);
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[],
+			$identityData->getRawAllowedPrivileges(),
+		);
+	}
+
+	public function testAllowDenyE(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('something');
+
+		$data = $builder->build();
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identity = new IntIdentity(1, []);
+
+		$identityBuilder->allow($identity, Authorizer::ALL_PRIVILEGES);
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'view' => [],
+					'edit' => [],
+				],
+				'something' => [],
+			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+
+		$identityBuilder->deny($identity, 'something');
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[
+				'article' => [
+					'view' => [],
+					'edit' => [],
+				],
+			],
+			$identityData->getRawAllowedPrivileges(),
 		);
 	}
 
