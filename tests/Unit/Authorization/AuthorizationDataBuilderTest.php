@@ -107,39 +107,20 @@ final class AuthorizationDataBuilderTest extends TestCase
 		$builder->addPrivilege('something');
 		$data = $builder->build();
 
-		$role = 'editor';
-
 		self::assertSame(
 			[],
 			$data->getRawRoleAllowedPrivileges(),
 		);
-		self::assertSame(
-			[],
-			$data->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[],
-			$data->getAllowedPrivilegesForRole('another-role'),
-		);
 
+		$role = 'editor';
 		$builder->addRole($role);
-		$builder->addRole('another-role');
 		$data = $builder->build();
 
 		self::assertSame(
 			[
 				'editor' => [],
-				'another-role' => [],
 			],
 			$data->getRawRoleAllowedPrivileges(),
-		);
-		self::assertSame(
-			[],
-			$data->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[],
-			$data->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$builder->allow($role, 'article.view');
@@ -153,24 +134,11 @@ final class AuthorizationDataBuilderTest extends TestCase
 						'edit' => [],
 					],
 				],
-				'another-role' => [],
 			],
 			$data->getRawRoleAllowedPrivileges(),
 		);
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit',
-			],
-			$data->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[],
-			$data->getAllowedPrivilegesForRole('another-role'),
-		);
 
 		$builder->allow($role, 'something');
-		$builder->allow('another-role', 'something');
 		$data = $builder->build();
 		self::assertSame(
 			[
@@ -181,25 +149,8 @@ final class AuthorizationDataBuilderTest extends TestCase
 					],
 					'something' => [],
 				],
-				'another-role' => [
-					'something' => [],
-				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit',
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$builder->deny($role, 'article.edit');
@@ -212,24 +163,8 @@ final class AuthorizationDataBuilderTest extends TestCase
 					],
 					'something' => [],
 				],
-				'another-role' => [
-					'something' => [],
-				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$builder->allow($role, 'article');
@@ -244,26 +179,8 @@ final class AuthorizationDataBuilderTest extends TestCase
 					],
 					'something' => [],
 				],
-				'another-role' => [
-					'something' => [],
-				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
-		);
-		self::assertSame(
-			[
-				'article.view',
-				'article.edit',
-				'article.delete',
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole($role),
-		);
-		self::assertSame(
-			[
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole('another-role'),
 		);
 
 		$builder->deny($role, 'article');
@@ -273,23 +190,59 @@ final class AuthorizationDataBuilderTest extends TestCase
 				'editor' => [
 					'something' => [],
 				],
-				'another-role' => [
-					'something' => [],
-				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
 		);
+	}
+
+	public function testRolesDataSeparated(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit');
+		$builder->addPrivilege('article.delete');
+		$builder->addPrivilege('something');
+		$data = $builder->build();
+
 		self::assertSame(
-			[
-				'something',
-			],
-			$data->getAllowedPrivilegesForRole($role),
+			[],
+			$data->getRawRoleAllowedPrivileges(),
 		);
+
+		$role = 'editor';
+		$role2 = 'another-role';
+		$builder->addRole($role);
+		$builder->addRole($role2);
+		$data = $builder->build();
+
 		self::assertSame(
 			[
-				'something',
+				'editor' => [],
+				'another-role' => [],
 			],
-			$data->getAllowedPrivilegesForRole('another-role'),
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		$builder->allow($role, 'article.view');
+		$builder->allow($role, 'article.edit');
+		$builder->allow($role2, 'article.delete');
+		$data = $builder->build();
+		self::assertSame(
+			[
+				'editor' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+				'another-role' => [
+					'article' => [
+						'delete' => [],
+					],
+				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
 		);
 	}
 
@@ -347,7 +300,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 	public function testAllowChecksPrivilege(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownRolePrivilege = true;
+		$builder->throwOnUnknownPrivilege = true;
 		$builder->addRole('role');
 
 		$e = null;
@@ -363,7 +316,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 	public function testDenyChecksPrivilege(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownRolePrivilege = true;
+		$builder->throwOnUnknownPrivilege = true;
 		$builder->addRole('role');
 
 		$e = null;
@@ -376,7 +329,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 		self::assertNotNull($e);
 	}
 
-	public function testAssigningUnknownRolePrivilegeDoesNotFailByDefault(): void
+	public function testAssigningUnknownPrivilegeDoesNotFailByDefault(): void
 	{
 		$builder = new AuthorizationDataBuilder();
 		$builder->addRole('role');

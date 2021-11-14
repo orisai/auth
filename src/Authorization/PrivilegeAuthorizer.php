@@ -46,6 +46,15 @@ class PrivilegeAuthorizer implements Authorizer
 			throw UnknownPrivilege::forFunction($privilege, static::class, $function);
 		}
 
+		$identityAuthData = $identity->getAuthData();
+		if ($identityAuthData !== null) {
+			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
+
+			if ($this->isAllowedMatchSubset($requiredPrivileges, $allowedPrivileges, $privilege, $privilegeParts)) {
+				return true;
+			}
+		}
+
 		$roleAllowedPrivileges = $this->data->getRawRoleAllowedPrivileges();
 		foreach ($identity->getRoles() as $role) {
 			if (!array_key_exists($role, $roleAllowedPrivileges)) {
