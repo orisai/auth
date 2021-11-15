@@ -61,7 +61,7 @@ abstract class BaseIdentity implements Identity
 	public function __unserialize(array $data): void
 	{
 		$this->roles = $data['roles'];
-		$this->authData = $data['authData'];
+		$this->authData = $data['authData'] ?? null;
 	}
 
 }

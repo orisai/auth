@@ -45,4 +45,15 @@ final class IntIdentityTest extends TestCase
 		$identity->setAuthData(new IdentityAuthorizationData(456, []));
 	}
 
+	public function testSerializationBC(): void
+	{
+		$serialized = 'O:38:"Orisai\Auth\Authentication\IntIdentity":2:{s:5:"roles";a:0:{}s:2:"id";i:1;}';
+		$identity = unserialize($serialized);
+
+		self::assertInstanceOf(IntIdentity::class, $identity);
+		self::assertSame(1, $identity->getId());
+		self::assertSame([], $identity->getRoles());
+		self::assertNull($identity->getAuthData());
+	}
+
 }
