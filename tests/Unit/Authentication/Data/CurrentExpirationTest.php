@@ -6,6 +6,7 @@ use Brick\DateTime\Duration;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use PHPUnit\Framework\TestCase;
+use function unserialize;
 
 final class CurrentExpirationTest extends TestCase
 {
@@ -21,6 +22,16 @@ final class CurrentExpirationTest extends TestCase
 		$time2 = Instant::of(789);
 		$expiration->setTime($time2);
 		self::assertSame($time2, $expiration->getTime());
+	}
+
+	public function testSerializationBC(): void
+	{
+		$serialized = 'O:49:"Orisai\Auth\Authentication\Data\CurrentExpiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}';
+		$expiration = unserialize($serialized);
+
+		self::assertInstanceOf(CurrentExpiration::class, $expiration);
+		self::assertSame(123, $expiration->getTime()->getEpochSecond());
+		self::assertSame(456, $expiration->getDelta()->getSeconds());
 	}
 
 }
