@@ -2,10 +2,8 @@
 
 namespace Orisai\Auth\Authorization;
 
-use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
-use function array_key_exists;
 use function explode;
 use function str_contains;
 use function str_ends_with;
@@ -80,84 +78,6 @@ final class PrivilegeProcessor
 		}
 
 		return Arrays::getKey($privileges, $privilegeParts);
-	}
-
-	/**
-	 * @param int|string                      $ownerId
-	 * @param array<int|string, array<mixed>> $allowed
-	 * @param array<mixed>                    $allPrivileges
-	 * @param class-string                    $class
-	 */
-	public static function allow(
-		string $privilege,
-		$ownerId,
-		array &$allowed,
-		array $allPrivileges,
-		bool $throwOnUnknownPrivilege,
-		string $class,
-		string $function
-	): void
-	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			$allowed[$ownerId] = $allPrivileges;
-
-			return;
-		}
-
-		$privilegeParts = self::parsePrivilege($privilege);
-		$privilegeValue = self::getPrivilege($privilege, $privilegeParts, $allPrivileges);
-
-		if ($privilegeValue === null) {
-			if ($throwOnUnknownPrivilege) {
-				throw UnknownPrivilege::forFunction($privilege, $class, $function);
-			}
-
-			return;
-		}
-
-		if (!array_key_exists($ownerId, $allowed)) {
-			$allowed[$ownerId] = [];
-		}
-
-		$rolePrivilegesCurrent = &$allowed[$ownerId];
-
-		Arrays::addKeyValue($rolePrivilegesCurrent, $privilegeParts, $privilegeValue);
-	}
-
-	/**
-	 * @param int|string                      $ownerId
-	 * @param array<int|string, array<mixed>> $denied
-	 * @param array<mixed>                    $allPrivileges
-	 * @param class-string                    $class
-	 */
-	public static function deny(
-		string $privilege,
-		$ownerId,
-		array &$denied,
-		array $allPrivileges,
-		bool $throwOnUnknownPrivilege,
-		string $class,
-		string $function
-	): void
-	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			$denied[$ownerId] = [];
-
-			return;
-		}
-
-		$privilegeParts = self::parsePrivilege($privilege);
-		$privilegeValue = self::getPrivilege($privilege, $privilegeParts, $allPrivileges);
-
-		if ($privilegeValue === null) {
-			if ($throwOnUnknownPrivilege) {
-				throw UnknownPrivilege::forFunction($privilege, $class, $function);
-			}
-
-			return;
-		}
-
-		Arrays::removeKey($denied[$ownerId], $privilegeParts);
 	}
 
 }

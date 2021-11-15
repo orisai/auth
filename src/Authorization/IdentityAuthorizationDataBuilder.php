@@ -4,7 +4,7 @@ namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Identity;
 
-final class IdentityAuthorizationDataBuilder
+final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 {
 
 	private AuthorizationData $data;
@@ -19,7 +19,7 @@ final class IdentityAuthorizationDataBuilder
 
 	public function allow(Identity $identity, string $privilege): void
 	{
-		PrivilegeProcessor::allow(
+		self::allowInternal(
 			$privilege,
 			$identity->getId(),
 			$this->identityAllowedPrivileges,
@@ -32,7 +32,7 @@ final class IdentityAuthorizationDataBuilder
 
 	public function deny(Identity $identity, string $privilege): void
 	{
-		PrivilegeProcessor::deny(
+		self::denyInternal(
 			$privilege,
 			$identity->getId(),
 			$this->identityAllowedPrivileges,

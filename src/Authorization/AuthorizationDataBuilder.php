@@ -6,7 +6,7 @@ use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidState;
 use function array_key_exists;
 
-final class AuthorizationDataBuilder
+final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 {
 
 	/** @var array<string, null> */
@@ -39,7 +39,7 @@ final class AuthorizationDataBuilder
 	{
 		$this->checkRole($role);
 
-		PrivilegeProcessor::allow(
+		self::allowInternal(
 			$privilege,
 			$role,
 			$this->rawRoleAllowedPrivileges,
@@ -54,7 +54,7 @@ final class AuthorizationDataBuilder
 	{
 		$this->checkRole($role);
 
-		PrivilegeProcessor::deny(
+		self::denyInternal(
 			$privilege,
 			$role,
 			$this->rawRoleAllowedPrivileges,
