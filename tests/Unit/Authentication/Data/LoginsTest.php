@@ -135,4 +135,16 @@ final class LoginsTest extends TestCase
 		);
 	}
 
+	public function testSerializationBC(): void
+	{
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		$serialized = 'O:38:"Orisai\Auth\Authentication\Data\Logins":2:{s:12:"currentLogin";N;s:13:"expiredLogins";a:0:{}}';
+		$logins = unserialize($serialized);
+
+		self::assertInstanceOf(Logins::class, $logins);
+		self::assertNull($logins->getCurrentLogin());
+		self::assertSame([], $logins->getExpiredLogins());
+		self::assertNull($logins->getLastExpiredLogin());
+	}
+
 }

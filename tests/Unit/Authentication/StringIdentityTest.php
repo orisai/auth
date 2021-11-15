@@ -45,4 +45,15 @@ final class StringIdentityTest extends TestCase
 		$identity->setAuthData(new IdentityAuthorizationData('456', []));
 	}
 
+	public function testSerializationBC(): void
+	{
+		$serialized = 'O:41:"Orisai\Auth\Authentication\StringIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";s:1:"1";}';
+		$identity = unserialize($serialized);
+
+		self::assertInstanceOf(StringIdentity::class, $identity);
+		self::assertSame('1', $identity->getId());
+		self::assertSame([], $identity->getRoles());
+		self::assertNull($identity->getAuthData());
+	}
+
 }

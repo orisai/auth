@@ -22,4 +22,14 @@ final class ExpirationTest extends TestCase
 		self::assertEquals($expiration, unserialize(serialize($expiration)));
 	}
 
+	public function testSerializationBC(): void
+	{
+		$serialized = 'O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}';
+		$expiration = unserialize($serialized);
+
+		self::assertInstanceOf(Expiration::class, $expiration);
+		self::assertSame(123, $expiration->getTime()->getEpochSecond());
+		self::assertSame(456, $expiration->getDelta()->getSeconds());
+	}
+
 }

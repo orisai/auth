@@ -48,4 +48,16 @@ final class CurrentLoginTest extends TestCase
 		self::assertTrue($login->hasInvalidIdentity());
 	}
 
+	public function testSerializationBC(): void
+	{
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\CurrentLogin":3:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:10:"expiration";N;}';
+		$login = unserialize($serialized);
+
+		self::assertInstanceOf(CurrentLogin::class, $login);
+		self::assertSame(2, $login->getAuthenticationTime()->getEpochSecond());
+		self::assertInstanceOf(IntIdentity::class, $login->getIdentity());
+		self::assertNull($login->getExpiration());
+	}
+
 }
