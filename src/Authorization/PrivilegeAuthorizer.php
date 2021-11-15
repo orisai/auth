@@ -12,7 +12,7 @@ use function array_key_exists;
 use function get_class;
 use function is_a;
 
-class PrivilegeAuthorizer implements Authorizer
+final class PrivilegeAuthorizer implements Authorizer
 {
 
 	private PolicyManager $policyManager;
