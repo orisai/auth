@@ -51,4 +51,24 @@ final class IdentityAuthorizationData
 		return Arrays::keysToStrings($this->rawAllowedPrivileges);
 	}
 
+	/**
+	 * @return array<mixed>
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'id' => $this->id,
+			'rawAllowedPrivileges' => $this->rawAllowedPrivileges,
+		];
+	}
+
+	/**
+	 * @param array<mixed> $data
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->id = $data['id'];
+		$this->rawAllowedPrivileges = $data['rawAllowedPrivileges'];
+	}
+
 }
