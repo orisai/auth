@@ -369,7 +369,7 @@ $builder->allow('editor', 'article.edit'); // Everything from article.edit
 $builder->allow('editor', 'article'); // Everything from article
 
 // Deny role to work with privileges (you shouldn't need to do this explicitly, everything is disallowed by default)
-$builder->deny('editor', 'article');
+$builder->removeAllow('editor', 'article');
 
 // Create data object
 $data = $builder->build();

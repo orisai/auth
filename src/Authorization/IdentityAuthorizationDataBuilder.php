@@ -19,7 +19,7 @@ final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilde
 
 	public function allow(Identity $identity, string $privilege): void
 	{
-		self::allowInternal(
+		self::addPrivilegeToList(
 			$privilege,
 			$identity->getId(),
 			$this->identityAllowedPrivileges,
@@ -30,9 +30,9 @@ final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilde
 		);
 	}
 
-	public function deny(Identity $identity, string $privilege): void
+	public function removeAllow(Identity $identity, string $privilege): void
 	{
-		self::denyInternal(
+		self::removePrivilegeFromList(
 			$privilege,
 			$identity->getId(),
 			$this->identityAllowedPrivileges,
