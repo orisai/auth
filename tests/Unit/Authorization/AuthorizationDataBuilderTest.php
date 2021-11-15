@@ -167,7 +167,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
-		$builder->deny($role, 'article.view');
+		$builder->removeAllow($role, 'article.view');
 		$data = $builder->build();
 
 		self::assertSame(
@@ -205,7 +205,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
-		$builder->deny($role, 'article.view');
+		$builder->removeAllow($role, 'article.view');
 		$data = $builder->build();
 
 		self::assertSame(
@@ -246,7 +246,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
-		$builder->deny($role, 'article');
+		$builder->removeAllow($role, 'article');
 		$data = $builder->build();
 
 		self::assertSame(
@@ -285,7 +285,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
-		$builder->deny($role, Authorizer::ALL_PRIVILEGES);
+		$builder->removeAllow($role, Authorizer::ALL_PRIVILEGES);
 		$data = $builder->build();
 
 		self::assertSame(
@@ -323,7 +323,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
-		$builder->deny($role, 'something');
+		$builder->removeAllow($role, 'something');
 		$data = $builder->build();
 
 		self::assertSame(
@@ -387,7 +387,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
 		);
 
-		$builder->deny('role', 'article');
+		$builder->removeAllow('role', 'article');
 	}
 
 	public function testAllowChecksPrivilege(): void
@@ -414,7 +414,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 
 		$e = null;
 		try {
-			$builder->deny('role', 'unknown');
+			$builder->removeAllow('role', 'unknown');
 		} catch (UnknownPrivilege $e) {
 			self::assertSame($e->getPrivilege(), 'unknown');
 		}
@@ -430,7 +430,7 @@ final class AuthorizationDataBuilderTest extends TestCase
 		$exception = null;
 		try {
 			$builder->allow('role', 'unknown');
-			$builder->deny('role', 'unknown');
+			$builder->removeAllow('role', 'unknown');
 		} catch (Throwable $exception) {
 			// Handled below
 		}

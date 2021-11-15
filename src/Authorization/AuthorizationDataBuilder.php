@@ -39,7 +39,7 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 	{
 		$this->checkRole($role);
 
-		self::allowInternal(
+		self::addPrivilegeToList(
 			$privilege,
 			$role,
 			$this->rawRoleAllowedPrivileges,
@@ -50,11 +50,11 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 		);
 	}
 
-	public function deny(string $role, string $privilege): void
+	public function removeAllow(string $role, string $privilege): void
 	{
 		$this->checkRole($role);
 
-		self::denyInternal(
+		self::removePrivilegeFromList(
 			$privilege,
 			$role,
 			$this->rawRoleAllowedPrivileges,

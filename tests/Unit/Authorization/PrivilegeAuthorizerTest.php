@@ -92,7 +92,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
 		self::assertTrue($authorizer->isAllowed($identity, $authorizer::ALL_PRIVILEGES));
 
-		$builder->deny('supervisor', 'foo.bar');
+		$builder->removeAllow('supervisor', 'foo.bar');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
@@ -106,7 +106,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
 		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ALL_PRIVILEGES));
 
-		$builder->deny('supervisor', $authorizer::ALL_PRIVILEGES);
+		$builder->removeAllow('supervisor', $authorizer::ALL_PRIVILEGES);
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
@@ -327,8 +327,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article'));
 
-		$builder->deny($role, 'article.edit');
-		$builder->deny($role, 'article.delete');
+		$builder->removeAllow($role, 'article.edit');
+		$builder->removeAllow($role, 'article.delete');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
@@ -339,7 +339,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$builder->deny($role, 'article');
+		$builder->removeAllow($role, 'article');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
@@ -363,7 +363,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$builder->addRole($role);
 
-		$builder->deny($role, 'article');
+		$builder->removeAllow($role, 'article');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
@@ -386,7 +386,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$builder->deny($role, 'article.edit');
+		$builder->removeAllow($role, 'article.edit');
 		$builder->allow($role, 'article.delete');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
@@ -423,7 +423,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$builder->deny($role, 'article.edit');
+		$builder->removeAllow($role, 'article.edit');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));
@@ -434,7 +434,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'article.delete'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 
-		$builder->deny($role, 'article');
+		$builder->removeAllow($role, 'article');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.edit'));

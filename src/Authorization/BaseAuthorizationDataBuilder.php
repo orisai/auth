@@ -18,7 +18,7 @@ abstract class BaseAuthorizationDataBuilder
 	 * @param array<mixed>                    $allPrivileges
 	 * @param class-string                    $class
 	 */
-	protected static function allowInternal(
+	protected static function addPrivilegeToList(
 		string $privilege,
 		$ownerId,
 		array &$allowed,
@@ -60,7 +60,7 @@ abstract class BaseAuthorizationDataBuilder
 	 * @param array<mixed>                    $allPrivileges
 	 * @param class-string                    $class
 	 */
-	protected static function denyInternal(
+	protected static function removePrivilegeFromList(
 		string $privilege,
 		$ownerId,
 		array &$denied,

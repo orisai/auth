@@ -88,7 +88,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			$identityData->getRawAllowedPrivileges(),
 		);
 
-		$identityBuilder->deny($identity, 'article.view');
+		$identityBuilder->removeAllow($identity, 'article.view');
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
@@ -123,7 +123,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			$identityData->getRawAllowedPrivileges(),
 		);
 
-		$identityBuilder->deny($identity, 'article.view');
+		$identityBuilder->removeAllow($identity, 'article.view');
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
@@ -161,7 +161,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			$identityData->getRawAllowedPrivileges(),
 		);
 
-		$identityBuilder->deny($identity, 'article');
+		$identityBuilder->removeAllow($identity, 'article');
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
@@ -197,7 +197,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			$identityData->getRawAllowedPrivileges(),
 		);
 
-		$identityBuilder->deny($identity, Authorizer::ALL_PRIVILEGES);
+		$identityBuilder->removeAllow($identity, Authorizer::ALL_PRIVILEGES);
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
@@ -233,7 +233,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			$identityData->getRawAllowedPrivileges(),
 		);
 
-		$identityBuilder->deny($identity, 'something');
+		$identityBuilder->removeAllow($identity, 'something');
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
@@ -279,7 +279,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 
 		$e = null;
 		try {
-			$identityBuilder->deny($identity, 'unknown');
+			$identityBuilder->removeAllow($identity, 'unknown');
 		} catch (UnknownPrivilege $e) {
 			self::assertSame($e->getPrivilege(), 'unknown');
 		}
@@ -299,7 +299,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 		$exception = null;
 		try {
 			$identityBuilder->allow($identity, 'unknown');
-			$identityBuilder->deny($identity, 'unknown');
+			$identityBuilder->removeAllow($identity, 'unknown');
 		} catch (Throwable $exception) {
 			// Handled below
 		}
