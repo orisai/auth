@@ -25,11 +25,6 @@ final class PrivilegeAuthorizer implements Authorizer
 		$this->data = $data;
 	}
 
-	public function getData(): AuthorizationData
-	{
-		return $this->data;
-	}
-
 	public function hasPrivilege(Identity $identity, string $privilege): bool
 	{
 		return $this->hasPrivilegeInternal($identity, $privilege, __FUNCTION__);
@@ -43,7 +38,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		$requiredPrivileges = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $privileges);
 
 		if ($requiredPrivileges === null) {
-			throw UnknownPrivilege::forFunction($privilege, static::class, $function);
+			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
 		$identityAuthData = $identity->getAuthData();
@@ -88,7 +83,7 @@ final class PrivilegeAuthorizer implements Authorizer
 	): bool
 	{
 		if ($requirements !== null) {
-			$class = static::class;
+			$class = self::class;
 			$requirementsType = get_class($requirements);
 			$message = Message::create()
 				->withContext("Trying to check privilege $privilege via $class->$function().")
@@ -116,13 +111,13 @@ final class PrivilegeAuthorizer implements Authorizer
 	{
 		$privilege = $policy::getPrivilege();
 		if (!$this->data->privilegeExists($privilege)) {
-			throw UnknownPrivilege::forFunction($privilege, static::class, $function);
+			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
 		$requirementsClass = $policy::getRequirementsClass();
 		if ($requirements !== null) {
 			if (!is_a($requirements, $requirementsClass, true)) {
-				$class = static::class;
+				$class = self::class;
 				$policyClass = get_class($policy);
 				$passedRequirementsClass = get_class($requirements);
 				$message = Message::create()
@@ -143,7 +138,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$methodRef = (new ReflectionClass($policy))->getMethod('isAllowed');
 
 			if (!$methodRef->getParameters()[1]->allowsNull()) {
-				$class = static::class;
+				$class = self::class;
 				$policyClass = get_class($policy);
 				$noRequirementsClass = NoRequirements::class;
 				$message = Message::create()
