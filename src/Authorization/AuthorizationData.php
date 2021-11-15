@@ -109,4 +109,28 @@ final class AuthorizationData
 		return $this->throwOnUnknownPrivilege;
 	}
 
+	/**
+	 * @return array<mixed>
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'rawRoles' => $this->rawRoles,
+			'rawPrivileges' => $this->rawPrivileges,
+			'rawRoleAllowedPrivileges' => $this->rawRoleAllowedPrivileges,
+			'throwOnUnknownPrivilege' => $this->throwOnUnknownPrivilege,
+		];
+	}
+
+	/**
+	 * @param array<mixed> $data
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->rawRoles = $data['rawRoles'];
+		$this->rawPrivileges = $data['rawPrivileges'];
+		$this->rawRoleAllowedPrivileges = $data['rawRoleAllowedPrivileges'];
+		$this->throwOnUnknownPrivilege = $data['throwOnUnknownPrivilege'];
+	}
+
 }
