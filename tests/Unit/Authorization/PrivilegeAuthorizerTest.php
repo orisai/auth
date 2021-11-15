@@ -29,15 +29,6 @@ final class PrivilegeAuthorizerTest extends TestCase
 		return new SimplePolicyManager();
 	}
 
-	public function testGetData(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-		$data = $builder->build();
-
-		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
-		self::assertSame($data, $authorizer->getData());
-	}
-
 	public function testNothingSet(): void
 	{
 		$builder = new AuthorizationDataBuilder();
