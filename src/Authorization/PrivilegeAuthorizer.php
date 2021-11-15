@@ -35,7 +35,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		$privileges = $this->data->getRawPrivileges();
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$requiredPrivileges = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $privileges);
+		$requiredPrivileges = PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $privileges);
 
 		if ($requiredPrivileges === null) {
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);

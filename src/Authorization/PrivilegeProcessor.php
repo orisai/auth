@@ -67,17 +67,17 @@ final class PrivilegeProcessor
 	}
 
 	/**
-	 * @param array<mixed>            $privileges
+	 * @param array<mixed>            $rawPrivileges
 	 * @param non-empty-array<string> $privilegeParts
 	 * @return array<mixed>|null
 	 */
-	public static function getPrivilege(string $privilege, array $privilegeParts, array $privileges): ?array
+	public static function getAnyRawPrivilege(array $privilegeParts, array $rawPrivileges): ?array
 	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			return $privileges;
+		if ($privilegeParts === [Authorizer::ALL_PRIVILEGES]) {
+			return $rawPrivileges;
 		}
 
-		return Arrays::getKey($privileges, $privilegeParts);
+		return Arrays::getKey($rawPrivileges, $privilegeParts);
 	}
 
 }

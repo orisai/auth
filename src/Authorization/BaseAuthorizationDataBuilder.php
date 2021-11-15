@@ -35,7 +35,7 @@ abstract class BaseAuthorizationDataBuilder
 		}
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $allPrivileges);
+		$privilegeValue = PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $allPrivileges);
 
 		if ($privilegeValue === null) {
 			if ($throwOnUnknownPrivilege) {
@@ -77,7 +77,7 @@ abstract class BaseAuthorizationDataBuilder
 		}
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = PrivilegeProcessor::getPrivilege($privilege, $privilegeParts, $allPrivileges);
+		$privilegeValue = PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $allPrivileges);
 
 		if ($privilegeValue === null) {
 			if ($throwOnUnknownPrivilege) {
