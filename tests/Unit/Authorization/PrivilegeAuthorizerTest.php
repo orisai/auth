@@ -19,6 +19,7 @@ use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\NullableRequirementsPolicy;
+use Tests\Orisai\Auth\Doubles\PassWithNoIdentityPolicy;
 use Tests\Orisai\Auth\Doubles\User;
 
 final class PrivilegeAuthorizerTest extends TestCase
@@ -571,8 +572,8 @@ MSG);
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
-		self::assertFalse($authorizer->isAllowed(new IntIdentity(1, []), NoRequirementsPolicy::getPrivilege(), null));
-		self::assertFalse(
+		self::assertTrue($authorizer->isAllowed(new IntIdentity(1, []), NoRequirementsPolicy::getPrivilege(), null));
+		self::assertTrue(
 			$authorizer->isAllowed(new IntIdentity(1, []), NoRequirementsPolicy::getPrivilege(), new NoRequirements()),
 		);
 	}
@@ -614,6 +615,24 @@ Solution: Pass requirements of type Tests\Orisai\Auth\Doubles\Article or mark
 MSG);
 
 		$authorizer->isAllowed(new IntIdentity(1, []), ArticleEditPolicy::getPrivilege(), null);
+	}
+
+	public function testPolicyNullableIdentity(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new PassWithNoIdentityPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(PassWithNoIdentityPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
+
+		self::assertFalse(
+			$authorizer->isAllowed(new IntIdentity(1, []), PassWithNoIdentityPolicy::getPrivilege()),
+		);
+		self::assertTrue(
+			$authorizer->isAllowed(null, PassWithNoIdentityPolicy::getPrivilege()),
+		);
 	}
 
 	public function testPolicyResourceOwner(): void

@@ -18,6 +18,8 @@ use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
+use Tests\Orisai\Auth\Doubles\PassWithNoIdentityPolicy;
 use Tests\Orisai\Auth\Doubles\TestingArrayLoginStorage;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
 use Throwable;
@@ -647,6 +649,36 @@ MSG);
 		self::assertTrue($firewall->hasPrivilege('front'));
 		self::assertFalse($firewall->isAllowed('admin'));
 		self::assertFalse($firewall->hasPrivilege('admin'));
+	}
+
+	public function testPolicy(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new PassWithNoIdentityPolicy());
+		$policyManager->add(new NoRequirementsPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(PassWithNoIdentityPolicy::getPrivilege());
+		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
+
+		$storage = new ArrayLoginStorage();
+		$authorizer = $this->authorizer($policyManager, $builder);
+		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
+
+		self::assertTrue(
+			$firewall->isAllowed(PassWithNoIdentityPolicy::getPrivilege()),
+		);
+		self::assertFalse(
+			$firewall->isAllowed(NoRequirementsPolicy::getPrivilege()),
+		);
+
+		$firewall->login(new IntIdentity(1, []));
+		self::assertFalse(
+			$firewall->isAllowed(PassWithNoIdentityPolicy::getPrivilege()),
+		);
+		self::assertTrue(
+			$firewall->isAllowed(NoRequirementsPolicy::getPrivilege()),
+		);
 	}
 
 	public function testRemovalMethodsSoftFail(): void

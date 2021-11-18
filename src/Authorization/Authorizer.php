@@ -11,6 +11,6 @@ interface Authorizer
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 
-	public function isAllowed(Identity $identity, string $privilege, ?object $requirements = null): bool;
+	public function isAllowed(?Identity $identity, string $privilege, ?object $requirements = null): bool;
 
 }

@@ -4,3 +4,9 @@ includes:
 parameters:
 	level: 7
 	resultCachePath: %currentWorkingDirectory%/var/tools/PHPStan/resultCache.tests.php
+
+	ignoreErrors:
+		# Intentional check
+		- message: '#^Instanceof between (.+)NoRequirements and (.+)NoRequirements will always evaluate to true\.$#'
+		  path: ../tests/Doubles/NoRequirementsPolicy.php
+		  count: 1

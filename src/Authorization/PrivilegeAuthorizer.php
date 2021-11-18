@@ -66,13 +66,16 @@ final class PrivilegeAuthorizer implements Authorizer
 		return false;
 	}
 
-	public function isAllowed(Identity $identity, string $privilege, ?object $requirements = null): bool
+	public function isAllowed(?Identity $identity, string $privilege, ?object $requirements = null): bool
 	{
 		$policy = $this->policyManager->get($privilege);
 
-		return $policy === null
-			? $this->isAllowedByPrivilege($identity, $privilege, $requirements, __FUNCTION__)
-			: $this->isAllowedByPolicy($identity, $policy, $requirements, __FUNCTION__);
+		if ($policy === null) {
+			return $identity !== null
+				&& $this->isAllowedByPrivilege($identity, $privilege, $requirements, __FUNCTION__);
+		}
+
+		return $this->isAllowedByPolicy($identity, $policy, $requirements, __FUNCTION__);
 	}
 
 	private function isAllowedByPrivilege(
@@ -103,7 +106,7 @@ final class PrivilegeAuthorizer implements Authorizer
 	 * @phpstan-param Policy<object> $policy
 	 */
 	private function isAllowedByPolicy(
-		Identity $identity,
+		?Identity $identity,
 		Policy $policy,
 		?object $requirements,
 		string $function
@@ -112,6 +115,13 @@ final class PrivilegeAuthorizer implements Authorizer
 		$privilege = $policy::getPrivilege();
 		if (!$this->data->privilegeExists($privilege)) {
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
+		}
+
+		if ($identity === null) {
+			$methodRef = (new ReflectionClass($policy))->getMethod('isAllowed');
+			if (!$methodRef->getParameters()[0]->allowsNull()) {
+				return false;
+			}
 		}
 
 		$requirementsClass = $policy::getRequirementsClass();

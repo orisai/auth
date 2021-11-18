@@ -182,13 +182,7 @@ abstract class BaseFirewall implements Firewall
 
 	public function isAllowed(string $privilege, ?object $requirements = null): bool
 	{
-		$identity = $this->fetchIdentity();
-
-		if ($identity === null) {
-			return false;
-		}
-
-		return $this->authorizer->isAllowed($identity, $privilege, $requirements);
+		return $this->authorizer->isAllowed($this->fetchIdentity(), $privilege, $requirements);
 	}
 
 	public function hasPrivilege(string $privilege): bool
