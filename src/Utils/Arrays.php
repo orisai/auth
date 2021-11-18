@@ -101,7 +101,7 @@ final class Arrays
 	}
 
 	/**
-	 * @param array<mixed> $array
+	 * @param array<int|string, mixed> $array
 	 * @return array<int, string>
 	 */
 	public static function keysToStrings(array $array, ?string $baseKey = null): array
@@ -111,7 +111,7 @@ final class Arrays
 		foreach ($array as $key => $value) {
 			$compositeKey = $baseKey !== null
 				? "$baseKey.$key"
-				: $key;
+				: (string) $key;
 
 			$stringsByKey[] = is_array($value) && $value !== []
 				? self::keysToStrings($value, $compositeKey)
