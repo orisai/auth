@@ -5,6 +5,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
+use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -50,6 +51,21 @@ final class AuthorizationDataBuilderTest extends TestCase
 			],
 			$data->getPrivileges(),
 		);
+	}
+
+	public function testPrivilegeIsReserved(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$this->expectException(InvalidArgument::class);
+		$this->expectExceptionMessage(<<<'MSG'
+Context: Trying to add privilege '*' via
+         Orisai\Auth\Authorization\AuthorizationDataBuilder->addPrivilege().
+Problem: Privilege '*' is reserved representation of all privileges and cannot
+         be added.
+MSG);
+
+		$builder->addPrivilege(Authorizer::ALL_PRIVILEGES);
 	}
 
 	public function testPrivilegeExists(): void
