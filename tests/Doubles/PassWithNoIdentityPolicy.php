@@ -10,12 +10,12 @@ use Orisai\Auth\Authorization\Policy;
 /**
  * @phpstan-implements Policy<NoRequirements>
  */
-final class NoRequirementsPolicy implements Policy
+final class PassWithNoIdentityPolicy implements Policy
 {
 
 	public static function getPrivilege(): string
 	{
-		return 'no-requirements';
+		return 'pass.with.no.identity';
 	}
 
 	public static function getRequirementsClass(): string
@@ -23,9 +23,9 @@ final class NoRequirementsPolicy implements Policy
 		return NoRequirements::class;
 	}
 
-	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
+	public function isAllowed(?Identity $identity, object $requirements, Authorizer $authorizer): bool
 	{
-		return $requirements instanceof NoRequirements;
+		return $identity === null;
 	}
 
 }
