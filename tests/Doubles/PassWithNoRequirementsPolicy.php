@@ -3,13 +3,13 @@
 namespace Tests\Orisai\Auth\Doubles;
 
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\OptionalRequirementsPolicy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements Policy<Article>
+ * @phpstan-implements OptionalRequirementsPolicy<Article>
  */
-final class NullableRequirementsPolicy implements Policy
+final class PassWithNoRequirementsPolicy implements OptionalRequirementsPolicy
 {
 
 	public static function getPrivilege(): string
@@ -24,7 +24,7 @@ final class NullableRequirementsPolicy implements Policy
 
 	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): bool
 	{
-		return false;
+		return $requirements === null;
 	}
 
 }

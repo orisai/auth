@@ -18,8 +18,8 @@ use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
-use Tests\Orisai\Auth\Doubles\NullableRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\PassWithNoIdentityPolicy;
+use Tests\Orisai\Auth\Doubles\PassWithNoRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\User;
 
 final class PrivilegeAuthorizerTest extends TestCase
@@ -581,15 +581,15 @@ MSG);
 	public function testPolicyNullableRequirementWithNull(): void
 	{
 		$policyManager = $this->policies();
-		$policyManager->add(new NullableRequirementsPolicy());
+		$policyManager->add(new PassWithNoRequirementsPolicy());
 
 		$builder = new AuthorizationDataBuilder();
-		$builder->addPrivilege(NullableRequirementsPolicy::getPrivilege());
+		$builder->addPrivilege(PassWithNoRequirementsPolicy::getPrivilege());
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
-		self::assertFalse(
-			$authorizer->isAllowed(new IntIdentity(1, []), NullableRequirementsPolicy::getPrivilege(), null),
+		self::assertTrue(
+			$authorizer->isAllowed(new IntIdentity(1, []), PassWithNoRequirementsPolicy::getPrivilege(), null),
 		);
 	}
 
@@ -609,9 +609,9 @@ Context: Trying to check privilege article.edit via
          Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
 Problem: Policy requirements are missing, which is not supported by
          Tests\Orisai\Auth\Doubles\ArticleEditPolicy.
-Solution: Pass requirements of type Tests\Orisai\Auth\Doubles\Article or mark
-          policy requirements nullable or change them to
-          Orisai\Auth\Authorization\NoRequirements.
+Solution: Pass requirements of type Tests\Orisai\Auth\Doubles\Article or
+          implement Orisai\Auth\Authorization\OptionalRequirementsPolicy or
+          change them to Orisai\Auth\Authorization\NoRequirements.
 MSG);
 
 		$authorizer->isAllowed(new IntIdentity(1, []), ArticleEditPolicy::getPrivilege(), null);
