@@ -66,7 +66,12 @@ final class PrivilegeAuthorizer implements Authorizer
 		return false;
 	}
 
-	public function isAllowed(?Identity $identity, string $privilege, ?object $requirements = null): bool
+	public function isAllowed(
+		?Identity $identity,
+		string $privilege,
+		?object $requirements = null,
+		?CurrentUserPolicyContext $context = null
+	): bool
 	{
 		$policy = $this->policyManager->get($privilege);
 
@@ -75,7 +80,13 @@ final class PrivilegeAuthorizer implements Authorizer
 				&& $this->isAllowedByPrivilege($identity, $privilege, $requirements, __FUNCTION__);
 		}
 
-		return $this->isAllowedByPolicy($identity, $policy, $requirements, __FUNCTION__);
+		return $this->isAllowedByPolicy(
+			$identity,
+			$policy,
+			$requirements,
+			$context ?? new AnyUserPolicyContext($this),
+			__FUNCTION__,
+		);
 	}
 
 	private function isAllowedByPrivilege(
@@ -103,12 +114,14 @@ final class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
+	 * @param CurrentUserPolicyContext|AnyUserPolicyContext $context
 	 * @phpstan-param Policy<object> $policy
 	 */
 	private function isAllowedByPolicy(
 		?Identity $identity,
 		Policy $policy,
 		?object $requirements,
+		PolicyContext $context,
 		string $function
 	): bool
 	{
@@ -163,7 +176,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			}
 		}
 
-		return $policy->isAllowed($identity, $requirements, $this);
+		return $policy->isAllowed($identity, $requirements, $context);
 	}
 
 	/**

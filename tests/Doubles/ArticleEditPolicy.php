@@ -3,8 +3,8 @@
 namespace Tests\Orisai\Auth\Doubles;
 
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
 
 /**
  * @phpstan-implements Policy<Article>
@@ -27,8 +27,10 @@ final class ArticleEditPolicy implements Policy
 	/**
 	 * @param Article $requirements
 	 */
-	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
+		$authorizer = $context->getAuthorizer();
+
 		return $authorizer->isAllowed($identity, self::EDIT_ALL)
 			|| $authorizer->isAllowed($identity, ...ArticleEditOwnedPolicy::get($requirements));
 	}

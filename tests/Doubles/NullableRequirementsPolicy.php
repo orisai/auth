@@ -3,8 +3,8 @@
 namespace Tests\Orisai\Auth\Doubles;
 
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
 
 /**
  * @phpstan-implements Policy<Article>
@@ -22,7 +22,7 @@ final class NullableRequirementsPolicy implements Policy
 		return Article::class;
 	}
 
-	public function isAllowed(Identity $identity, ?object $requirements, Authorizer $authorizer): bool
+	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): bool
 	{
 		return false;
 	}
