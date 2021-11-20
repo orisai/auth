@@ -4,13 +4,13 @@ namespace Tests\Orisai\Auth\Doubles;
 
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\NoRequirements;
-use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\OptionalIdentityPolicy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements Policy<NoRequirements>
+ * @phpstan-implements OptionalIdentityPolicy<NoRequirements>
  */
-final class PassWithNoIdentityPolicy implements Policy
+final class PassWithNoIdentityPolicy implements OptionalIdentityPolicy
 {
 
 	public static function getPrivilege(): string

@@ -15,10 +15,11 @@ parameters:
 		- message: '#^Method (.+)BaseFirewall\:\:getIdentity\(\) should return I of (.+)Identity but returns (.+)Identity\.$#'
 		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
 
-		# Parameter nullability is expected from implementing class and checked
+		# It is checked whether interface is nullable
 		- message: '#^Parameter \#1 \$identity of method (.+)Policy(.+)\:\:isAllowed\(\) expects (.+)Identity, (.+)Identity\|null given\.#'
 		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
+		# Parameter nullability is expected from implementing class and checked
 		- message: '#^Parameter \#2 \$requirements of method (.+)Policy(.+)\:\:isAllowed\(\) expects object, object\|null given\.#'
 		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
