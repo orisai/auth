@@ -27,6 +27,7 @@ final class AuthorizationData
 	 * @param array<string, array<mixed>> $rawRoleAllowedPrivileges
 	 *
 	 * @internal
+	 * @see AuthorizationDataBuilder::build()
 	 */
 	public function __construct(
 		array $rawRoles,

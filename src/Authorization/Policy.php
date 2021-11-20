@@ -6,6 +6,9 @@ use Orisai\Auth\Authentication\Identity;
 
 /**
  * @phpstan-template R of object
+ *
+ * @see OptionalIdentityPolicy
+ * @see OptionalRequirementsPolicy
  */
 interface Policy
 {
@@ -15,6 +18,8 @@ interface Policy
 	/**
 	 * @return class-string
 	 * @phpstan-return class-string<R>
+	 *
+	 * @see NoRequirements
 	 */
 	public static function getRequirementsClass(): string;
 

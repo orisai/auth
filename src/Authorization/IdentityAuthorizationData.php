@@ -20,6 +20,7 @@ final class IdentityAuthorizationData
 	 * @param array<mixed> $rawAllowedPrivileges
 	 *
 	 * @internal
+	 * @see IdentityAuthorizationDataBuilder::build()
 	 */
 	public function __construct($id, array $rawAllowedPrivileges)
 	{
