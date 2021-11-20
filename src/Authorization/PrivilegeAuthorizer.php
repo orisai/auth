@@ -130,11 +130,8 @@ final class PrivilegeAuthorizer implements Authorizer
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
-		if ($identity === null) {
-			$methodRef = (new ReflectionClass($policy))->getMethod('isAllowed');
-			if (!$methodRef->getParameters()[0]->allowsNull()) {
-				return false;
-			}
+		if ($identity === null && !$policy instanceof OptionalIdentityPolicy) {
+			return false;
 		}
 
 		$requirementsClass = $policy::getRequirementsClass();
