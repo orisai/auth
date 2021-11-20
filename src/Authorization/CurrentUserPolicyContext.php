@@ -16,6 +16,8 @@ final class CurrentUserPolicyContext implements PolicyContext
 
 	/**
 	 * @param Firewall<Identity> $firewall
+	 *
+	 * @internal
 	 */
 	public function __construct(Authorizer $authorizer, Firewall $firewall)
 	{

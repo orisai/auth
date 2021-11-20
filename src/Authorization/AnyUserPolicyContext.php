@@ -7,6 +7,9 @@ final class AnyUserPolicyContext implements PolicyContext
 
 	private Authorizer $authorizer;
 
+	/**
+	 * @internal
+	 */
 	public function __construct(Authorizer $authorizer)
 	{
 		$this->authorizer = $authorizer;
