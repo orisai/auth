@@ -7,7 +7,6 @@ use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
-use ReflectionClass;
 use function array_key_exists;
 use function get_class;
 use function is_a;
@@ -154,23 +153,20 @@ final class PrivilegeAuthorizer implements Authorizer
 			}
 		} elseif ($requirementsClass === NoRequirements::class) {
 			$requirements = new NoRequirements();
-		} else {
-			$methodRef = (new ReflectionClass($policy))->getMethod('isAllowed');
+		} elseif (!$policy instanceof OptionalRequirementsPolicy) {
+			$class = self::class;
+			$policyClass = get_class($policy);
+			$noRequirementsClass = NoRequirements::class;
+			$optionalRequirementsClass = OptionalRequirementsPolicy::class;
+			$message = Message::create()
+				->withContext("Trying to check privilege $privilege via $class->$function().")
+				->withProblem("Policy requirements are missing, which is not supported by $policyClass.")
+				->withSolution(
+					"Pass requirements of type $requirementsClass or implement $optionalRequirementsClass or change them to $noRequirementsClass.",
+				);
 
-			if (!$methodRef->getParameters()[1]->allowsNull()) {
-				$class = self::class;
-				$policyClass = get_class($policy);
-				$noRequirementsClass = NoRequirements::class;
-				$message = Message::create()
-					->withContext("Trying to check privilege $privilege via $class->$function().")
-					->withProblem("Policy requirements are missing, which is not supported by $policyClass.")
-					->withSolution(
-						"Pass requirements of type $requirementsClass or mark policy requirements nullable or change them to $noRequirementsClass.",
-					);
-
-				throw InvalidArgument::create()
-					->withMessage($message);
-			}
+			throw InvalidArgument::create()
+				->withMessage($message);
 		}
 
 		return $policy->isAllowed($identity, $requirements, $context);

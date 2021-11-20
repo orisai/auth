@@ -19,7 +19,6 @@ parameters:
 		- message: '#^Parameter \#1 \$identity of method (.+)Policy(.+)\:\:isAllowed\(\) expects (.+)Identity, (.+)Identity\|null given\.#'
 		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
-		# Parameter nullability is expected from implementing class and checked
 		- message: '#^Parameter \#2 \$requirements of method (.+)Policy(.+)\:\:isAllowed\(\) expects object, object\|null given\.#'
 		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
