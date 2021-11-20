@@ -3,9 +3,9 @@
 namespace Tests\Orisai\Auth\Doubles;
 
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
 
 /**
  * @phpstan-implements Policy<NoRequirements>
@@ -23,7 +23,7 @@ final class NeverPassPolicy implements Policy
 		return NoRequirements::class;
 	}
 
-	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
 		return false;
 	}

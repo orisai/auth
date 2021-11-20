@@ -13,6 +13,7 @@ use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\CurrentUserPolicyContext;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 
@@ -182,7 +183,12 @@ abstract class BaseFirewall implements Firewall
 
 	public function isAllowed(string $privilege, ?object $requirements = null): bool
 	{
-		return $this->authorizer->isAllowed($this->fetchIdentity(), $privilege, $requirements);
+		return $this->authorizer->isAllowed(
+			$this->fetchIdentity(),
+			$privilege,
+			$requirements,
+			new CurrentUserPolicyContext($this->authorizer, $this),
+		);
 	}
 
 	public function hasPrivilege(string $privilege): bool

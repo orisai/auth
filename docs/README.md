@@ -397,6 +397,7 @@ This approach is safe but may impractical. To customize that behavior, define a 
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
 
 /**
  * @phpstan-implements Policy<Article>
@@ -419,8 +420,10 @@ final class ArticleEditPolicy implements Policy
 	/**
 	 * @param Article $requirements
 	 */
-	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
+		$authorizer = $context->getAuthorizer();
+
 		// User is allowed to edit an article, if is allowed to edit all of them or is the article author
 		return $authorizer->isAllowed($identity, self::EDIT_ALL)
 			|| $authorizer->isAllowed($identity, ...ArticleEditOwnedPolicy::get($requirements));
@@ -441,6 +444,7 @@ final class ArticleEditPolicy implements Policy
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
 
 /**
  * @phpstan-implements Policy<Article>
@@ -461,8 +465,10 @@ final class ArticleEditOwnedPolicy implements Policy
 	/**
 	 * @param Article $requirements
 	 */
-	public function isAllowed(Identity $identity, object $requirements, Authorizer $authorizer): bool
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
+		$authorizer = $context->getAuthorizer();
+
 		return $authorizer->hasPrivilege($identity, self::getPrivilege())
 			&& $identity->getId() === $requirements->getAuthor()->getId();
 	}
