@@ -32,22 +32,22 @@ final class SessionLoginStorageTest extends TestCase
 		$storage = $this->createStorage($session);
 
 		self::assertFalse($storage->alreadyExists('front'));
-		self::assertFalse($session->hasSection('orisai.auth.front'));
+		self::assertFalse($session->hasSection('Orisai.Auth.Logins/front'));
 		$loginsFront = $storage->getLogins('front');
 		self::assertNull($loginsFront->getCurrentLogin());
 		self::assertSame([], $loginsFront->getExpiredLogins());
 		self::assertTrue($storage->alreadyExists('front'));
-		self::assertTrue($session->hasSection('orisai.auth.front'));
+		self::assertTrue($session->hasSection('Orisai.Auth.Logins/front'));
 
 		$sessionId = $session->getId();
 
 		self::assertFalse($storage->alreadyExists('admin'));
-		self::assertFalse($session->hasSection('orisai.auth.admin'));
+		self::assertFalse($session->hasSection('Orisai.Auth.Logins/admin'));
 		$loginsAdmin = $storage->getLogins('admin');
 		self::assertNotSame($loginsAdmin, $loginsFront);
 		self::assertEquals($loginsAdmin, $loginsFront);
 		self::assertTrue($storage->alreadyExists('admin'));
-		self::assertTrue($session->hasSection('orisai.auth.admin'));
+		self::assertTrue($session->hasSection('Orisai.Auth.Logins/admin'));
 
 		$storage->regenerateSecurityToken('doesnt matter');
 		self::assertNotSame($sessionId, $session->getId());

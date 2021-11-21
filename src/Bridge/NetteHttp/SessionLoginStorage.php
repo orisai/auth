@@ -11,8 +11,6 @@ use function assert;
 final class SessionLoginStorage implements LoginStorage
 {
 
-	private const SESSION_PREFIX = 'orisai.auth';
-
 	private Session $session;
 
 	/** @var array<Logins> */
@@ -39,7 +37,7 @@ final class SessionLoginStorage implements LoginStorage
 
 	private function formatSectionName(string $namespace): string
 	{
-		return self::SESSION_PREFIX . '.' . $namespace;
+		return "Orisai.Auth.Logins/$namespace";
 	}
 
 	private function getSessionSection(string $namespace): SessionSection
