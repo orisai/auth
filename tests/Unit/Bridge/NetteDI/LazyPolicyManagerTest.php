@@ -8,14 +8,28 @@ use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
 use function dirname;
+use function mkdir;
+use const PHP_VERSION_ID;
 
 final class LazyPolicyManagerTest extends TestCase
 {
 
+	private string $rootDir;
+
+	protected function setUp(): void
+	{
+		parent::setUp();
+
+		$this->rootDir = dirname(__DIR__, 4);
+		if (PHP_VERSION_ID < 81_000) {
+			@mkdir("$this->rootDir/var/build");
+		}
+	}
+
 	public function test(): void
 	{
-		$configurator = new ManualConfigurator(dirname(__DIR__, 4));
-		$configurator->setDebugMode(true);
+		$configurator = new ManualConfigurator($this->rootDir);
+		$configurator->setForceReloadContainer();
 		$configurator->addConfig(__DIR__ . '/config.manager.neon');
 
 		$container = $configurator->createContainer();

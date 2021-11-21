@@ -12,14 +12,28 @@ use Tests\Orisai\Auth\Doubles\TestingFirewall;
 use Tests\Orisai\Auth\Doubles\User;
 use function assert;
 use function dirname;
+use function mkdir;
+use const PHP_VERSION_ID;
 
 final class NetteDISetupTest extends TestCase
 {
 
+	private string $rootDir;
+
+	protected function setUp(): void
+	{
+		parent::setUp();
+
+		$this->rootDir = dirname(__DIR__, 4);
+		if (PHP_VERSION_ID < 81_000) {
+			@mkdir("$this->rootDir/var/build");
+		}
+	}
+
 	public function testBuild(): void
 	{
-		$configurator = new ManualConfigurator(dirname(__DIR__, 4));
-		$configurator->setDebugMode(true);
+		$configurator = new ManualConfigurator($this->rootDir);
+		$configurator->setForceReloadContainer();
 		$configurator->addConfig(__DIR__ . '/config.full.neon');
 
 		$container = $configurator->createContainer();
@@ -34,8 +48,8 @@ final class NetteDISetupTest extends TestCase
 	 */
 	public function testPolicy(): void
 	{
-		$configurator = new ManualConfigurator(dirname(__DIR__, 4));
-		$configurator->setDebugMode(true);
+		$configurator = new ManualConfigurator($this->rootDir);
+		$configurator->setForceReloadContainer();
 		$configurator->addConfig(__DIR__ . '/config.full.neon');
 
 		$container = $configurator->createContainer();
