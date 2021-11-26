@@ -7,4 +7,8 @@ interface PolicyContext
 
 	public function getAuthorizer(): Authorizer;
 
+	public function setDecisionReason(DecisionReason $reason): void;
+
+	public function getDecisionReason(): ?DecisionReason;
+
 }

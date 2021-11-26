@@ -7,6 +7,8 @@ final class AnyUserPolicyContext implements PolicyContext
 
 	private Authorizer $authorizer;
 
+	private ?DecisionReason $decisionReason = null;
+
 	/**
 	 * @internal
 	 */
@@ -18,6 +20,16 @@ final class AnyUserPolicyContext implements PolicyContext
 	public function getAuthorizer(): Authorizer
 	{
 		return $this->authorizer;
+	}
+
+	public function setDecisionReason(DecisionReason $reason): void
+	{
+		$this->decisionReason = $reason;
+	}
+
+	public function getDecisionReason(): ?DecisionReason
+	{
+		return $this->decisionReason;
 	}
 
 }
