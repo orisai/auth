@@ -5,6 +5,7 @@ namespace Orisai\Auth\Authentication;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
+use Orisai\Auth\Authorization\DecisionReason;
 
 /**
  * @phpstan-template I of Identity
@@ -43,7 +44,7 @@ interface Firewall
 
 	public function hasRole(string $role): bool;
 
-	public function isAllowed(string $privilege, ?object $requirements = null): bool;
+	public function isAllowed(string $privilege, ?object $requirements = null, ?DecisionReason &$reason = null): bool;
 
 	public function hasPrivilege(string $privilege): bool;
 

@@ -69,6 +69,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		?Identity $identity,
 		string $privilege,
 		?object $requirements = null,
+		?DecisionReason &$reason = null,
 		?CurrentUserPolicyContext $context = null
 	): bool
 	{
@@ -84,6 +85,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$policy,
 			$requirements,
 			$context ?? new AnyUserPolicyContext($this),
+			$reason,
 			__FUNCTION__,
 		);
 	}
@@ -121,6 +123,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		Policy $policy,
 		?object $requirements,
 		PolicyContext $context,
+		?DecisionReason &$reason,
 		string $function
 	): bool
 	{
@@ -169,7 +172,11 @@ final class PrivilegeAuthorizer implements Authorizer
 				->withMessage($message);
 		}
 
-		return $policy->isAllowed($identity, $requirements, $context);
+		$isAllowed = $policy->isAllowed($identity, $requirements, $context);
+
+		$reason = $context->getDecisionReason();
+
+		return $isAllowed;
 	}
 
 	/**

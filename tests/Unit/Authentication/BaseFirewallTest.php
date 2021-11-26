@@ -10,11 +10,13 @@ use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
+use Tests\Orisai\Auth\Doubles\AddDecisionReasonPolicy;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
@@ -115,6 +117,29 @@ final class BaseFirewallTest extends TestCase
 
 		self::assertSame($newIdentity, $firewall1->getIdentity());
 		self::assertSame($identity, $firewall2->getIdentity());
+	}
+
+	public function testPolicyDecisionReason(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new NoRequirementsPolicy());
+		$policyManager->add(new AddDecisionReasonPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
+		$builder->addPrivilege(AddDecisionReasonPolicy::getPrivilege());
+
+		$authorizer = $this->authorizer($policyManager, $builder);
+
+		$firewall = new TestingFirewall(new ArrayLoginStorage(), $this->renewer(), $authorizer);
+
+		$firewall->login(new IntIdentity(1, []));
+
+		$firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), null, $reason);
+		self::assertNull($reason);
+
+		$firewall->isAllowed(AddDecisionReasonPolicy::getPrivilege(), null, $reason);
+		self::assertInstanceOf(DecisionReason::class, $reason);
 	}
 
 	public function testIdentityClassUpdate(): void

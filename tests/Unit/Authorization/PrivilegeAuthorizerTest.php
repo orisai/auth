@@ -5,6 +5,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use Orisai\Auth\Authorization\NoRequirements;
@@ -13,6 +14,7 @@ use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use Tests\Orisai\Auth\Doubles\AddDecisionReasonPolicy;
 use Tests\Orisai\Auth\Doubles\Article;
 use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
@@ -633,6 +635,27 @@ MSG);
 		self::assertTrue(
 			$authorizer->isAllowed(null, PassWithNoIdentityPolicy::getPrivilege()),
 		);
+	}
+
+	public function testPolicyDecisionReason(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new NoRequirementsPolicy());
+		$policyManager->add(new AddDecisionReasonPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
+		$builder->addPrivilege(AddDecisionReasonPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
+
+		$identity = new IntIdentity(1, []);
+
+		$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $reason);
+		self::assertNull($reason);
+
+		$authorizer->isAllowed($identity, AddDecisionReasonPolicy::getPrivilege(), null, $reason);
+		self::assertInstanceOf(DecisionReason::class, $reason);
 	}
 
 	public function testPolicyResourceOwner(): void

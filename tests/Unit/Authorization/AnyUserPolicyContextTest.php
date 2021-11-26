@@ -4,6 +4,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authorization\AnyUserPolicyContext;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +18,10 @@ final class AnyUserPolicyContextTest extends TestCase
 		$context = new AnyUserPolicyContext($authorizer);
 
 		self::assertSame($authorizer, $context->getAuthorizer());
+
+		self::assertNull($context->getDecisionReason());
+		$context->setDecisionReason($reason = DecisionReason::create('Message'));
+		self::assertSame($reason, $context->getDecisionReason());
 	}
 
 }
