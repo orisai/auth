@@ -14,6 +14,8 @@ final class CurrentUserPolicyContext implements PolicyContext
 	/** @var Firewall<Identity> */
 	private Firewall $firewall;
 
+	private ?DecisionReason $decisionReason = null;
+
 	/**
 	 * @param Firewall<Identity> $firewall
 	 *
@@ -36,6 +38,16 @@ final class CurrentUserPolicyContext implements PolicyContext
 	public function getExpiredLogins(): array
 	{
 		return $this->firewall->getExpiredLogins();
+	}
+
+	public function setDecisionReason(DecisionReason $reason): void
+	{
+		$this->decisionReason = $reason;
+	}
+
+	public function getDecisionReason(): ?DecisionReason
+	{
+		return $this->decisionReason;
 	}
 
 }

@@ -15,6 +15,7 @@ interface Authorizer
 		?Identity $identity,
 		string $privilege,
 		?object $requirements = null,
+		?DecisionReason &$reason = null,
 		?CurrentUserPolicyContext $context = null
 	): bool;
 

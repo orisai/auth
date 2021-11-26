@@ -6,6 +6,7 @@ use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\SimpleFirewall;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\CurrentUserPolicyContext;
+use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use PHPUnit\Framework\TestCase;
@@ -22,6 +23,10 @@ final class CurrentUserPolicyContextTest extends TestCase
 
 		self::assertSame($authorizer, $context->getAuthorizer());
 		self::assertSame([], $context->getExpiredLogins());
+
+		self::assertNull($context->getDecisionReason());
+		$context->setDecisionReason($reason = DecisionReason::create('Message'));
+		self::assertSame($reason, $context->getDecisionReason());
 	}
 
 }
