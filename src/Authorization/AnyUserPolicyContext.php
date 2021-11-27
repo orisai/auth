@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Orisai\Auth\Authentication\DecisionReason;
+
 final class AnyUserPolicyContext implements PolicyContext
 {
 

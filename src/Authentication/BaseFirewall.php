@@ -14,7 +14,6 @@ use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\CurrentUserPolicyContext;
-use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 

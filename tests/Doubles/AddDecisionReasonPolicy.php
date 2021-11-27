@@ -2,8 +2,8 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;

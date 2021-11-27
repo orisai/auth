@@ -1,8 +1,8 @@
 <?php declare(strict_types = 1);
 
-namespace Tests\Orisai\Auth\Unit\Authorization;
+namespace Tests\Orisai\Auth\Unit\Authentication;
 
-use Orisai\Auth\Authorization\DecisionReason;
+use Orisai\Auth\Authentication\DecisionReason;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionReasonTest extends TestCase
