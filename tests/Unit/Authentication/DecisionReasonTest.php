@@ -42,10 +42,7 @@ final class DecisionReasonTest extends TestCase
 		self::assertSame('Message', $reason->getMessage());
 		self::assertSame([], $reason->getParameters());
 		self::assertFalse($reason->isTranslatable());
-	}
 
-	public function testSerializationBCTranslatable(): void
-	{
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		$serialized = 'O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:20:"translatable.message";s:10:"parameters";a:1:{s:1:"a";s:1:"b";}s:12:"translatable";b:1;}';
 		$reason = unserialize($serialized);
