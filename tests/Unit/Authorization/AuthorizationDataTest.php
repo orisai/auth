@@ -76,6 +76,29 @@ final class AuthorizationDataTest extends TestCase
 		self::assertSame([], $data->getRawPrivileges());
 		self::assertSame([], $data->getRawRoleAllowedPrivileges());
 		self::assertFalse($data->isThrowOnUnknownPrivilege());
+
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		$serialized = 'O:43:"Orisai\Auth\Authorization\AuthorizationData":4:{s:8:"rawRoles";a:1:{s:6:"editor";N;}s:13:"rawPrivileges";a:1:{s:7:"article";a:3:{s:4:"view";a:0:{}s:4:"edit";a:0:{}s:6:"delete";a:0:{}}}s:24:"rawRoleAllowedPrivileges";a:1:{s:6:"editor";a:1:{s:7:"article";a:2:{s:4:"view";a:0:{}s:4:"edit";a:0:{}}}}s:23:"throwOnUnknownPrivilege";b:1;}';
+		$data = unserialize($serialized);
+
+		self::assertInstanceOf(AuthorizationData::class, $data);
+		self::assertSame(
+			['editor'],
+			$data->getRoles(),
+		);
+		self::assertSame(
+			['article.view', 'article.edit', 'article.delete'],
+			$data->getPrivileges(),
+		);
+		self::assertSame(
+			['article.view', 'article.edit'],
+			$data->getAllowedPrivilegesForRole('editor'),
+		);
+		self::assertSame(
+			[],
+			$data->getAllowedPrivilegesForRole('unknown'),
+		);
+		self::assertTrue($data->isThrowOnUnknownPrivilege());
 	}
 
 }

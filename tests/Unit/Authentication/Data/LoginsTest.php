@@ -145,6 +145,14 @@ final class LoginsTest extends TestCase
 		self::assertNull($logins->getCurrentLogin());
 		self::assertSame([], $logins->getExpiredLogins());
 		self::assertNull($logins->getLastExpiredLogin());
+
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		$serialized = 'O:38:"Orisai\Auth\Authentication\Data\Logins":2:{s:12:"currentLogin";O:44:"Orisai\Auth\Authentication\Data\CurrentLogin":3:{s:8:"identity";O:41:"Orisai\Auth\Authentication\StringIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";s:4:"test";}s:18:"authenticationTime";i:1;s:10:"expiration";N;}s:13:"expiredLogins";a:1:{s:4:"test";O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";r:3;s:18:"authenticationTime";i:1;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";N;s:10:"expiration";N;}}}"string(519) "O:38:"Orisai\Auth\Authentication\Data\Logins":2:{s:12:"currentLogin";O:44:"Orisai\Auth\Authentication\Data\CurrentLogin":3:{s:8:"identity";O:41:"Orisai\Auth\Authentication\StringIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";s:4:"test";}s:18:"authenticationTime";i:1;s:10:"expiration";N;}s:13:"expiredLogins";a:1:{s:4:"test";O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";r:3;s:18:"authenticationTime";i:1;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";N;s:10:"expiration";N;}}}';
+		$logins = unserialize($serialized);
+
+		self::assertInstanceOf(Logins::class, $logins);
+		self::assertInstanceOf(CurrentLogin::class, $logins->getCurrentLogin());
+		self::assertCount(1, $logins->getExpiredLogins());
 	}
 
 }
