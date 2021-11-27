@@ -53,4 +53,26 @@ final class DecisionReason
 		return $this->translatable;
 	}
 
+	/**
+	 * @return array<mixed>
+	 */
+	public function __serialize(): array
+	{
+		return [
+			'message' => $this->message,
+			'parameters' => $this->parameters,
+			'translatable' => $this->translatable,
+		];
+	}
+
+	/**
+	 * @param array<mixed> $data
+	 */
+	public function __unserialize(array $data): void
+	{
+		$this->message = $data['message'];
+		$this->parameters = $data['parameters'];
+		$this->translatable = $data['translatable'];
+	}
+
 }
