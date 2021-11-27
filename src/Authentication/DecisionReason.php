@@ -1,6 +1,6 @@
 <?php declare(strict_types = 1);
 
-namespace Orisai\Auth\Authorization;
+namespace Orisai\Auth\Authentication;
 
 final class DecisionReason
 {

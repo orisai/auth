@@ -3,6 +3,7 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authentication\Identity;
 

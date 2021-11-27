@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
 
 interface Authorizer

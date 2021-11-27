@@ -5,7 +5,6 @@ namespace Orisai\Auth\Authentication;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
-use Orisai\Auth\Authorization\DecisionReason;
 
 /**
  * @phpstan-template I of Identity

@@ -2,10 +2,10 @@
 
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\DecisionReason;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use Orisai\Auth\Authorization\NoRequirements;
