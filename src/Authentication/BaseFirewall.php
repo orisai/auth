@@ -100,7 +100,7 @@ abstract class BaseFirewall implements Firewall
 	/**
 	 * @phpstan-param self::REASON_* $reason
 	 */
-	private function unauthenticate(Logins $logins, int $reason, ?string $logoutReasonDescription): void
+	private function unauthenticate(Logins $logins, int $reason, ?DecisionReason $logoutReasonDescription): void
 	{
 		$login = $logins->getCurrentLogin();
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRenewer;
@@ -12,9 +13,9 @@ use Orisai\Auth\Authentication\IdentityRenewer;
 final class NeverPassIdentityRenewer implements IdentityRenewer
 {
 
-	private ?string $reason;
+	private ?DecisionReason $reason;
 
-	public function __construct(?string $reason = null)
+	public function __construct(?DecisionReason $reason = null)
 	{
 		$this->reason = $reason;
 	}

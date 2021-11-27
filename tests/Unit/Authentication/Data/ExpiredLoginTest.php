@@ -8,6 +8,7 @@ use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\Expiration;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authentication\IntIdentity;
 use PHPUnit\Framework\TestCase;
@@ -33,8 +34,9 @@ final class ExpiredLoginTest extends TestCase
 
 		self::assertEquals($login, unserialize(serialize($login)));
 
-		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL, 'description');
-		self::assertSame('description', $login->getLogoutReasonDescription());
+		$reason = DecisionReason::create('description');
+		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL, $reason);
+		self::assertSame($reason, $login->getLogoutReasonDescription());
 		self::assertEquals($login, unserialize(serialize($login)));
 	}
 
@@ -88,7 +90,18 @@ final class ExpiredLoginTest extends TestCase
 		self::assertInstanceOf(Expiration::class, $expiration);
 		self::assertSame(123, $expiration->getTime()->getEpochSecond());
 		self::assertSame(456, $expiration->getDelta()->getSeconds());
-		self::assertSame('reason', $login->getLogoutReasonDescription());
+		$description = $login->getLogoutReasonDescription();
+		self::assertSame('reason', $description->getMessage());
+		self::assertFalse($description->isTranslatable());
+
+		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
+		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}"string(403) "O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}';
+		$login = unserialize($serialized);
+
+		self::assertInstanceOf(ExpiredLogin::class, $login);
+		$description = $login->getLogoutReasonDescription();
+		self::assertSame('message', $description->getMessage());
+		self::assertTrue($description->isTranslatable());
 	}
 
 }
