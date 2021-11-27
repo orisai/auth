@@ -2,7 +2,9 @@
 
 namespace Orisai\Auth\Authentication\Data;
 
+use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Firewall;
+use function is_string;
 
 final class ExpiredLogin extends BaseLogin
 {
@@ -12,12 +14,16 @@ final class ExpiredLogin extends BaseLogin
 	/** @phpstan-var Firewall::REASON_* */
 	private int $logoutReason;
 
-	private ?string $logoutReasonDescription;
+	private ?DecisionReason $logoutReasonDescription;
 
 	/**
 	 * @phpstan-param Firewall::REASON_* $logoutReason
 	 */
-	public function __construct(CurrentLogin $currentLogin, int $logoutReason, ?string $logoutReasonDescription = null)
+	public function __construct(
+		CurrentLogin $currentLogin,
+		int $logoutReason,
+		?DecisionReason $logoutReasonDescription = null
+	)
 	{
 		parent::__construct($currentLogin->getIdentity(), $currentLogin->getAuthenticationTime());
 
@@ -43,7 +49,7 @@ final class ExpiredLogin extends BaseLogin
 		return $this->logoutReason;
 	}
 
-	public function getLogoutReasonDescription(): ?string
+	public function getLogoutReasonDescription(): ?DecisionReason
 	{
 		return $this->logoutReasonDescription;
 	}
@@ -68,7 +74,8 @@ final class ExpiredLogin extends BaseLogin
 	{
 		parent::__unserialize($data);
 		$this->logoutReason = $data['logoutReason'];
-		$this->logoutReasonDescription = $data['logoutReasonDescription'] ?? null;
+		$description = $data['logoutReasonDescription'] ?? null;
+		$this->logoutReasonDescription = !is_string($description) ? $description : DecisionReason::create($description);
 		$this->expiration = $data['expiration'];
 	}
 

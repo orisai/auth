@@ -310,7 +310,7 @@ MSG);
 	/**
 	 * @dataProvider provideRenewerRemovedIdentity
 	 */
-	public function testRenewerRemovedIdentity(?string $reasonDescription): void
+	public function testRenewerRemovedIdentity(?DecisionReason $reasonDescription): void
 	{
 		$identity = new IntIdentity(123, []);
 
@@ -336,7 +336,7 @@ MSG);
 	public function provideRenewerRemovedIdentity(): Generator
 	{
 		yield [null];
-		yield ['reason description'];
+		yield [DecisionReason::create('reason description')];
 	}
 
 	public function testSecurityTokenRegenerates(): void
