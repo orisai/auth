@@ -32,7 +32,7 @@ final class PrivilegeProcessor
 				->withMessage("Privilege {$privilege} ends with dot `.`, which is not allowed.");
 		}
 
-		if ($privilege !== Authorizer::ALL_PRIVILEGES && str_contains($privilege, Authorizer::ALL_PRIVILEGES)) {
+		if ($privilege !== Authorizer::ROOT_PRIVILEGE && str_contains($privilege, Authorizer::ROOT_PRIVILEGE)) {
 			throw InvalidArgument::create()
 				->withMessage("Privilege {$privilege} contains `*`, which can be used only standalone.");
 		}
@@ -53,7 +53,7 @@ final class PrivilegeProcessor
 		$all = [];
 
 		if ($includePowerUser) {
-			$all[] = Authorizer::ALL_PRIVILEGES;
+			$all[] = Authorizer::ROOT_PRIVILEGE;
 		}
 
 		$parts = self::parsePrivilege($privilege);
@@ -73,7 +73,7 @@ final class PrivilegeProcessor
 	 */
 	public static function getAnyRawPrivilege(array $privilegeParts, array $rawPrivileges): ?array
 	{
-		if ($privilegeParts === [Authorizer::ALL_PRIVILEGES]) {
+		if ($privilegeParts === [Authorizer::ROOT_PRIVILEGE]) {
 			return $rawPrivileges;
 		}
 

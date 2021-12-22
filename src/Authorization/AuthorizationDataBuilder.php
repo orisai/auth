@@ -30,12 +30,12 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 
 	public function addPrivilege(string $privilege): void
 	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
+		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
 			$class = self::class;
 			$function = __FUNCTION__;
 			$message = Message::create()
 				->withContext("Trying to add privilege '$privilege' via $class->$function().")
-				->withProblem("Privilege '$privilege' is reserved representation of all privileges and " .
+				->withProblem("Privilege '$privilege' is reserved representation of root privilege and " .
 					'cannot be added.');
 
 			throw InvalidArgument::create()

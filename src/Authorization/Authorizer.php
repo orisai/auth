@@ -8,7 +8,7 @@ use Orisai\Auth\Authentication\Identity;
 interface Authorizer
 {
 
-	public const ALL_PRIVILEGES = '*';
+	public const ROOT_PRIVILEGE = '*';
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 

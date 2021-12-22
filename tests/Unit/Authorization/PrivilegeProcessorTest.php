@@ -75,7 +75,7 @@ final class PrivilegeProcessorTest extends TestCase
 			'article.edit.owned',
 			true,
 			[
-				Authorizer::ALL_PRIVILEGES,
+				Authorizer::ROOT_PRIVILEGE,
 				'article',
 				'article.edit',
 				'article.edit.owned',
