@@ -76,7 +76,7 @@ final class AuthorizationData
 
 	public function privilegeExists(string $privilege): bool
 	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
+		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
 			return true;
 		}
 

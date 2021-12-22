@@ -197,7 +197,7 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			$identityData->getRawAllowedPrivileges(),
 		);
 
-		$identityBuilder->removeAllow($identity, Authorizer::ALL_PRIVILEGES);
+		$identityBuilder->removeAllow($identity, Authorizer::ROOT_PRIVILEGE);
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
@@ -219,12 +219,12 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
 		$identity = new IntIdentity(1, []);
 
-		$identityBuilder->allow($identity, Authorizer::ALL_PRIVILEGES);
+		$identityBuilder->allow($identity, Authorizer::ROOT_PRIVILEGE);
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
 			[
-				Authorizer::ALL_PRIVILEGES => [],
+				Authorizer::ROOT_PRIVILEGE => [],
 			],
 			$identityData->getRawAllowedPrivileges(),
 		);
@@ -235,13 +235,13 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 
 		self::assertSame(
 			[
-				Authorizer::ALL_PRIVILEGES => [],
+				Authorizer::ROOT_PRIVILEGE => [],
 			],
 			$identityData->getRawAllowedPrivileges(),
 		);
 
 		// Root privilege itself can be removed
-		$identityBuilder->removeAllow($identity, Authorizer::ALL_PRIVILEGES);
+		$identityBuilder->removeAllow($identity, Authorizer::ROOT_PRIVILEGE);
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(

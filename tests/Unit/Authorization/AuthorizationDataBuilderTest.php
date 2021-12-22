@@ -61,18 +61,18 @@ final class AuthorizationDataBuilderTest extends TestCase
 		$this->expectExceptionMessage(<<<'MSG'
 Context: Trying to add privilege '*' via
          Orisai\Auth\Authorization\AuthorizationDataBuilder->addPrivilege().
-Problem: Privilege '*' is reserved representation of all privileges and cannot
+Problem: Privilege '*' is reserved representation of root privilege and cannot
          be added.
 MSG);
 
-		$builder->addPrivilege(Authorizer::ALL_PRIVILEGES);
+		$builder->addPrivilege(Authorizer::ROOT_PRIVILEGE);
 	}
 
 	public function testPrivilegeExists(): void
 	{
 		$builder = new AuthorizationDataBuilder();
 		$data = $builder->build();
-		self::assertTrue($data->privilegeExists(Authorizer::ALL_PRIVILEGES));
+		self::assertTrue($data->privilegeExists(Authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($data->privilegeExists('article'));
 		self::assertFalse($data->privilegeExists('article.edit'));
 		self::assertFalse($data->privilegeExists('article.edit.all'));
@@ -88,7 +88,7 @@ MSG);
 		self::assertTrue($data->privilegeExists('article'));
 		self::assertTrue($data->privilegeExists('article.edit'));
 		self::assertTrue($data->privilegeExists('article.edit.all'));
-		self::assertTrue($data->privilegeExists(Authorizer::ALL_PRIVILEGES));
+		self::assertTrue($data->privilegeExists(Authorizer::ROOT_PRIVILEGE));
 	}
 
 	public function testRoles(): void
@@ -301,7 +301,7 @@ MSG);
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
-		$builder->removeAllow($role, Authorizer::ALL_PRIVILEGES);
+		$builder->removeAllow($role, Authorizer::ROOT_PRIVILEGE);
 		$data = $builder->build();
 
 		self::assertSame(
@@ -323,13 +323,13 @@ MSG);
 		$role = 'editor';
 		$builder->addRole($role);
 
-		$builder->allow($role, Authorizer::ALL_PRIVILEGES);
+		$builder->allow($role, Authorizer::ROOT_PRIVILEGE);
 		$data = $builder->build();
 
 		self::assertSame(
 			[
 				'editor' => [
-					Authorizer::ALL_PRIVILEGES => [],
+					Authorizer::ROOT_PRIVILEGE => [],
 				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
@@ -342,14 +342,14 @@ MSG);
 		self::assertSame(
 			[
 				'editor' => [
-					Authorizer::ALL_PRIVILEGES => [],
+					Authorizer::ROOT_PRIVILEGE => [],
 				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
 		// Root privilege itself can be removed
-		$builder->removeAllow($role, Authorizer::ALL_PRIVILEGES);
+		$builder->removeAllow($role, Authorizer::ROOT_PRIVILEGE);
 		$data = $builder->build();
 
 		self::assertSame(
