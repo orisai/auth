@@ -32,7 +32,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
-		if ($privilege === self::ALL_PRIVILEGES) {
+		if ($privilege === self::ROOT_PRIVILEGE) {
 			return $this->hasRootPrivilege($identity);
 		}
 
@@ -45,7 +45,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		if ($identityAuthData !== null) {
 			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
 
-			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
 				return true;
 			}
 		}
@@ -58,7 +58,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 			$allowedPrivileges = &$roleAllowedPrivileges[$role];
 
-			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
 				return true;
 			}
 		}
@@ -81,7 +81,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		if ($identityAuthData !== null) {
 			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
 
-			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
 				return true;
 			}
 
@@ -103,7 +103,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 			$allowedPrivileges = &$roleAllowedPrivileges[$role];
 
-			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
 				return true;
 			}
 
@@ -132,7 +132,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		array $privilegeParts
 	): bool
 	{
-		$matchingAllowedPrivileges = $privilege === self::ALL_PRIVILEGES
+		$matchingAllowedPrivileges = $privilege === self::ROOT_PRIVILEGE
 			? $allowedPrivileges
 			: Arrays::getKey($allowedPrivileges, $privilegeParts);
 

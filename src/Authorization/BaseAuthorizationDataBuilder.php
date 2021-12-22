@@ -28,8 +28,8 @@ abstract class BaseAuthorizationDataBuilder
 		string $function
 	): void
 	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			$allowed[$ownerId] = [Authorizer::ALL_PRIVILEGES => []];
+		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
+			$allowed[$ownerId] = [Authorizer::ROOT_PRIVILEGE => []];
 
 			return;
 		}
@@ -70,7 +70,7 @@ abstract class BaseAuthorizationDataBuilder
 		string $function
 	): void
 	{
-		if ($privilege === Authorizer::ALL_PRIVILEGES) {
+		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
 			$denied[$ownerId] = [];
 
 			return;
