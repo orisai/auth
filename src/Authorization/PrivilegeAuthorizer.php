@@ -252,6 +252,10 @@ final class PrivilegeAuthorizer implements Authorizer
 				->withMessage($message);
 		}
 
+		if ($identity !== null && $this->hasRootPrivilege($identity)) {
+			return true;
+		}
+
 		$isAllowed = $policy->isAllowed($identity, $requirements, $context);
 
 		$reason = $context->getDecisionReason();
