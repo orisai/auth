@@ -93,4 +93,74 @@ final class PrivilegeProcessorTest extends TestCase
 		];
 	}
 
+	/**
+	 * @param non-empty-array<string> $privilegeParts
+	 * @param array<mixed>            $rawPrivileges
+	 * @param array<mixed>|null       $expected
+	 *
+	 * @dataProvider getAnyRawPrivilegeProvider
+	 */
+	public function testGetAnyRawPrivilege(array $privilegeParts, array $rawPrivileges, ?array $expected): void
+	{
+		self::assertSame(
+			PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $rawPrivileges),
+			$expected,
+		);
+	}
+
+	/**
+	 * @return Generator<array<mixed>>
+	 */
+	public function getAnyRawPrivilegeProvider(): Generator
+	{
+		yield [
+			['app', 'article'],
+			[
+				'app' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			[
+				'view' => [],
+				'edit' => [],
+			],
+		];
+
+		yield [
+			['app', 'article', 'create'],
+			[
+				'app' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			null,
+		];
+
+		yield [
+			[Authorizer::ROOT_PRIVILEGE],
+			[
+				'app' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			[
+				'app' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+		];
+	}
+
 }

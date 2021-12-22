@@ -67,8 +67,8 @@ final class PrivilegeProcessor
 	}
 
 	/**
-	 * @param array<mixed>            $rawPrivileges
 	 * @param non-empty-array<string> $privilegeParts
+	 * @param array<mixed>            $rawPrivileges
 	 * @return array<mixed>|null
 	 */
 	public static function getAnyRawPrivilege(array $privilegeParts, array $rawPrivileges): ?array
