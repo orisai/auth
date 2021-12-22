@@ -29,7 +29,7 @@ abstract class BaseAuthorizationDataBuilder
 	): void
 	{
 		if ($privilege === Authorizer::ALL_PRIVILEGES) {
-			$allowed[$ownerId] = $allPrivileges;
+			$allowed[$ownerId] = [Authorizer::ALL_PRIVILEGES => []];
 
 			return;
 		}
