@@ -298,6 +298,36 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'article'));
 	}
 
+	public function testRootPrivilegeFromIdentity(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addPrivilege('article.view');
+		$builder->addPrivilege('article.edit.owned');
+		$builder->addPrivilege('article.edit.all');
+
+		$data = $builder->build();
+
+		$identity = new IntIdentity(1, []);
+
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+		$identityBuilder->allow($identity, Authorizer::ROOT_PRIVILEGE);
+
+		$identityData = $identityBuilder->build($identity);
+		$identity->setAuthData($identityData);
+
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
+
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.owned'));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.all'));
+		self::assertTrue($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.owned'));
+		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.all'));
+		self::assertTrue($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
+	}
+
 	public function testRolesNotMixed(): void
 	{
 		$builder = new AuthorizationDataBuilder();
@@ -517,6 +547,8 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
+		self::assertFalse($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
+		self::assertFalse($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
 
 		$identity = new IntIdentity(1, ['unknown', 'known']);
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something'));
