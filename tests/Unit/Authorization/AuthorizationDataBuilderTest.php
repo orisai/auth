@@ -329,27 +329,32 @@ MSG);
 		self::assertSame(
 			[
 				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
-					'something' => [],
+					Authorizer::ALL_PRIVILEGES => [],
 				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
 		);
 
+		// Can't remove part of root privilege
 		$builder->removeAllow($role, 'something');
 		$data = $builder->build();
 
 		self::assertSame(
 			[
 				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
+					Authorizer::ALL_PRIVILEGES => [],
 				],
+			],
+			$data->getRawRoleAllowedPrivileges(),
+		);
+
+		// Root privilege itself can be removed
+		$builder->removeAllow($role, Authorizer::ALL_PRIVILEGES);
+		$data = $builder->build();
+
+		self::assertSame(
+			[
+				'editor' => [],
 			],
 			$data->getRawRoleAllowedPrivileges(),
 		);

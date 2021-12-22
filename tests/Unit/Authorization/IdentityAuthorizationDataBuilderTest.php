@@ -224,25 +224,28 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 
 		self::assertSame(
 			[
-				'article' => [
-					'view' => [],
-					'edit' => [],
-				],
-				'something' => [],
+				Authorizer::ALL_PRIVILEGES => [],
 			],
 			$identityData->getRawAllowedPrivileges(),
 		);
 
+		// Can't remove part of root privilege
 		$identityBuilder->removeAllow($identity, 'something');
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(
 			[
-				'article' => [
-					'view' => [],
-					'edit' => [],
-				],
+				Authorizer::ALL_PRIVILEGES => [],
 			],
+			$identityData->getRawAllowedPrivileges(),
+		);
+
+		// Root privilege itself can be removed
+		$identityBuilder->removeAllow($identity, Authorizer::ALL_PRIVILEGES);
+		$identityData = $identityBuilder->build($identity);
+
+		self::assertSame(
+			[],
 			$identityData->getRawAllowedPrivileges(),
 		);
 	}

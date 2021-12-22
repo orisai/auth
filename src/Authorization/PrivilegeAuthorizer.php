@@ -32,6 +32,42 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
+		if ($privilege === self::ALL_PRIVILEGES) {
+			return $this->hasRootPrivilege($identity);
+		}
+
+		return $this->hasPrivilegeMatchSubsets($identity, $privilege, $function);
+	}
+
+	private function hasRootPrivilege(Identity $identity): bool
+	{
+		$identityAuthData = $identity->getAuthData();
+		if ($identityAuthData !== null) {
+			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
+
+			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+				return true;
+			}
+		}
+
+		$roleAllowedPrivileges = $this->data->getRawRoleAllowedPrivileges();
+		foreach ($identity->getRoles() as $role) {
+			if (!array_key_exists($role, $roleAllowedPrivileges)) {
+				continue;
+			}
+
+			$allowedPrivileges = &$roleAllowedPrivileges[$role];
+
+			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private function hasPrivilegeMatchSubsets(Identity $identity, string $privilege, string $function): bool
+	{
 		$privileges = $this->data->getRawPrivileges();
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
@@ -45,7 +81,16 @@ final class PrivilegeAuthorizer implements Authorizer
 		if ($identityAuthData !== null) {
 			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
 
-			if ($this->isAllowedMatchSubset($requiredPrivileges, $allowedPrivileges, $privilege, $privilegeParts)) {
+			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+				return true;
+			}
+
+			if ($this->hasPrivilegeSubtractSubset(
+				$requiredPrivileges,
+				$allowedPrivileges,
+				$privilege,
+				$privilegeParts,
+			)) {
 				return true;
 			}
 		}
@@ -58,12 +103,46 @@ final class PrivilegeAuthorizer implements Authorizer
 
 			$allowedPrivileges = &$roleAllowedPrivileges[$role];
 
-			if ($this->isAllowedMatchSubset($requiredPrivileges, $allowedPrivileges, $privilege, $privilegeParts)) {
+			if (array_key_exists(self::ALL_PRIVILEGES, $allowedPrivileges)) {
+				return true;
+			}
+
+			if ($this->hasPrivilegeSubtractSubset(
+				$requiredPrivileges,
+				$allowedPrivileges,
+				$privilege,
+				$privilegeParts,
+			)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * @param array<mixed>            $requiredPrivileges
+	 * @param array<mixed>            $allowedPrivileges
+	 * @param non-empty-array<string> $privilegeParts
+	 */
+	private function hasPrivilegeSubtractSubset(
+		array &$requiredPrivileges,
+		array $allowedPrivileges,
+		string $privilege,
+		array $privilegeParts
+	): bool
+	{
+		$matchingAllowedPrivileges = $privilege === self::ALL_PRIVILEGES
+			? $allowedPrivileges
+			: Arrays::getKey($allowedPrivileges, $privilegeParts);
+
+		if ($matchingAllowedPrivileges === null) {
+			return false;
+		}
+
+		Arrays::removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingAllowedPrivileges);
+
+		return $requiredPrivileges === [];
 	}
 
 	public function isAllowed(
@@ -178,31 +257,6 @@ final class PrivilegeAuthorizer implements Authorizer
 		$reason = $context->getDecisionReason();
 
 		return $isAllowed;
-	}
-
-	/**
-	 * @param array<mixed>            $requiredPrivileges
-	 * @param array<mixed>            $allowedPrivileges
-	 * @param non-empty-array<string> $privilegeParts
-	 */
-	private function isAllowedMatchSubset(
-		array &$requiredPrivileges,
-		array $allowedPrivileges,
-		string $privilege,
-		array $privilegeParts
-	): bool
-	{
-		$matchingAllowedPrivileges = $privilege === self::ALL_PRIVILEGES
-			? $allowedPrivileges
-			: Arrays::getKey($allowedPrivileges, $privilegeParts);
-
-		if ($matchingAllowedPrivileges === null) {
-			return false;
-		}
-
-		Arrays::removeMatchingPartsFromFromFirstArray($requiredPrivileges, $matchingAllowedPrivileges);
-
-		return $requiredPrivileges === [];
 	}
 
 }
