@@ -207,10 +207,6 @@ final class PrivilegeAuthorizer implements Authorizer
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
-		if ($identity === null && !$policy instanceof OptionalIdentityPolicy) {
-			return false;
-		}
-
 		$requirementsClass = $policy::getRequirementsClass();
 		if ($requirements !== null) {
 			if (!is_a($requirements, $requirementsClass, true)) {
@@ -245,6 +241,10 @@ final class PrivilegeAuthorizer implements Authorizer
 
 			throw InvalidArgument::create()
 				->withMessage($message);
+		}
+
+		if ($identity === null && !$policy instanceof OptionalIdentityPolicy) {
+			return false;
 		}
 
 		if ($identity !== null && $this->hasRootPrivilege($identity)) {
