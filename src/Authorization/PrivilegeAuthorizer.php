@@ -88,7 +88,6 @@ final class PrivilegeAuthorizer implements Authorizer
 			if ($this->hasPrivilegeSubtractSubset(
 				$requiredPrivileges,
 				$allowedPrivileges,
-				$privilege,
 				$privilegeParts,
 			)) {
 				return true;
@@ -110,7 +109,6 @@ final class PrivilegeAuthorizer implements Authorizer
 			if ($this->hasPrivilegeSubtractSubset(
 				$requiredPrivileges,
 				$allowedPrivileges,
-				$privilege,
 				$privilegeParts,
 			)) {
 				return true;
@@ -128,13 +126,10 @@ final class PrivilegeAuthorizer implements Authorizer
 	private function hasPrivilegeSubtractSubset(
 		array &$requiredPrivileges,
 		array $allowedPrivileges,
-		string $privilege,
 		array $privilegeParts
 	): bool
 	{
-		$matchingAllowedPrivileges = $privilege === self::ROOT_PRIVILEGE
-			? $allowedPrivileges
-			: Arrays::getKey($allowedPrivileges, $privilegeParts);
+		$matchingAllowedPrivileges = Arrays::getKey($allowedPrivileges, $privilegeParts);
 
 		if ($matchingAllowedPrivileges === null) {
 			return false;
