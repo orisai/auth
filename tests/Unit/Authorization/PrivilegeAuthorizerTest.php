@@ -770,7 +770,7 @@ MSG);
 		self::assertFalse($authorizer->isAllowed($identity1, 'article'));
 		self::assertFalse($authorizer->isAllowed($identity1, Authorizer::ALL_PRIVILEGES));
 
-		// Has access to all resources
+		// Has access to all resources as a root
 		$identity1 = new IntIdentity($user1->getId(), ['supervisor']);
 
 		self::assertTrue($authorizer->isAllowed($identity1, ...ArticleEditPolicy::get($article2)));
@@ -779,9 +779,9 @@ MSG);
 		self::assertTrue($authorizer->isAllowed($identity1, 'article'));
 		self::assertTrue($authorizer->isAllowed($identity1, Authorizer::ALL_PRIVILEGES));
 
-		// - except these which have defined policy which does not allow it
+		// - including these with policy which does not allow it
 		self::assertTrue($authorizer->hasPrivilege($identity1, NeverPassPolicy::getPrivilege()));
-		self::assertFalse($authorizer->isAllowed($identity1, ...NeverPassPolicy::get()));
+		self::assertTrue($authorizer->isAllowed($identity1, ...NeverPassPolicy::get()));
 	}
 
 }
