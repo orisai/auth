@@ -9,23 +9,22 @@ parameters:
 		# Since php 7.4 password_hash cannot return false
 		# https://github.com/php/php-src/blob/901417f0ae02afc8bef904818edaf2b2db8f6b58/ext/standard/password.c#L655
 		- message: '#^Method (.+)BcryptPasswordEncoder\:\:encode\(\) should return string but returns string\|false\.$#'
-		  path: %currentWorkingDirectory%/src/Passwords/BcryptPasswordEncoder.php
+		  path: ../src/Passwords/BcryptPasswordEncoder.php
 
 		# Should not be possible to get incorrect instance via firewall api
 		- message: '#^Method (.+)BaseFirewall\:\:getIdentity\(\) should return I of (.+)Identity but returns (.+)Identity\.$#'
-		  path: %currentWorkingDirectory%/src/Authentication/BaseFirewall.php
+		  path: ../src/Authentication/BaseFirewall.php
 
 		# It is checked whether interface is nullable
 		- message: '#^Parameter \#1 \$identity of method (.+)Policy(.+)\:\:isAllowed\(\) expects (.+)Identity, (.+)Identity\|null given\.#'
-		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
+		  path: ../src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
 		- message: '#^Parameter \#2 \$requirements of method (.+)Policy(.+)\:\:isAllowed\(\) expects object, object\|null given\.#'
-		  path: %currentWorkingDirectory%/src/Authorization/PrivilegeAuthorizer.php
+		  path: ../src/Authorization/PrivilegeAuthorizer.php
 		  count: 1
 
 		# Policy manager does not work with specific Policy, cannot specify type
 		- message: '#^(.+)generic interface Orisai\\Auth\\Authorization\\Policy(.+)$#'
 		  paths:
-		  	- %currentWorkingDirectory%/src/Authorization/PolicyManager.php
-		  	- %currentWorkingDirectory%/src/Authorization/SimplePolicyManager.php
-		  	- %currentWorkingDirectory%/src/Bridge/NetteDI/LazyPolicyManager.php
+		  	- ../src/Authorization/PolicyManager.php
+		  	- ../src/Authorization/SimplePolicyManager.php
