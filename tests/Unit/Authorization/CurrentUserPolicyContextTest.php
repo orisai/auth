@@ -10,7 +10,7 @@ use Orisai\Auth\Authorization\CurrentUserPolicyContext;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use PHPUnit\Framework\TestCase;
-use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRefresher;
 
 final class CurrentUserPolicyContextTest extends TestCase
 {
@@ -18,7 +18,7 @@ final class CurrentUserPolicyContextTest extends TestCase
 	public function test(): void
 	{
 		$authorizer = new PrivilegeAuthorizer(new SimplePolicyManager(), (new AuthorizationDataBuilder())->build());
-		$firewall = new SimpleFirewall('test', new ArrayLoginStorage(), new AlwaysPassIdentityRenewer(), $authorizer);
+		$firewall = new SimpleFirewall('test', new ArrayLoginStorage(), new AlwaysPassIdentityRefresher(), $authorizer);
 		$context = new CurrentUserPolicyContext($authorizer, $firewall);
 
 		self::assertSame($authorizer, $context->getAuthorizer());

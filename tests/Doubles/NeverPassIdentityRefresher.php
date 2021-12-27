@@ -5,12 +5,12 @@ namespace Tests\Orisai\Auth\Doubles;
 use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authentication\IdentityRenewer;
+use Orisai\Auth\Authentication\IdentityRefresher;
 
 /**
- * @phpstan-implements IdentityRenewer<Identity>
+ * @phpstan-implements IdentityRefresher<Identity>
  */
-final class NeverPassIdentityRenewer implements IdentityRenewer
+final class NeverPassIdentityRefresher implements IdentityRefresher
 {
 
 	private ?DecisionReason $reason;
@@ -20,7 +20,7 @@ final class NeverPassIdentityRenewer implements IdentityRenewer
 		$this->reason = $reason;
 	}
 
-	public function renewIdentity(Identity $identity): Identity
+	public function refresh(Identity $identity): Identity
 	{
 		throw IdentityExpired::create($this->reason);
 	}

@@ -7,13 +7,13 @@ use Orisai\Auth\Authentication\Exception\IdentityExpired;
 /**
  * @phpstan-template T of Identity
  */
-interface IdentityRenewer
+interface IdentityRefresher
 {
 
 	/**
 	 * @phpstan-return T
 	 * @throws IdentityExpired
 	 */
-	public function renewIdentity(Identity $identity): Identity;
+	public function refresh(Identity $identity): Identity;
 
 }

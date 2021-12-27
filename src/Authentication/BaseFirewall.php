@@ -26,8 +26,8 @@ abstract class BaseFirewall implements Firewall
 
 	private LoginStorage $storage;
 
-	/** @phpstan-var IdentityRenewer<I> */
-	private IdentityRenewer $renewer;
+	/** @phpstan-var IdentityRefresher<I> */
+	private IdentityRefresher $refresher;
 
 	private Authorizer $authorizer;
 
@@ -38,17 +38,17 @@ abstract class BaseFirewall implements Firewall
 	private int $expiredIdentitiesLimit = self::EXPIRED_IDENTITIES_DEFAULT_LIMIT;
 
 	/**
-	 * @phpstan-param IdentityRenewer<I> $renewer
+	 * @phpstan-param IdentityRefresher<I> $refresher
 	 */
 	public function __construct(
 		LoginStorage $storage,
-		IdentityRenewer $renewer,
+		IdentityRefresher $refresher,
 		Authorizer $authorizer,
 		?Clock $clock = null
 	)
 	{
 		$this->storage = $storage;
-		$this->renewer = $renewer;
+		$this->refresher = $refresher;
 		$this->authorizer = $authorizer;
 		$this->clock = $clock ?? new SystemClock();
 	}
@@ -271,7 +271,7 @@ abstract class BaseFirewall implements Firewall
 		}
 
 		try {
-			$identity = $this->renewer->renewIdentity($login->getIdentity());
+			$identity = $this->refresher->refresh($login->getIdentity());
 		} catch (IdentityExpired $exception) {
 			$this->unauthenticate($logins, self::REASON_INVALID_IDENTITY, $exception->getLogoutReasonDescription());
 

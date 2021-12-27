@@ -6,7 +6,7 @@ use Brick\DateTime\Clock;
 use Orisai\Auth\Authentication\BaseFirewall;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authentication\IdentityRenewer;
+use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authorization\Authorizer;
 
@@ -21,12 +21,12 @@ final class UserAwareFirewall extends BaseFirewall
 	public function __construct(
 		UserGetter $userGetter,
 		LoginStorage $storage,
-		IdentityRenewer $renewer,
+		IdentityRefresher $refresher,
 		Authorizer $authorizer,
 		?Clock $clock = null
 	)
 	{
-		parent::__construct($storage, $renewer, $authorizer, $clock);
+		parent::__construct($storage, $refresher, $authorizer, $clock);
 		$this->userGetter = $userGetter;
 	}
 

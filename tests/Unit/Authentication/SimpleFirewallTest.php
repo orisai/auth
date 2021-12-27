@@ -9,7 +9,7 @@ use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use PHPUnit\Framework\TestCase;
-use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRefresher;
 
 final class SimpleFirewallTest extends TestCase
 {
@@ -20,7 +20,7 @@ final class SimpleFirewallTest extends TestCase
 		$firewall = new SimpleFirewall(
 			'simple',
 			$storage,
-			new AlwaysPassIdentityRenewer(),
+			new AlwaysPassIdentityRefresher(),
 			new PrivilegeAuthorizer(
 				new SimplePolicyManager(),
 				(new AuthorizationDataBuilder())->build(),
