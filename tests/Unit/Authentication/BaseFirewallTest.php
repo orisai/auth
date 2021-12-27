@@ -17,9 +17,9 @@ use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AddDecisionReasonPolicy;
-use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRenewer;
-use Tests\Orisai\Auth\Doubles\NeverPassIdentityRenewer;
-use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRenewer;
+use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRefresher;
+use Tests\Orisai\Auth\Doubles\NeverPassIdentityRefresher;
+use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\PassWithNoIdentityPolicy;
 use Tests\Orisai\Auth\Doubles\TestingArrayLoginStorage;
@@ -30,9 +30,9 @@ use function array_keys;
 final class BaseFirewallTest extends TestCase
 {
 
-	private function renewer(): AlwaysPassIdentityRenewer
+	private function refresher(): AlwaysPassIdentityRefresher
 	{
-		return new AlwaysPassIdentityRenewer();
+		return new AlwaysPassIdentityRefresher();
 	}
 
 	private function authorizer(
@@ -56,7 +56,7 @@ final class BaseFirewallTest extends TestCase
 	public function testBase(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -86,14 +86,14 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall1 = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			null,
 			'one',
 		);
 		$firewall2 = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			null,
 			'two',
@@ -131,7 +131,7 @@ final class BaseFirewallTest extends TestCase
 
 		$authorizer = $this->authorizer($policyManager, $builder);
 
-		$firewall = new TestingFirewall(new ArrayLoginStorage(), $this->renewer(), $authorizer);
+		$firewall = new TestingFirewall(new ArrayLoginStorage(), $this->refresher(), $authorizer);
 
 		$firewall->login(new IntIdentity(1, []));
 
@@ -150,7 +150,7 @@ final class BaseFirewallTest extends TestCase
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall(
 			$storage,
-			new NewIdentityIdentityRenewer($renewedIdentity),
+			new NewIdentityIdentityRefresher($renewedIdentity),
 			$this->authorizer(),
 		);
 
@@ -164,7 +164,7 @@ final class BaseFirewallTest extends TestCase
 		$identity = new IntIdentity(123, ['foo']);
 
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		self::assertFalse($firewall->hasRole('foo'));
 
@@ -176,7 +176,7 @@ final class BaseFirewallTest extends TestCase
 	public function testExpiredIdentities(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 		$firewall->setExpiredIdentitiesLimit(3);
 		$identity1 = new IntIdentity(1, []);
 
@@ -239,7 +239,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -256,7 +256,7 @@ final class BaseFirewallTest extends TestCase
 	public function testManualRenewIdentityFailure(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$this->expectException(NotLoggedIn::class);
@@ -270,13 +270,13 @@ MSG);
 		$firewall->renewIdentity($identity);
 	}
 
-	public function testRenewerSameIdentity(): void
+	public function testRefreshSameIdentity(): void
 	{
 		$identity = new IntIdentity(123, []);
 
 		$storage = new ArrayLoginStorage();
-		$renewer = new AlwaysPassIdentityRenewer();
-		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
+		$refresher = new AlwaysPassIdentityRefresher();
+		$firewall = new TestingFirewall($storage, $refresher, $this->authorizer());
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
@@ -288,14 +288,14 @@ MSG);
 		self::assertSame([], $firewall->getExpiredLogins());
 	}
 
-	public function testRenewerNewIdentity(): void
+	public function testRefresherNewIdentity(): void
 	{
 		$originalIdentity = new IntIdentity(123, []);
 		$newIdentity = new IntIdentity(456, []);
 
 		$storage = new ArrayLoginStorage();
-		$renewer = new NewIdentityIdentityRenewer($newIdentity);
-		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
+		$refresher = new NewIdentityIdentityRefresher($newIdentity);
+		$firewall = new TestingFirewall($storage, $refresher, $this->authorizer());
 
 		$firewall->login($originalIdentity);
 		self::assertSame($originalIdentity, $firewall->getIdentity());
@@ -308,15 +308,15 @@ MSG);
 	}
 
 	/**
-	 * @dataProvider provideRenewerRemovedIdentity
+	 * @dataProvider provideRefresherRemovedIdentity
 	 */
-	public function testRenewerRemovedIdentity(?DecisionReason $reasonDescription): void
+	public function testRefresherRemovedIdentity(?DecisionReason $reasonDescription): void
 	{
 		$identity = new IntIdentity(123, []);
 
 		$storage = new ArrayLoginStorage();
-		$renewer = new NeverPassIdentityRenewer($reasonDescription);
-		$firewall = new TestingFirewall($storage, $renewer, $this->authorizer());
+		$refresher = new NeverPassIdentityRefresher($reasonDescription);
+		$firewall = new TestingFirewall($storage, $refresher, $this->authorizer());
 
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
@@ -333,7 +333,7 @@ MSG);
 	/**
 	 * @return Generator<array<mixed>>
 	 */
-	public function provideRenewerRemovedIdentity(): Generator
+	public function provideRefresherRemovedIdentity(): Generator
 	{
 		yield [null];
 		yield [DecisionReason::create('reason description')];
@@ -342,10 +342,10 @@ MSG);
 	public function testSecurityTokenRegenerates(): void
 	{
 		$storage = new TestingArrayLoginStorage();
-		$renewer = new NeverPassIdentityRenewer();
+		$refresher = new NeverPassIdentityRefresher();
 		$firewall = new TestingFirewall(
 			$storage,
-			$renewer,
+			$refresher,
 			$this->authorizer(),
 		);
 		$namespace = $firewall->getNamespace();
@@ -381,7 +381,7 @@ MSG);
 	{
 		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $clock);
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -406,7 +406,7 @@ MSG);
 	public function testNotTimeExpiredIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -423,7 +423,7 @@ MSG);
 	{
 		$clock = new FixedClock(Instant::now());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer(), $clock);
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -441,7 +441,7 @@ MSG);
 	public function testExpirationTimeInThePast(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
@@ -462,7 +462,7 @@ MSG);
 		$clock = new FixedClock(Instant::of(1));
 		$firewall = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			$clock,
 		);
@@ -483,7 +483,7 @@ MSG);
 	public function testExpirationCannotBeSet(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -502,7 +502,7 @@ MSG);
 		$clock = new FixedClock(Instant::of(1));
 		$firewall = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			$clock,
 		);
@@ -524,7 +524,7 @@ MSG);
 	public function testNotLoggedInGetExpirationTime(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -540,7 +540,7 @@ MSG);
 	public function testNotLoggedInGetIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -558,7 +558,7 @@ MSG);
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			new FixedClock(Instant::of(1)),
 		);
@@ -571,7 +571,7 @@ MSG);
 	public function testNotLoggedInGetAuthTime(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->renewer(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
@@ -595,7 +595,7 @@ MSG);
 		$namespace = 'test';
 		$firewall = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			null,
 			$namespace,
@@ -660,7 +660,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$authorizer = $this->authorizer(null, $builder);
-		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
+		$firewall = new TestingFirewall($storage, $this->refresher(), $authorizer, null, 'test');
 
 		self::assertFalse($firewall->isAllowed('front'));
 		self::assertFalse($firewall->hasPrivilege('front'));
@@ -688,7 +688,7 @@ MSG);
 
 		$storage = new ArrayLoginStorage();
 		$authorizer = $this->authorizer($policyManager, $builder);
-		$firewall = new TestingFirewall($storage, $this->renewer(), $authorizer, null, 'test');
+		$firewall = new TestingFirewall($storage, $this->refresher(), $authorizer, null, 'test');
 
 		self::assertTrue(
 			$firewall->isAllowed(PassWithNoIdentityPolicy::getPrivilege()),
@@ -712,7 +712,7 @@ MSG);
 		$namespace = 'test';
 		$firewall = new TestingFirewall(
 			$storage,
-			$this->renewer(),
+			$this->refresher(),
 			$this->authorizer(),
 			null,
 			$namespace,

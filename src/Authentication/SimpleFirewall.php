@@ -16,12 +16,12 @@ final class SimpleFirewall extends BaseFirewall
 	public function __construct(
 		string $namespace,
 		LoginStorage $storage,
-		IdentityRenewer $renewer,
+		IdentityRefresher $refresher,
 		Authorizer $authorizer,
 		?Clock $clock = null
 	)
 	{
-		parent::__construct($storage, $renewer, $authorizer, $clock);
+		parent::__construct($storage, $refresher, $authorizer, $clock);
 		$this->namespace = $namespace;
 	}
 

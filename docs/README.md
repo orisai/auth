@@ -218,13 +218,13 @@ Create an identity renewer
 ```php
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authentication\IdentityRenewer;
+use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\Auth\Authentication\IntIdentity;
 
 /**
- * @phpstan-implements IdentityRenewer<IntIdentity>
+ * @phpstan-implements IdentityRefresher<IntIdentity>
  */
-final class AdminIdentityRenewer implements IdentityRenewer
+final class AdminIdentityRenewer implements IdentityRefresher
 {
 
     private UserRepository $userRepository;
