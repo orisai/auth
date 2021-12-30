@@ -385,7 +385,7 @@ MSG);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(Instant::now()->plusSeconds(1));
+		$firewall->setExpirationTime(Instant::now()->plusSeconds(1));
 		self::assertSame($identity, $firewall->getIdentity());
 
 		$clock->move(2);
@@ -410,7 +410,7 @@ MSG);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(Instant::now()->plusMinutes(10));
+		$firewall->setExpirationTime(Instant::now()->plusMinutes(10));
 		self::assertSame($identity, $firewall->getIdentity());
 
 		$firewall->resetLoginsChecks();
@@ -427,8 +427,8 @@ MSG);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpiration(Instant::now()->plusSeconds(1));
-		$firewall->removeExpiration();
+		$firewall->setExpirationTime(Instant::now()->plusSeconds(1));
+		$firewall->removeExpirationTime();
 		self::assertSame($identity, $firewall->getIdentity());
 
 		$clock->move(2);
@@ -453,7 +453,7 @@ Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
 MSG);
 
-		$firewall->setExpiration(Instant::now()->minusSeconds(10));
+		$firewall->setExpirationTime(Instant::now()->minusSeconds(10));
 	}
 
 	public function testExpirationTimeIsRightNow(): void
@@ -477,7 +477,7 @@ Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
 MSG);
 
-		$firewall->setExpiration($clock->getTime());
+		$firewall->setExpirationTime($clock->getTime());
 	}
 
 	public function testExpirationCannotBeSet(): void
@@ -487,13 +487,13 @@ MSG);
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->setExpiration().
+Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->setExpirationTime().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
 MSG);
 
-		$firewall->setExpiration(Instant::now()->minusSeconds(10));
+		$firewall->setExpirationTime(Instant::now()->minusSeconds(10));
 	}
 
 	public function testGetExpirationTime(): void
@@ -513,7 +513,7 @@ MSG);
 		self::assertNull($firewall->getExpirationTime());
 
 		$expiration = Instant::of(5);
-		$firewall->setExpiration($expiration);
+		$firewall->setExpirationTime($expiration);
 		self::assertSame(5, $firewall->getExpirationTime()->getEpochSecond());
 
 		$firewall->resetLoginsChecks();
@@ -634,7 +634,7 @@ MSG);
 		$firewall->logout();
 		self::assertFalse($storage->alreadyExists($namespace));
 
-		$firewall->removeExpiration();
+		$firewall->removeExpirationTime();
 		self::assertFalse($storage->alreadyExists($namespace));
 
 		$firewall->removeExpiredLogins();
@@ -721,7 +721,7 @@ MSG);
 		$exception = null;
 		try {
 			$firewall->logout();
-			$firewall->removeExpiration();
+			$firewall->removeExpirationTime();
 			$firewall->removeExpiredLogin(123);
 			$firewall->removeExpiredLogins();
 		} catch (Throwable $exception) {

@@ -206,7 +206,7 @@ abstract class BaseFirewall implements Firewall
 	/**
 	 * @throws NotLoggedIn
 	 */
-	public function setExpiration(Instant $time): void
+	public function setExpirationTime(Instant $time): void
 	{
 		$login = $this->getLogins()->getCurrentLogin();
 
@@ -228,7 +228,7 @@ abstract class BaseFirewall implements Firewall
 		}
 	}
 
-	public function removeExpiration(): void
+	public function removeExpirationTime(): void
 	{
 		$login = $this->fetchCurrentLogin();
 

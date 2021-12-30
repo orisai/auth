@@ -58,9 +58,9 @@ interface Firewall
 	/**
 	 * @throws NotLoggedIn
 	 */
-	public function setExpiration(Instant $time): void;
+	public function setExpirationTime(Instant $time): void;
 
-	public function removeExpiration(): void;
+	public function removeExpirationTime(): void;
 
 	/**
 	 * @return array<ExpiredLogin>
