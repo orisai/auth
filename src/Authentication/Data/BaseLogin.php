@@ -31,6 +31,9 @@ abstract class BaseLogin
 		return $this->authenticationTime;
 	}
 
+	/**
+	 * @internal
+	 */
 	public function hasInvalidIdentity(): bool
 	{
 		return $this->hasInvalidIdentity;
