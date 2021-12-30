@@ -776,26 +776,26 @@ MSG);
 		// Don't have privileges
 		$identity1 = new IntIdentity($user1->getId(), []);
 
-		self::assertFalse($authorizer->isAllowed($identity1, ...ArticleEditPolicy::get($article1)));
-		self::assertFalse($authorizer->isAllowed($identity1, ...ArticleEditOwnedPolicy::get($article1)));
+		self::assertFalse($authorizer->isAllowed($identity1, ArticleEditPolicy::getPrivilege(), $article1));
+		self::assertFalse($authorizer->isAllowed($identity1, ArticleEditOwnedPolicy::getPrivilege(), $article1));
 
 		// Has access to owned resources
 		$identity1 = new IntIdentity($user1->getId(), ['owner']);
 
 		self::assertTrue($authorizer->hasPrivilege($identity1, 'article.edit.owned'));
-		self::assertTrue($authorizer->isAllowed($identity1, ...ArticleEditPolicy::get($article1)));
-		self::assertTrue($authorizer->isAllowed($identity1, ...ArticleEditOwnedPolicy::get($article1)));
+		self::assertTrue($authorizer->isAllowed($identity1, ArticleEditPolicy::getPrivilege(), $article1));
+		self::assertTrue($authorizer->isAllowed($identity1, ArticleEditOwnedPolicy::getPrivilege(), $article1));
 
 		// Does not have access to resource of another user
 		$user2 = new User(2);
 		$identity2 = new IntIdentity($user2->getId(), ['owner']);
 		self::assertTrue($authorizer->hasPrivilege($identity2, 'article.edit.owned'));
-		self::assertFalse($authorizer->isAllowed($identity2, ...ArticleEditPolicy::get($article1)));
+		self::assertFalse($authorizer->isAllowed($identity2, ArticleEditPolicy::getPrivilege(), $article1));
 
 		// Has access to resources of all users
 		$identity1 = new IntIdentity($user1->getId(), ['owner', 'editor']);
 		$article2 = new Article($user2);
-		self::assertTrue($authorizer->isAllowed($identity1, ...ArticleEditPolicy::get($article2)));
+		self::assertTrue($authorizer->isAllowed($identity1, ArticleEditPolicy::getPrivilege(), $article2));
 
 		// - but not other resources
 		self::assertFalse($authorizer->isAllowed($identity1, 'article.view'));
@@ -805,7 +805,7 @@ MSG);
 		// Has access to all resources as a root
 		$identity1 = new IntIdentity($user1->getId(), ['supervisor']);
 
-		self::assertTrue($authorizer->isAllowed($identity1, ...ArticleEditPolicy::get($article2)));
+		self::assertTrue($authorizer->isAllowed($identity1, ArticleEditPolicy::getPrivilege(), $article2));
 
 		self::assertTrue($authorizer->isAllowed($identity1, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity1, 'article'));
@@ -813,7 +813,6 @@ MSG);
 
 		// - including these with policy which does not allow it
 		self::assertTrue($authorizer->hasPrivilege($identity1, NeverPassPolicy::getPrivilege()));
-		self::assertTrue($authorizer->isAllowed($identity1, ...NeverPassPolicy::get()));
 	}
 
 }

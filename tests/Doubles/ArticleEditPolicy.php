@@ -32,15 +32,7 @@ final class ArticleEditPolicy implements Policy
 		$authorizer = $context->getAuthorizer();
 
 		return $authorizer->isAllowed($identity, self::EDIT_ALL)
-			|| $authorizer->isAllowed($identity, ...ArticleEditOwnedPolicy::get($requirements));
-	}
-
-	/**
-	 * @return array{literal-string, object}
-	 */
-	public static function get(Article $article): array
-	{
-		return [self::getPrivilege(), $article];
+			|| $authorizer->isAllowed($identity, ArticleEditOwnedPolicy::getPrivilege(), $requirements);
 	}
 
 }

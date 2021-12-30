@@ -33,12 +33,4 @@ final class ArticleEditOwnedPolicy implements Policy
 			&& $identity->getId() === $requirements->getAuthor()->getId();
 	}
 
-	/**
-	 * @return array{literal-string, object}
-	 */
-	public static function get(Article $article): array
-	{
-		return [self::getPrivilege(), $article];
-	}
-
 }
