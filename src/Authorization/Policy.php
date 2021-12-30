@@ -13,6 +13,9 @@ use Orisai\Auth\Authentication\Identity;
 interface Policy
 {
 
+	/**
+	 * @phpstan-return literal-string
+	 */
 	public static function getPrivilege(): string;
 
 	/**

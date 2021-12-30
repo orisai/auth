@@ -10,8 +10,14 @@ interface Authorizer
 
 	public const ROOT_PRIVILEGE = '*';
 
+	/**
+	 * @phpstan-param literal-string $privilege
+	 */
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 
+	/**
+	 * @phpstan-param literal-string $privilege
+	 */
 	public function isAllowed(
 		?Identity $identity,
 		string $privilege,

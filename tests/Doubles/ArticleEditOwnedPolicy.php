@@ -34,7 +34,7 @@ final class ArticleEditOwnedPolicy implements Policy
 	}
 
 	/**
-	 * @return array{string, object}
+	 * @return array{literal-string, object}
 	 */
 	public static function get(Article $article): array
 	{

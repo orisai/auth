@@ -29,7 +29,7 @@ final class NeverPassPolicy implements Policy
 	}
 
 	/**
-	 * @return array{string, null}
+	 * @return array{literal-string, null}
 	 */
 	public static function get(): array
 	{
