@@ -145,18 +145,18 @@ final class BaseFirewallTest extends TestCase
 	public function testIdentityClassUpdate(): void
 	{
 		$originalIdentity = new IntIdentity(123, []);
-		$renewedIdentity = new StringIdentity('string', []);
+		$refreshedIdentity = new StringIdentity('string', []);
 
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall(
 			$storage,
-			new NewIdentityIdentityRefresher($renewedIdentity),
+			new NewIdentityIdentityRefresher($refreshedIdentity),
 			$this->authorizer(),
 		);
 
 		$firewall->login($originalIdentity);
 		$firewall->resetLoginsChecks();
-		self::assertSame($renewedIdentity, $firewall->getLogins()->getCurrentLogin()->getIdentity());
+		self::assertSame($refreshedIdentity, $firewall->getLogins()->getCurrentLogin()->getIdentity());
 	}
 
 	public function testHasRole(): void
@@ -236,7 +236,7 @@ final class BaseFirewallTest extends TestCase
 		self::assertNull($firewall->getLastExpiredLogin());
 	}
 
-	public function testManualRenewIdentity(): void
+	public function testManualRefreshIdentity(): void
 	{
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
@@ -245,15 +245,15 @@ final class BaseFirewallTest extends TestCase
 		$firewall->login($identity);
 		self::assertSame($identity, $firewall->getIdentity());
 
-		$firewall->renewIdentity($identity);
+		$firewall->refreshIdentity($identity);
 		self::assertSame($identity, $firewall->getIdentity());
 
 		$newIdentity = new IntIdentity(456, []);
-		$firewall->renewIdentity($newIdentity);
+		$firewall->refreshIdentity($newIdentity);
 		self::assertSame($newIdentity, $firewall->getIdentity());
 	}
 
-	public function testManualRenewIdentityFailure(): void
+	public function testManualRefreshIdentityFailure(): void
 	{
 		$storage = new ArrayLoginStorage();
 		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
@@ -261,13 +261,13 @@ final class BaseFirewallTest extends TestCase
 
 		$this->expectException(NotLoggedIn::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->renewIdentity().
+Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->refreshIdentity().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
 MSG);
 
-		$firewall->renewIdentity($identity);
+		$firewall->refreshIdentity($identity);
 	}
 
 	public function testRefreshSameIdentity(): void
