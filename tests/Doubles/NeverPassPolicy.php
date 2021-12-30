@@ -28,12 +28,4 @@ final class NeverPassPolicy implements Policy
 		return false;
 	}
 
-	/**
-	 * @return array{literal-string, null}
-	 */
-	public static function get(): array
-	{
-		return [self::getPrivilege(), null];
-	}
-
 }
