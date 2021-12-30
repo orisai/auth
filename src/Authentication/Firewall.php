@@ -18,8 +18,6 @@ interface Firewall
 
 	public const REASON_INVALID_IDENTITY = 3;
 
-	public const EXPIRED_IDENTITIES_DEFAULT_LIMIT = 3;
-
 	public function isLoggedIn(): bool;
 
 	/**

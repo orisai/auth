@@ -35,7 +35,7 @@ abstract class BaseFirewall implements Firewall
 
 	protected ?Logins $logins = null;
 
-	private int $expiredIdentitiesLimit = self::EXPIRED_IDENTITIES_DEFAULT_LIMIT;
+	private int $expiredIdentitiesLimit = 3;
 
 	/**
 	 * @phpstan-param IdentityRefresher<I> $refresher
