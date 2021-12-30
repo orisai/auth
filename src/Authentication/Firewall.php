@@ -29,7 +29,7 @@ interface Firewall
 	 * @phpstan-param I $identity
 	 * @throws NotLoggedIn
 	 */
-	public function renewIdentity(Identity $identity): void;
+	public function refreshIdentity(Identity $identity): void;
 
 	public function logout(): void;
 
