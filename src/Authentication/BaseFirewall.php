@@ -74,9 +74,6 @@ abstract class BaseFirewall implements Firewall
 		$this->storage->regenerateSecurityToken($this->getNamespace());
 	}
 
-	/**
-	 * @throws NotLoggedIn
-	 */
 	public function refreshIdentity(Identity $identity): void
 	{
 		$login = $this->getLogins()->getCurrentLogin();
@@ -114,9 +111,6 @@ abstract class BaseFirewall implements Firewall
 		$this->storage->regenerateSecurityToken($this->getNamespace());
 	}
 
-	/**
-	 * @throws NotLoggedIn
-	 */
 	public function getIdentity(): Identity
 	{
 		$identity = $this->fetchIdentity();
@@ -282,7 +276,7 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @return array<ExpiredLogin>
+	 * {@inheritDoc}
 	 */
 	public function getExpiredLogins(): array
 	{
@@ -312,7 +306,7 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @param int|string $id
+	 * {@inheritDoc}
 	 */
 	public function removeExpiredLogin($id): void
 	{
