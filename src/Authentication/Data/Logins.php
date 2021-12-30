@@ -56,6 +56,9 @@ final class Logins
 		return $this->expiredLogins[$key];
 	}
 
+	/**
+	 * @param int<0, max> $limit
+	 */
 	public function removeOldestExpiredLoginsAboveLimit(int $limit): void
 	{
 		if (($count = count($this->expiredLogins)) <= $limit) {

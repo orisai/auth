@@ -35,6 +35,7 @@ abstract class BaseFirewall implements Firewall
 
 	protected ?Logins $logins = null;
 
+	/** @var int<0, max> */
 	private int $expiredIdentitiesLimit = 3;
 
 	/**

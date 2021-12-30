@@ -2,12 +2,9 @@
 
 namespace Orisai\Auth\Passwords;
 
-use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\Exceptions\Message;
 use function password_hash;
 use function password_needs_rehash;
 use function password_verify;
-use function sprintf;
 use function strpos;
 use const PASSWORD_BCRYPT;
 use const PASSWORD_BCRYPT_DEFAULT_COST;
@@ -15,20 +12,14 @@ use const PASSWORD_BCRYPT_DEFAULT_COST;
 final class BcryptPasswordEncoder implements PasswordEncoder
 {
 
+	/** @var int<4, 31> */
 	private int $cost;
 
+	/**
+	 * @param int<4, 31> $cost
+	 */
 	public function __construct(int $cost = PASSWORD_BCRYPT_DEFAULT_COST)
 	{
-		if ($cost < 4 || $cost > 31) {
-			$message = Message::create()
-				->withContext('Trying to set bcrypt algorithm cost.')
-				->withProblem(sprintf('Cost %s is out of range.', $cost))
-				->withSolution('Choose cost in range 4-31.');
-
-			throw InvalidArgument::create()
-				->withMessage($message);
-		}
-
 		$this->cost = $cost;
 	}
 
