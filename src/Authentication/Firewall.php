@@ -41,8 +41,14 @@ interface Firewall
 
 	public function hasRole(string $role): bool;
 
+	/**
+	 * @phpstan-param literal-string $privilege
+	 */
 	public function isAllowed(string $privilege, ?object $requirements = null, ?DecisionReason &$reason = null): bool;
 
+	/**
+	 * @phpstan-param literal-string $privilege
+	 */
 	public function hasPrivilege(string $privilege): bool;
 
 	/**
