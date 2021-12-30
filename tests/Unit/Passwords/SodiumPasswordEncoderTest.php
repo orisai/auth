@@ -4,7 +4,6 @@ namespace Tests\Orisai\Auth\Unit\Passwords;
 
 use Generator;
 use Orisai\Auth\Passwords\SodiumPasswordEncoder;
-use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Utils\Dependencies\DependenciesTester;
 use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
 use PHPUnit\Framework\TestCase;
@@ -41,26 +40,6 @@ final class SodiumPasswordEncoderTest extends TestCase
 
 		self::assertFalse($encoder->needsReEncode($encoded));
 		self::assertTrue($encoder->isValid($raw, $encoded));
-	}
-
-	public function testTimeCostTooLow(): void
-	{
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage('Context: Trying to set argon2 algorithm time cost.
-Problem: Cost 2 is too low.
-Solution: Choose cost 3 or greater.');
-
-		new SodiumPasswordEncoder(2);
-	}
-
-	public function testMemoryCostTooLow(): void
-	{
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage('Context: Trying to set argon2 algorithm memory cost.
-Problem: Cost 10 is too low.
-Solution: Choose cost 10240 or greater (in bytes).');
-
-		new SodiumPasswordEncoder(null, 10);
 	}
 
 	/**

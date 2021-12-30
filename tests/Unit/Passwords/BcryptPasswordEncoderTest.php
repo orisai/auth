@@ -4,7 +4,6 @@ namespace Tests\Orisai\Auth\Unit\Passwords;
 
 use Generator;
 use Orisai\Auth\Passwords\BcryptPasswordEncoder;
-use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 
 final class BcryptPasswordEncoderTest extends TestCase
@@ -30,26 +29,6 @@ final class BcryptPasswordEncoderTest extends TestCase
 
 		self::assertFalse($encoder->needsReEncode($encoded));
 		self::assertTrue($encoder->isValid($raw, $encoded));
-	}
-
-	public function testCostTooLow(): void
-	{
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage('Context: Trying to set bcrypt algorithm cost.
-Problem: Cost 3 is out of range.
-Solution: Choose cost in range 4-31.');
-
-		new BcryptPasswordEncoder(3);
-	}
-
-	public function testCostTooHigh(): void
-	{
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage('Context: Trying to set bcrypt algorithm cost.
-Problem: Cost 32 is out of range.
-Solution: Choose cost in range 4-31.');
-
-		new BcryptPasswordEncoder(32);
 	}
 
 	/**

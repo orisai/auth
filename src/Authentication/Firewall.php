@@ -82,6 +82,9 @@ interface Firewall
 	 */
 	public function removeExpiredLogin($id): void;
 
+	/**
+	 * @param int<0, max> $count
+	 */
 	public function setExpiredIdentitiesLimit(int $count): void;
 
 }

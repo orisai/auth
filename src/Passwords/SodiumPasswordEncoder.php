@@ -2,15 +2,12 @@
 
 namespace Orisai\Auth\Passwords;
 
-use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\Exceptions\Message;
 use Orisai\Utils\Dependencies\Dependencies;
 use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
 use function max;
 use function sodium_crypto_pwhash_str;
 use function sodium_crypto_pwhash_str_needs_rehash;
 use function sodium_crypto_pwhash_str_verify;
-use function sprintf;
 use function strpos;
 use const SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
 use const SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
@@ -18,41 +15,26 @@ use const SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
 final class SodiumPasswordEncoder implements PasswordEncoder
 {
 
+	/** @var int<3, max> */
 	private int $timeCost;
 
+	/** @var int<10240, max> */
 	private int $memoryCost;
 
+	/**
+	 * @param int<3, max>|null $timeCost
+	 * @param int<10240, max>|null $memoryCost
+	 */
 	public function __construct(?int $timeCost = null, ?int $memoryCost = null)
 	{
 		if (!self::isSupported()) {
 			throw ExtensionRequired::forClass(['sodium'], self::class);
 		}
 
-		$timeCost ??= max(4, SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE);
-		$memoryCost ??= max(64 * 1_024 * 1_024, SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE);
-
-		if ($timeCost < 3) {
-			$message = Message::create()
-				->withContext('Trying to set argon2 algorithm time cost.')
-				->withProblem(sprintf('Cost %s is too low.', $timeCost))
-				->withSolution('Choose cost 3 or greater.');
-
-			throw InvalidArgument::create()
-				->withMessage($message);
-		}
-
-		if ($memoryCost < ($minMemoryCost = 10 * 1_024)) {
-			$message = Message::create()
-				->withContext('Trying to set argon2 algorithm memory cost.')
-				->withProblem(sprintf('Cost %s is too low.', $memoryCost))
-				->withSolution(sprintf('Choose cost %s or greater (in bytes).', $minMemoryCost));
-
-			throw InvalidArgument::create()
-				->withMessage($message);
-		}
-
-		$this->timeCost = $timeCost;
-		$this->memoryCost = $memoryCost;
+		$this->timeCost = $timeCost
+			?? max(4, SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE);
+		$this->memoryCost = $memoryCost
+			?? max(64 * 1_024 * 1_024, SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE);
 	}
 
 	public function encode(string $raw): string
