@@ -22,8 +22,12 @@ use Tests\Orisai\Auth\Doubles\NeverPassIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\PassWithNoIdentityPolicy;
+use Tests\Orisai\Auth\Doubles\RequireCurrentUserPolicy;
 use Tests\Orisai\Auth\Doubles\TestingArrayLoginStorage;
 use Tests\Orisai\Auth\Doubles\TestingFirewall;
+use Tests\Orisai\Auth\Doubles\User;
+use Tests\Orisai\Auth\Doubles\UserAwareFirewall;
+use Tests\Orisai\Auth\Doubles\UserGetter;
 use Throwable;
 use function array_keys;
 
@@ -744,6 +748,47 @@ MSG);
 		}
 
 		self::assertNull($exception);
+	}
+
+	public function testUserAwareFirewall(): void
+	{
+		$storage = new ArrayLoginStorage();
+		$getter = new UserGetter();
+		$firewall = new UserAwareFirewall(
+			$getter,
+			$storage,
+			$this->refresher(),
+			$this->authorizer(),
+		);
+
+		$identity = new IntIdentity(123, []);
+		$user = new User(123);
+		$getter->addUser($user);
+
+		$firewall->login($identity);
+		$firewallUser = $firewall->getUser();
+		self::assertSame($user, $firewallUser);
+	}
+
+	public function testCurrentUserPolicy(): void
+	{
+		$storage = new ArrayLoginStorage();
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(RequireCurrentUserPolicy::getPrivilege());
+
+		$policyManager = new SimplePolicyManager();
+		$policyManager->add(new RequireCurrentUserPolicy());
+
+		$firewall = new TestingFirewall(
+			$storage,
+			$this->refresher(),
+			$this->authorizer($policyManager, $builder),
+		);
+		$identity = new IntIdentity(123, []);
+
+		$firewall->login($identity);
+		self::assertTrue($firewall->isAllowed(RequireCurrentUserPolicy::getPrivilege()));
 	}
 
 }

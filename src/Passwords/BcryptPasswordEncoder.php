@@ -51,6 +51,7 @@ final class BcryptPasswordEncoder implements PasswordEncoder
 	 */
 	private function getOptions(): array
 	{
+		/** @infection-ignore-all */
 		return [
 			'cost' => $this->cost,
 		];

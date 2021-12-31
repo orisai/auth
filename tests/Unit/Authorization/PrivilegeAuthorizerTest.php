@@ -543,16 +543,31 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$builder->addRole('known');
 		$builder->addPrivilege('something');
 		$builder->allow('known', 'something');
-
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
+
 		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
-		self::assertFalse($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
-		self::assertFalse($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
 
 		$identity = new IntIdentity(1, ['unknown', 'known']);
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something'));
+	}
+
+	public function testSkipUnknownRolesForRoot(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+		$identity = new IntIdentity(1, ['unknown']);
+
+		$builder->addRole('known');
+		$builder->allow('known', Authorizer::ROOT_PRIVILEGE);
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
+
+		self::assertFalse($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
+		self::assertFalse($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
+
+		$identity = new IntIdentity(1, ['unknown', 'known']);
+		self::assertTrue($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
+		self::assertTrue($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
 	}
 
 	public function testIsAllowedWithPrivilegeChecksPrivilege(): void

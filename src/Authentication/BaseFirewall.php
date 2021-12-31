@@ -123,7 +123,7 @@ abstract class BaseFirewall implements Firewall
 		return $identity;
 	}
 
-	protected function fetchCurrentLogin(): ?CurrentLogin
+	private function fetchCurrentLogin(): ?CurrentLogin
 	{
 		if (!$this->doesStorageAlreadyExist()) {
 			return null;
@@ -347,7 +347,7 @@ abstract class BaseFirewall implements Firewall
 		return $this->logins = $logins;
 	}
 
-	protected function doesStorageAlreadyExist(): bool
+	private function doesStorageAlreadyExist(): bool
 	{
 		return $this->storage->alreadyExists($this->getNamespace());
 	}

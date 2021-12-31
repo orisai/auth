@@ -31,8 +31,10 @@ final class SodiumPasswordEncoder implements PasswordEncoder
 			throw ExtensionRequired::forClass(['sodium'], self::class);
 		}
 
+		/** @infection-ignore-all */
 		$this->timeCost = $timeCost
 			?? max(4, SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE);
+		/** @infection-ignore-all */
 		$this->memoryCost = $memoryCost
 			?? max(64 * 1_024 * 1_024, SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE);
 	}

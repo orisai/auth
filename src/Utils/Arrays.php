@@ -90,10 +90,12 @@ final class Arrays
 				continue;
 			}
 
+			/** @infection-ignore-all */
 			if (is_array($value) && $value !== [] && is_array($first[$key]) && $first[$key] !== []) {
 				self::removeMatchingPartsFromFromFirstArray($first[$key], $value);
 			}
 
+			/** @infection-ignore-all */
 			if ($value === $first[$key] || ($first[$key] === [] && is_array($value))) {
 				unset($first[$key]);
 			}
