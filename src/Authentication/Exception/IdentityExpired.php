@@ -8,19 +8,19 @@ use Orisai\Exceptions\DomainException;
 final class IdentityExpired extends DomainException
 {
 
-	private ?DecisionReason $logoutReasonDescription;
+	private ?DecisionReason $logoutReason;
 
-	public static function create(?DecisionReason $logoutReasonDescription = null): self
+	public static function create(?DecisionReason $logoutReason = null): self
 	{
 		$self = new self();
-		$self->logoutReasonDescription = $logoutReasonDescription;
+		$self->logoutReason = $logoutReason;
 
 		return $self;
 	}
 
-	public function getLogoutReasonDescription(): ?DecisionReason
+	public function getLogoutReason(): ?DecisionReason
 	{
-		return $this->logoutReasonDescription;
+		return $this->logoutReason;
 	}
 
 }

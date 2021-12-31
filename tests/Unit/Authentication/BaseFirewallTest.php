@@ -76,8 +76,8 @@ final class BaseFirewallTest extends TestCase
 
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
-		self::assertSame($firewall::REASON_MANUAL, $expired->getLogoutReason());
-		self::assertNull($expired->getLogoutReasonDescription());
+		self::assertSame($firewall::REASON_MANUAL, $expired->getLogoutCode());
+		self::assertNull($expired->getLogoutReason());
 
 		$this->expectException(NotLoggedIn::class);
 		$firewall->getIdentity();
@@ -330,8 +330,8 @@ MSG);
 
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
-		self::assertSame($firewall::REASON_INVALID_IDENTITY, $expired->getLogoutReason());
-		self::assertSame($reasonDescription, $expired->getLogoutReasonDescription());
+		self::assertSame($firewall::REASON_INVALID_IDENTITY, $expired->getLogoutCode());
+		self::assertSame($reasonDescription, $expired->getLogoutReason());
 	}
 
 	/**
@@ -398,8 +398,8 @@ MSG);
 		self::assertFalse($firewall->isLoggedIn());
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
-		self::assertSame($firewall::REASON_INACTIVITY, $expired->getLogoutReason());
-		self::assertNull($expired->getLogoutReasonDescription());
+		self::assertSame($firewall::REASON_INACTIVITY, $expired->getLogoutCode());
+		self::assertNull($expired->getLogoutReason());
 
 		$firewall->login($identity);
 		self::assertTrue($firewall->isLoggedIn());
