@@ -12,6 +12,7 @@ final class UnknownPrivilege extends LogicalException
 
 	private function __construct(string $privilege)
 	{
+		/** @infection-ignore-all */
 		parent::__construct();
 		$this->privilege = $privilege;
 	}

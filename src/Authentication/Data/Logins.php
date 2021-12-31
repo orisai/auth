@@ -61,6 +61,7 @@ final class Logins
 	 */
 	public function removeOldestExpiredLoginsAboveLimit(int $limit): void
 	{
+		/** @infection-ignore-all */
 		if (($count = count($this->expiredLogins)) <= $limit) {
 			return;
 		}
