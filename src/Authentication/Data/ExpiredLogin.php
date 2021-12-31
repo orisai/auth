@@ -12,17 +12,17 @@ final class ExpiredLogin extends BaseLogin
 	private ?Expiration $expiration = null;
 
 	/** @phpstan-var Firewall::REASON_* */
-	private int $logoutReason;
+	private int $logoutCode;
 
-	private ?DecisionReason $logoutReasonDescription;
+	private ?DecisionReason $logoutReason;
 
 	/**
-	 * @phpstan-param Firewall::REASON_* $logoutReason
+	 * @phpstan-param Firewall::REASON_* $logoutCode
 	 */
 	public function __construct(
 		CurrentLogin $currentLogin,
-		int $logoutReason,
-		?DecisionReason $logoutReasonDescription = null
+		int $logoutCode,
+		?DecisionReason $logoutReason = null
 	)
 	{
 		parent::__construct($currentLogin->getIdentity(), $currentLogin->getAuthenticationTime());
@@ -32,8 +32,8 @@ final class ExpiredLogin extends BaseLogin
 			$this->expiration = new Expiration($expiration->getTime(), $expiration->getDelta());
 		}
 
+		$this->logoutCode = $logoutCode;
 		$this->logoutReason = $logoutReason;
-		$this->logoutReasonDescription = $logoutReasonDescription;
 	}
 
 	public function getExpiration(): ?Expiration
@@ -44,14 +44,14 @@ final class ExpiredLogin extends BaseLogin
 	/**
 	 * @phpstan-return Firewall::REASON_*
 	 */
-	public function getLogoutReason(): int
+	public function getLogoutCode(): int
 	{
-		return $this->logoutReason;
+		return $this->logoutCode;
 	}
 
-	public function getLogoutReasonDescription(): ?DecisionReason
+	public function getLogoutReason(): ?DecisionReason
 	{
-		return $this->logoutReasonDescription;
+		return $this->logoutReason;
 	}
 
 	/**
@@ -60,8 +60,8 @@ final class ExpiredLogin extends BaseLogin
 	public function __serialize(): array
 	{
 		$data = parent::__serialize();
-		$data['logoutReason'] = $this->logoutReason;
-		$data['logoutReasonDescription'] = $this->logoutReasonDescription;
+		$data['logoutReason'] = $this->logoutCode;
+		$data['logoutReasonDescription'] = $this->logoutReason;
 		$data['expiration'] = $this->expiration;
 
 		return $data;
@@ -73,9 +73,9 @@ final class ExpiredLogin extends BaseLogin
 	public function __unserialize(array $data): void
 	{
 		parent::__unserialize($data);
-		$this->logoutReason = $data['logoutReason'];
+		$this->logoutCode = $data['logoutReason'];
 		$description = $data['logoutReasonDescription'] ?? null;
-		$this->logoutReasonDescription = !is_string($description) ? $description : DecisionReason::create($description);
+		$this->logoutReason = !is_string($description) ? $description : DecisionReason::create($description);
 		$this->expiration = $data['expiration'];
 	}
 

@@ -29,14 +29,14 @@ final class ExpiredLoginTest extends TestCase
 		self::assertSame($identity, $login->getIdentity());
 		self::assertSame($authTime, $login->getAuthenticationTime());
 		self::assertNull($login->getExpiration());
-		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutReason());
-		self::assertNull($login->getLogoutReasonDescription());
+		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutCode());
+		self::assertNull($login->getLogoutReason());
 
 		self::assertEquals($login, unserialize(serialize($login)));
 
 		$reason = DecisionReason::create('description');
 		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL, $reason);
-		self::assertSame($reason, $login->getLogoutReasonDescription());
+		self::assertSame($reason, $login->getLogoutReason());
 		self::assertEquals($login, unserialize(serialize($login)));
 	}
 
@@ -78,8 +78,8 @@ final class ExpiredLoginTest extends TestCase
 		self::assertSame(2, $login->getAuthenticationTime()->getEpochSecond());
 		self::assertInstanceOf(IntIdentity::class, $login->getIdentity());
 		self::assertNull($login->getExpiration());
-		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutReason());
-		self::assertNull($login->getLogoutReasonDescription());
+		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutCode());
+		self::assertNull($login->getLogoutReason());
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";s:6:"reason";s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}"string(374) "O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";s:6:"reason";s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}';
@@ -90,7 +90,7 @@ final class ExpiredLoginTest extends TestCase
 		self::assertInstanceOf(Expiration::class, $expiration);
 		self::assertSame(123, $expiration->getTime()->getEpochSecond());
 		self::assertSame(456, $expiration->getDelta()->getSeconds());
-		$description = $login->getLogoutReasonDescription();
+		$description = $login->getLogoutReason();
 		self::assertSame('reason', $description->getMessage());
 		self::assertFalse($description->isTranslatable());
 
@@ -99,7 +99,7 @@ final class ExpiredLoginTest extends TestCase
 		$login = unserialize($serialized);
 
 		self::assertInstanceOf(ExpiredLogin::class, $login);
-		$description = $login->getLogoutReasonDescription();
+		$description = $login->getLogoutReason();
 		self::assertSame('message', $description->getMessage());
 		self::assertTrue($description->isTranslatable());
 	}
