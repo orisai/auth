@@ -60,7 +60,8 @@ final class BaseFirewallTest extends TestCase
 	public function testBase(): void
 	{
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
+		$authorizer = $this->authorizer();
+		$firewall = new TestingFirewall($storage, $this->refresher(), $authorizer);
 		$identity = new IntIdentity(123, []);
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -81,6 +82,8 @@ final class BaseFirewallTest extends TestCase
 
 		$this->expectException(NotLoggedIn::class);
 		$firewall->getIdentity();
+
+		self::assertSame($authorizer, $firewall->getAuthorizer());
 	}
 
 	public function testSeparateNamespaces(): void

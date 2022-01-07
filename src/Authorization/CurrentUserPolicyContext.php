@@ -22,9 +22,9 @@ final class CurrentUserPolicyContext implements PolicyContext
 	 *
 	 * @internal
 	 */
-	public function __construct(Authorizer $authorizer, Firewall $firewall)
+	public function __construct(Firewall $firewall)
 	{
-		$this->authorizer = $authorizer;
+		$this->authorizer = $firewall->getAuthorizer();
 		$this->firewall = $firewall;
 	}
 

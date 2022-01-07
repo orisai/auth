@@ -5,6 +5,7 @@ namespace Orisai\Auth\Authentication;
 use Brick\DateTime\Instant;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
+use Orisai\Auth\Authorization\Authorizer;
 
 /**
  * @phpstan-template I of Identity
@@ -86,5 +87,7 @@ interface Firewall
 	 * @param int<0, max> $count
 	 */
 	public function setExpiredIdentitiesLimit(int $count): void;
+
+	public function getAuthorizer(): Authorizer;
 
 }

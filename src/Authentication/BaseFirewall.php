@@ -183,7 +183,7 @@ abstract class BaseFirewall implements Firewall
 			$privilege,
 			$requirements,
 			$reason,
-			new CurrentUserPolicyContext($this->authorizer, $this),
+			new CurrentUserPolicyContext($this),
 		);
 	}
 
@@ -356,6 +356,11 @@ abstract class BaseFirewall implements Firewall
 	{
 		$this->checkInactivity($logins);
 		$this->checkIdentity($logins);
+	}
+
+	public function getAuthorizer(): Authorizer
+	{
+		return $this->authorizer;
 	}
 
 }

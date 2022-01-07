@@ -19,7 +19,7 @@ final class CurrentUserPolicyContextTest extends TestCase
 	{
 		$authorizer = new PrivilegeAuthorizer(new SimplePolicyManager(), (new AuthorizationDataBuilder())->build());
 		$firewall = new SimpleFirewall('test', new ArrayLoginStorage(), new AlwaysPassIdentityRefresher(), $authorizer);
-		$context = new CurrentUserPolicyContext($authorizer, $firewall);
+		$context = new CurrentUserPolicyContext($firewall);
 
 		self::assertSame($authorizer, $context->getAuthorizer());
 		self::assertSame([], $context->getExpiredLogins());
