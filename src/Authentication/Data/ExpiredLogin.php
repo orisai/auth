@@ -11,13 +11,13 @@ final class ExpiredLogin extends BaseLogin
 
 	private ?Expiration $expiration = null;
 
-	/** @phpstan-var Firewall::REASON_* */
+	/** @phpstan-var Firewall::LOGOUT_* */
 	private int $logoutCode;
 
 	private ?DecisionReason $logoutReason;
 
 	/**
-	 * @phpstan-param Firewall::REASON_* $logoutCode
+	 * @phpstan-param Firewall::LOGOUT_* $logoutCode
 	 */
 	public function __construct(
 		CurrentLogin $currentLogin,
@@ -42,7 +42,7 @@ final class ExpiredLogin extends BaseLogin
 	}
 
 	/**
-	 * @phpstan-return Firewall::REASON_*
+	 * @phpstan-return Firewall::LOGOUT_*
 	 */
 	public function getLogoutCode(): int
 	{

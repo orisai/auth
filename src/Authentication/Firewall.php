@@ -12,11 +12,11 @@ use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 interface Firewall
 {
 
-	public const REASON_MANUAL = 1;
+	public const LOGOUT_MANUAL = 1;
 
-	public const REASON_INACTIVITY = 2;
+	public const LOGOUT_INACTIVITY = 2;
 
-	public const REASON_INVALID_IDENTITY = 3;
+	public const LOGOUT_INVALID_IDENTITY = 3;
 
 	public function isLoggedIn(): bool;
 

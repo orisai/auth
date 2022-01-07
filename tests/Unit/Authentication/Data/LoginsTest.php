@@ -31,7 +31,7 @@ final class LoginsTest extends TestCase
 		$logins->removeCurrentLogin();
 		self::assertNull($logins->getCurrentLogin());
 
-		$e1 = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
+		$e1 = new ExpiredLogin($currentLogin, Firewall::LOGOUT_MANUAL);
 		$logins->addExpiredLogin($e1);
 		self::assertSame(['test' => $e1], $logins->getExpiredLogins());
 		self::assertSame($e1, $logins->getLastExpiredLogin());
@@ -116,7 +116,7 @@ final class LoginsTest extends TestCase
 
 	private function expiredLogin(Identity $identity): ExpiredLogin
 	{
-		return new ExpiredLogin(new CurrentLogin($identity, Instant::of(1)), Firewall::REASON_MANUAL);
+		return new ExpiredLogin(new CurrentLogin($identity, Instant::of(1)), Firewall::LOGOUT_MANUAL);
 	}
 
 	public function testIncompleteIdentityClasses(): void

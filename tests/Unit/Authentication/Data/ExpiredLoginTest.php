@@ -24,18 +24,18 @@ final class ExpiredLoginTest extends TestCase
 		$identity = new IntIdentity(1, []);
 		$authTime = Instant::of(2);
 		$currentLogin = new CurrentLogin($identity, $authTime);
-		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
+		$login = new ExpiredLogin($currentLogin, Firewall::LOGOUT_MANUAL);
 
 		self::assertSame($identity, $login->getIdentity());
 		self::assertSame($authTime, $login->getAuthenticationTime());
 		self::assertNull($login->getExpiration());
-		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutCode());
+		self::assertSame(Firewall::LOGOUT_MANUAL, $login->getLogoutCode());
 		self::assertNull($login->getLogoutReason());
 
 		self::assertEquals($login, unserialize(serialize($login)));
 
 		$reason = DecisionReason::create('description');
-		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL, $reason);
+		$login = new ExpiredLogin($currentLogin, Firewall::LOGOUT_MANUAL, $reason);
 		self::assertSame($reason, $login->getLogoutReason());
 		self::assertEquals($login, unserialize(serialize($login)));
 	}
@@ -47,7 +47,7 @@ final class ExpiredLoginTest extends TestCase
 		$time = Instant::of(123);
 		$delta = Duration::ofSeconds(456);
 		$currentLogin->setExpiration(new CurrentExpiration($time, $delta));
-		$login = new ExpiredLogin($currentLogin, Firewall::REASON_MANUAL);
+		$login = new ExpiredLogin($currentLogin, Firewall::LOGOUT_MANUAL);
 
 		$expiration = $login->getExpiration();
 		self::assertInstanceOf(Expiration::class, $expiration);
@@ -78,7 +78,7 @@ final class ExpiredLoginTest extends TestCase
 		self::assertSame(2, $login->getAuthenticationTime()->getEpochSecond());
 		self::assertInstanceOf(IntIdentity::class, $login->getIdentity());
 		self::assertNull($login->getExpiration());
-		self::assertSame(Firewall::REASON_MANUAL, $login->getLogoutCode());
+		self::assertSame(Firewall::LOGOUT_MANUAL, $login->getLogoutCode());
 		self::assertNull($login->getLogoutReason());
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
