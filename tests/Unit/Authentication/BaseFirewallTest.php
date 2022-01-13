@@ -794,4 +794,86 @@ MSG);
 		self::assertTrue($firewall->isAllowed(RequireCurrentUserPolicy::getPrivilege()));
 	}
 
+	public function testLoginEvent(): void
+	{
+		$firewall = new TestingFirewall(
+			new ArrayLoginStorage(),
+			$this->refresher(),
+			$this->authorizer(),
+		);
+
+		$identity = new IntIdentity(123, []);
+
+		$cb1Calls = 0;
+		$cb1 = static function () use (&$cb1Calls, $identity, $firewall): void {
+			$cb1Calls++;
+			self::assertTrue($firewall->isLoggedIn());
+			self::assertSame($identity, $firewall->getIdentity());
+		};
+		$cb2Calls = 0;
+		$cb2 = static function () use (&$cb2Calls): void {
+			$cb2Calls++;
+		};
+
+		$firewall->addLoginCallback($cb1);
+		$firewall->addLoginCallback($cb2);
+
+		$firewall->login($identity);
+		self::assertSame(1, $cb1Calls);
+		self::assertSame(1, $cb2Calls);
+
+		// Another login (even without logging out first) triggers event
+		$firewall->login($identity);
+		$firewall->logout();
+		self::assertSame(2, $cb1Calls);
+		self::assertSame(2, $cb2Calls);
+	}
+
+	public function testLogoutEvent(): void
+	{
+		$firewall = new TestingFirewall(
+			new ArrayLoginStorage(),
+			new NeverPassIdentityRefresher(),
+			$this->authorizer(),
+		);
+
+		$identity = new IntIdentity(123, []);
+
+		$cb1Calls = 0;
+		$cb1 = static function () use (&$cb1Calls, $identity, $firewall): void {
+			$cb1Calls++;
+			self::assertFalse($firewall->isLoggedIn());
+			$login = $firewall->getLastExpiredLogin();
+			self::assertSame($identity, $login !== null ? $login->getIdentity() : null);
+		};
+		$cb2Calls = 0;
+		$cb2 = static function () use (&$cb2Calls): void {
+			$cb2Calls++;
+		};
+
+		$firewall->addLogoutCallback($cb1);
+		$firewall->addLogoutCallback($cb2);
+
+		// Logout four logged-out user has
+		self::assertFalse($firewall->isLoggedIn());
+		$firewall->logout();
+		self::assertSame(0, $cb1Calls);
+		self::assertSame(0, $cb2Calls);
+
+		// Manual logout
+		self::assertFalse($firewall->isLoggedIn());
+		$firewall->login($identity);
+		$firewall->logout();
+		self::assertSame(1, $cb1Calls);
+		self::assertSame(1, $cb2Calls);
+
+		// Automatic logout
+		self::assertFalse($firewall->isLoggedIn());
+		$firewall->login($identity);
+		$firewall->resetLoginsChecks();
+		self::assertFalse($firewall->isLoggedIn());
+		self::assertSame(2, $cb1Calls);
+		self::assertSame(2, $cb2Calls);
+	}
+
 }

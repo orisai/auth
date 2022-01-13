@@ -10,3 +10,8 @@ parameters:
 		- message: '#^Instanceof between (.+)NoRequirements and (.+)NoRequirements will always evaluate to true\.$#'
 		  path: ../tests/Doubles/NoRequirementsPolicy.php
 		  count: 1
+
+		# Variable value is incremented in callback by reference
+		- message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with (.+) and (.+) will always evaluate to false\.$#'
+		  path: ../tests/Unit/Authentication/BaseFirewallTest.php
+		  count: 6

@@ -3,6 +3,7 @@
 namespace Orisai\Auth\Authentication;
 
 use Brick\DateTime\Instant;
+use Closure;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
@@ -27,12 +28,22 @@ interface Firewall
 	public function login(Identity $identity): void;
 
 	/**
+	 * @param Closure(): void $callback
+	 */
+	public function addLoginCallback(Closure $callback): void;
+
+	/**
 	 * @phpstan-param I $identity
 	 * @throws NotLoggedIn
 	 */
 	public function refreshIdentity(Identity $identity): void;
 
 	public function logout(): void;
+
+	/**
+	 * @param Closure(): void $callback
+	 */
+	public function addLogoutCallback(Closure $callback): void;
 
 	/**
 	 * @phpstan-return I

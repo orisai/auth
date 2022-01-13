@@ -6,6 +6,7 @@ use Brick\DateTime\Clock;
 use Brick\DateTime\Clock\SystemClock;
 use Brick\DateTime\Duration;
 use Brick\DateTime\Instant;
+use Closure;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
@@ -37,6 +38,12 @@ abstract class BaseFirewall implements Firewall
 
 	/** @var int<0, max> */
 	private int $expiredIdentitiesLimit = 3;
+
+	/** @var array<Closure(): void> */
+	private array $onLogin = [];
+
+	/** @var array<Closure(): void> */
+	private array $onLogout = [];
 
 	/**
 	 * @phpstan-param IdentityRefresher<I> $refresher
@@ -72,7 +79,16 @@ abstract class BaseFirewall implements Firewall
 
 		$logins->setCurrentLogin(new CurrentLogin($identity, $this->clock->getTime()));
 
+		foreach ($this->onLogin as $cb) {
+			$cb();
+		}
+
 		$this->storage->regenerateSecurityToken($this->getNamespace());
+	}
+
+	public function addLoginCallback(Closure $callback): void
+	{
+		$this->onLogin[] = $callback;
 	}
 
 	public function refreshIdentity(Identity $identity): void
@@ -95,6 +111,11 @@ abstract class BaseFirewall implements Firewall
 		$this->unauthenticate($this->getLogins(), self::LOGOUT_MANUAL, null);
 	}
 
+	public function addLogoutCallback(Closure $callback): void
+	{
+		$this->onLogout[] = $callback;
+	}
+
 	/**
 	 * @phpstan-param self::LOGOUT_* $reason
 	 */
@@ -108,6 +129,10 @@ abstract class BaseFirewall implements Firewall
 
 		$logins->removeCurrentLogin();
 		$this->addExpiredLogin(new ExpiredLogin($login, $reason, $logoutReasonDescription));
+
+		foreach ($this->onLogout as $cb) {
+			$cb();
+		}
 
 		$this->storage->regenerateSecurityToken($this->getNamespace());
 	}
