@@ -9,6 +9,7 @@ use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
+use Orisai\Auth\Authentication\LogoutCode;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PolicyManager;
@@ -77,7 +78,7 @@ final class BaseFirewallTest extends TestCase
 
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
-		self::assertSame($firewall::LOGOUT_MANUAL, $expired->getLogoutCode());
+		self::assertEquals(LogoutCode::manual(), $expired->getLogoutCode());
 		self::assertNull($expired->getLogoutReason());
 
 		$this->expectException(NotLoggedIn::class);
@@ -333,7 +334,7 @@ MSG);
 
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
-		self::assertSame($firewall::LOGOUT_INVALID_IDENTITY, $expired->getLogoutCode());
+		self::assertEquals(LogoutCode::invalidIdentity(), $expired->getLogoutCode());
 		self::assertSame($reasonDescription, $expired->getLogoutReason());
 	}
 
@@ -401,7 +402,7 @@ MSG);
 		self::assertFalse($firewall->isLoggedIn());
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
-		self::assertSame($firewall::LOGOUT_INACTIVITY, $expired->getLogoutCode());
+		self::assertEquals(LogoutCode::inactivity(), $expired->getLogoutCode());
 		self::assertNull($expired->getLogoutReason());
 
 		$firewall->login($identity);

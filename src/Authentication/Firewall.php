@@ -14,12 +14,6 @@ use Orisai\Auth\Authorization\Authorizer;
 interface Firewall
 {
 
-	public const LOGOUT_MANUAL = 1;
-
-	public const LOGOUT_INACTIVITY = 2;
-
-	public const LOGOUT_INVALID_IDENTITY = 3;
-
 	public function isLoggedIn(): bool;
 
 	/**

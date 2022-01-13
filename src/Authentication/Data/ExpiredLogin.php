@@ -3,7 +3,7 @@
 namespace Orisai\Auth\Authentication\Data;
 
 use Orisai\Auth\Authentication\DecisionReason;
-use Orisai\Auth\Authentication\Firewall;
+use Orisai\Auth\Authentication\LogoutCode;
 use function is_string;
 
 final class ExpiredLogin extends BaseLogin
@@ -11,17 +11,13 @@ final class ExpiredLogin extends BaseLogin
 
 	private ?Expiration $expiration = null;
 
-	/** @phpstan-var Firewall::LOGOUT_* */
-	private int $logoutCode;
+	private LogoutCode $logoutCode;
 
 	private ?DecisionReason $logoutReason;
 
-	/**
-	 * @phpstan-param Firewall::LOGOUT_* $logoutCode
-	 */
 	public function __construct(
 		CurrentLogin $currentLogin,
-		int $logoutCode,
+		LogoutCode $logoutCode,
 		?DecisionReason $logoutReason = null
 	)
 	{
@@ -41,10 +37,7 @@ final class ExpiredLogin extends BaseLogin
 		return $this->expiration;
 	}
 
-	/**
-	 * @phpstan-return Firewall::LOGOUT_*
-	 */
-	public function getLogoutCode(): int
+	public function getLogoutCode(): LogoutCode
 	{
 		return $this->logoutCode;
 	}
@@ -60,7 +53,7 @@ final class ExpiredLogin extends BaseLogin
 	public function __serialize(): array
 	{
 		$data = parent::__serialize();
-		$data['logoutReason'] = $this->logoutCode;
+		$data['logoutReason'] = $this->logoutCode->value;
 		$data['logoutReasonDescription'] = $this->logoutReason;
 		$data['expiration'] = $this->expiration;
 
@@ -73,7 +66,7 @@ final class ExpiredLogin extends BaseLogin
 	public function __unserialize(array $data): void
 	{
 		parent::__unserialize($data);
-		$this->logoutCode = $data['logoutReason'];
+		$this->logoutCode = LogoutCode::from($data['logoutReason']);
 		$description = $data['logoutReasonDescription'] ?? null;
 		$this->logoutReason = !is_string($description) ? $description : DecisionReason::create($description);
 		$this->expiration = $data['expiration'];

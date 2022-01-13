@@ -72,7 +72,7 @@ abstract class BaseFirewall implements Firewall
 	{
 		$logins = $this->getLogins();
 
-		$this->unauthenticate($logins, Firewall::LOGOUT_MANUAL, null);
+		$this->unauthenticate($logins, LogoutCode::manual(), null);
 		$logins->setCurrentLogin(new CurrentLogin($identity, $this->clock->getTime()));
 
 		foreach ($this->onLogin as $cb) {
@@ -104,7 +104,7 @@ abstract class BaseFirewall implements Firewall
 			return;
 		}
 
-		$this->unauthenticate($this->getLogins(), self::LOGOUT_MANUAL, null);
+		$this->unauthenticate($this->getLogins(), LogoutCode::manual(), null);
 	}
 
 	public function addLogoutCallback(Closure $callback): void
@@ -112,10 +112,7 @@ abstract class BaseFirewall implements Firewall
 		$this->onLogout[] = $callback;
 	}
 
-	/**
-	 * @phpstan-param self::LOGOUT_* $logoutCode
-	 */
-	private function unauthenticate(Logins $logins, int $logoutCode, ?DecisionReason $logoutReason): void
+	private function unauthenticate(Logins $logins, LogoutCode $logoutCode, ?DecisionReason $logoutReason): void
 	{
 		$login = $logins->getCurrentLogin();
 
@@ -272,7 +269,7 @@ abstract class BaseFirewall implements Firewall
 		$now = $this->clock->getTime();
 
 		if ($expiration->getTime()->isBefore($now)) {
-			$this->unauthenticate($logins, self::LOGOUT_INACTIVITY, null);
+			$this->unauthenticate($logins, LogoutCode::inactivity(), null);
 		} else {
 			$expiration->setTime($now->plusSeconds($expiration->getDelta()->toSeconds()));
 		}
@@ -289,7 +286,7 @@ abstract class BaseFirewall implements Firewall
 		try {
 			$identity = $this->refresher->refresh($login->getIdentity());
 		} catch (IdentityExpired $exception) {
-			$this->unauthenticate($logins, self::LOGOUT_INVALID_IDENTITY, $exception->getLogoutReason());
+			$this->unauthenticate($logins, LogoutCode::invalidIdentity(), $exception->getLogoutReason());
 
 			return;
 		}
