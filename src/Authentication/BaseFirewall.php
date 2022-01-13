@@ -113,9 +113,9 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @phpstan-param self::LOGOUT_* $reason
+	 * @phpstan-param self::LOGOUT_* $logoutCode
 	 */
-	private function unauthenticate(Logins $logins, int $reason, ?DecisionReason $logoutReasonDescription): void
+	private function unauthenticate(Logins $logins, int $logoutCode, ?DecisionReason $logoutReason): void
 	{
 		$login = $logins->getCurrentLogin();
 
@@ -124,7 +124,7 @@ abstract class BaseFirewall implements Firewall
 		}
 
 		$logins->removeCurrentLogin();
-		$this->addExpiredLogin(new ExpiredLogin($login, $reason, $logoutReasonDescription));
+		$this->addExpiredLogin(new ExpiredLogin($login, $logoutCode, $logoutReason));
 
 		foreach ($this->onLogout as $cb) {
 			$cb();
