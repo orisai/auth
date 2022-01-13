@@ -72,11 +72,7 @@ abstract class BaseFirewall implements Firewall
 	{
 		$logins = $this->getLogins();
 
-		$previousLogin = $logins->getCurrentLogin();
-		if ($previousLogin !== null && $previousLogin->getIdentity()->getId() !== $identity->getId()) {
-			$this->addExpiredLogin(new ExpiredLogin($previousLogin, $this::LOGOUT_MANUAL));
-		}
-
+		$this->unauthenticate($logins, Firewall::LOGOUT_MANUAL, null);
 		$logins->setCurrentLogin(new CurrentLogin($identity, $this->clock->getTime()));
 
 		foreach ($this->onLogin as $cb) {

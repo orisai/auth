@@ -874,6 +874,14 @@ MSG);
 		self::assertFalse($firewall->isLoggedIn());
 		self::assertSame(2, $cb1Calls);
 		self::assertSame(2, $cb2Calls);
+
+		// Another login, logout should run automatically
+		self::assertFalse($firewall->isLoggedIn());
+		$firewall->login($identity);
+		$firewall->login($identity);
+		self::assertTrue($firewall->isLoggedIn());
+		self::assertSame(3, $cb1Calls);
+		self::assertSame(3, $cb2Calls);
 	}
 
 }

@@ -14,4 +14,4 @@ parameters:
 		# Variable value is incremented in callback by reference
 		- message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with (.+) and (.+) will always evaluate to false\.$#'
 		  path: ../tests/Unit/Authentication/BaseFirewallTest.php
-		  count: 6
+		  count: 8
