@@ -34,7 +34,6 @@
 		"phpstan/extension-installer": "^1.0.0",
 		"phpstan/phpstan": "^1.0.0",
 		"phpstan/phpstan-deprecation-rules": "^1.0.0",
-		"phpstan/phpstan-nette": "^1.0.0",
 		"phpstan/phpstan-phpunit": "^1.0.0",
 		"phpstan/phpstan-strict-rules": "^1.0.0",
 		"phpunit/phpunit": "^9.5.0",
