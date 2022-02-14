@@ -5,6 +5,9 @@ parameters:
 	level: 7
 	resultCachePath: %currentWorkingDirectory%/var/tools/PHPStan/resultCache.tests.php
 
+	scanDirectories:
+		- ../src
+
 	ignoreErrors:
 		# Intentional check
 		- message: '#^Instanceof between (.+)NoRequirements and (.+)NoRequirements will always evaluate to true\.$#'
