@@ -18,7 +18,6 @@ final class StaticListPasswordEncoderTest extends TestCase
 		self::assertSame('static_5f4dcc3b5aa765d61d8327deb882cf99', $encoded);
 		self::assertFalse($encoder->needsReEncode($encoded));
 		self::assertTrue($encoder->isValid($raw, $encoded));
-
 	}
 
 	public function testNotPasses(): void
