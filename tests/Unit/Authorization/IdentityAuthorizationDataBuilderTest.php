@@ -253,7 +253,6 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 	public function testAllowChecksPrivilege(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownPrivilege = true;
 		$builder->addRole('role');
 		$data = $builder->build();
 
@@ -273,7 +272,6 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 	public function testDenyChecksPrivilege(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownPrivilege = true;
 		$builder->addRole('role');
 		$data = $builder->build();
 
@@ -290,9 +288,10 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 		self::assertNotNull($e);
 	}
 
-	public function testAssigningUnknownPrivilegeDoesNotFailByDefault(): void
+	public function testThrowOnUnknownPrivilegeDisabled(): void
 	{
 		$builder = new AuthorizationDataBuilder();
+		$builder->throwOnUnknownPrivilege = false;
 		$builder->addRole('role');
 		$data = $builder->build();
 

@@ -20,7 +20,7 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 	/** @var array<string, array<mixed>> */
 	protected array $rawRoleAllowedPrivileges = [];
 
-	public bool $throwOnUnknownPrivilege = false;
+	public bool $throwOnUnknownPrivilege = true;
 
 	public function addRole(string $role): void
 	{

@@ -414,7 +414,6 @@ MSG);
 	public function testAllowChecksPrivilege(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownPrivilege = true;
 		$builder->addRole('role');
 
 		$e = null;
@@ -430,7 +429,6 @@ MSG);
 	public function testDenyChecksPrivilege(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$builder->throwOnUnknownPrivilege = true;
 		$builder->addRole('role');
 
 		$e = null;
@@ -443,9 +441,10 @@ MSG);
 		self::assertNotNull($e);
 	}
 
-	public function testAssigningUnknownPrivilegeDoesNotFailByDefault(): void
+	public function testThrowOnUnknownPrivilegeDisabled(): void
 	{
 		$builder = new AuthorizationDataBuilder();
+		$builder->throwOnUnknownPrivilege = false;
 		$builder->addRole('role');
 
 		$exception = null;
