@@ -24,7 +24,7 @@ final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilde
 			$identity->getId(),
 			$this->identityAllowedPrivileges,
 			$this->data->getRawPrivileges(),
-			$this->data->isThrowOnUnknownPrivilege(),
+			$this->data->shouldThrowOnUnknownPrivilege(),
 			self::class,
 			__FUNCTION__,
 		);
@@ -37,7 +37,7 @@ final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilde
 			$identity->getId(),
 			$this->identityAllowedPrivileges,
 			$this->data->getRawPrivileges(),
-			$this->data->isThrowOnUnknownPrivilege(),
+			$this->data->shouldThrowOnUnknownPrivilege(),
 			self::class,
 			__FUNCTION__,
 		);

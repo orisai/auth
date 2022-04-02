@@ -105,7 +105,7 @@ final class AuthorizationData
 		return Arrays::keysToStrings($privileges);
 	}
 
-	public function isThrowOnUnknownPrivilege(): bool
+	public function shouldThrowOnUnknownPrivilege(): bool
 	{
 		return $this->throwOnUnknownPrivilege;
 	}

@@ -32,7 +32,7 @@ final class AuthorizationDataTest extends TestCase
 			false,
 		);
 
-		self::assertFalse($data->isThrowOnUnknownPrivilege());
+		self::assertFalse($data->shouldThrowOnUnknownPrivilege());
 
 		self::assertSame($roles, $data->getRawRoles());
 		self::assertSame(
@@ -75,7 +75,7 @@ final class AuthorizationDataTest extends TestCase
 		self::assertSame([], $data->getRawRoles());
 		self::assertSame([], $data->getRawPrivileges());
 		self::assertSame([], $data->getRawRoleAllowedPrivileges());
-		self::assertFalse($data->isThrowOnUnknownPrivilege());
+		self::assertFalse($data->shouldThrowOnUnknownPrivilege());
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		$serialized = 'O:43:"Orisai\Auth\Authorization\AuthorizationData":4:{s:8:"rawRoles";a:1:{s:6:"editor";N;}s:13:"rawPrivileges";a:1:{s:7:"article";a:3:{s:4:"view";a:0:{}s:4:"edit";a:0:{}s:6:"delete";a:0:{}}}s:24:"rawRoleAllowedPrivileges";a:1:{s:6:"editor";a:1:{s:7:"article";a:2:{s:4:"view";a:0:{}s:4:"edit";a:0:{}}}}s:23:"throwOnUnknownPrivilege";b:1;}';
@@ -98,7 +98,7 @@ final class AuthorizationDataTest extends TestCase
 			[],
 			$data->getAllowedPrivilegesForRole('unknown'),
 		);
-		self::assertTrue($data->isThrowOnUnknownPrivilege());
+		self::assertTrue($data->shouldThrowOnUnknownPrivilege());
 	}
 
 }
