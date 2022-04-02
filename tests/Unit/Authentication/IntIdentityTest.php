@@ -23,11 +23,11 @@ final class IntIdentityTest extends TestCase
 		self::assertTrue($identity->hasRole('bar'));
 		self::assertFalse($identity->hasRole('baz'));
 
-		self::assertNull($identity->getAuthData());
+		self::assertNull($identity->getAuthorizationData());
 
 		$data = new IdentityAuthorizationData($identity->getId(), []);
-		$identity->setAuthData($data);
-		self::assertSame($data, $identity->getAuthData());
+		$identity->setAuthorizationData($data);
+		self::assertSame($data, $identity->getAuthorizationData());
 
 		$serialized = serialize($identity);
 		self::assertEquals($identity, unserialize($serialized));
@@ -42,7 +42,7 @@ final class IntIdentityTest extends TestCase
 			"Identity data with identity ID '456' can't be used with identity with ID '123'.",
 		);
 
-		$identity->setAuthData(new IdentityAuthorizationData(456, []));
+		$identity->setAuthorizationData(new IdentityAuthorizationData(456, []));
 	}
 
 	public function testSerializationBC(): void
@@ -53,7 +53,7 @@ final class IntIdentityTest extends TestCase
 		self::assertInstanceOf(IntIdentity::class, $identity);
 		self::assertSame(1, $identity->getId());
 		self::assertSame([], $identity->getRoles());
-		self::assertNull($identity->getAuthData());
+		self::assertNull($identity->getAuthorizationData());
 	}
 
 }

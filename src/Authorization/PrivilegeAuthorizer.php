@@ -41,7 +41,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private function hasRootPrivilege(Identity $identity): bool
 	{
-		$identityAuthData = $identity->getAuthData();
+		$identityAuthData = $identity->getAuthorizationData();
 		if ($identityAuthData !== null) {
 			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
 
@@ -77,7 +77,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
-		$identityAuthData = $identity->getAuthData();
+		$identityAuthData = $identity->getAuthorizationData();
 		if ($identityAuthData !== null) {
 			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
 

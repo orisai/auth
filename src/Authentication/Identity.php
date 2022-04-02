@@ -19,7 +19,7 @@ interface Identity
 
 	public function hasRole(string $role): bool;
 
-	public function getAuthData(): ?IdentityAuthorizationData;
+	public function getAuthorizationData(): ?IdentityAuthorizationData;
 
 	/**
 	 * @return array<mixed>

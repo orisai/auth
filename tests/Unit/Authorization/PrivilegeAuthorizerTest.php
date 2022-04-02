@@ -275,7 +275,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$identityBuilder->allow($identity, 'article.delete');
 
 		$identityData = $identityBuilder->build($identity);
-		$identity->setAuthData($identityData);
+		$identity->setAuthorizationData($identityData);
 
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
 
@@ -314,7 +314,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$identityBuilder->allow($identity, Authorizer::ROOT_PRIVILEGE);
 
 		$identityData = $identityBuilder->build($identity);
-		$identity->setAuthData($identityData);
+		$identity->setAuthorizationData($identityData);
 
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
 

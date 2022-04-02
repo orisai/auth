@@ -12,7 +12,7 @@ abstract class BaseIdentity implements Identity
 	/** @var array<string> */
 	protected array $roles;
 
-	protected ?IdentityAuthorizationData $authData = null;
+	protected ?IdentityAuthorizationData $authorizationData = null;
 
 	/**
 	 * @return array<string>
@@ -27,12 +27,12 @@ abstract class BaseIdentity implements Identity
 		return in_array($role, $this->roles, true);
 	}
 
-	public function getAuthData(): ?IdentityAuthorizationData
+	public function getAuthorizationData(): ?IdentityAuthorizationData
 	{
-		return $this->authData;
+		return $this->authorizationData;
 	}
 
-	public function setAuthData(IdentityAuthorizationData $authData): void
+	public function setAuthorizationData(IdentityAuthorizationData $authData): void
 	{
 		if (($dataId = $authData->getId()) !== ($id = $this->getId())) {
 			throw InvalidArgument::create()
@@ -41,7 +41,7 @@ abstract class BaseIdentity implements Identity
 				);
 		}
 
-		$this->authData = $authData;
+		$this->authorizationData = $authData;
 	}
 
 	/**
@@ -51,7 +51,7 @@ abstract class BaseIdentity implements Identity
 	{
 		return [
 			'roles' => $this->roles,
-			'authData' => $this->authData,
+			'authData' => $this->authorizationData,
 		];
 	}
 
@@ -61,7 +61,7 @@ abstract class BaseIdentity implements Identity
 	public function __unserialize(array $data): void
 	{
 		$this->roles = $data['roles'];
-		$this->authData = $data['authData'] ?? null;
+		$this->authorizationData = $data['authData'] ?? null;
 	}
 
 }
