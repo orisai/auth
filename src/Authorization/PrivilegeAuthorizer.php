@@ -17,7 +17,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private PolicyManager $policyManager;
 
-	protected AuthorizationData $data;
+	private AuthorizationData $data;
 
 	public function __construct(PolicyManager $policyManager, AuthorizationData $data)
 	{

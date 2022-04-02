@@ -5,15 +5,15 @@ namespace Orisai\Auth\Authentication;
 class StringIdentity extends BaseIdentity
 {
 
-	protected string $id;
+	private string $id;
 
 	/**
-	 * @param array<string> $roles
+	 * @param array<int, string> $roles
 	 */
 	public function __construct(string $id, array $roles)
 	{
+		parent::__construct($roles);
 		$this->id = $id;
-		$this->roles = $roles;
 	}
 
 	public function getId(): string

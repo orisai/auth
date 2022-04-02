@@ -12,13 +12,13 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 {
 
 	/** @var array<string, null> */
-	protected array $rawRoles = [];
+	private array $rawRoles = [];
 
 	/** @var array<mixed> */
-	protected array $rawPrivileges = [];
+	private array $rawPrivileges = [];
 
 	/** @var array<string, array<mixed>> */
-	protected array $rawRoleAllowedPrivileges = [];
+	private array $rawRoleAllowedPrivileges = [];
 
 	public bool $throwOnUnknownPrivilege = true;
 

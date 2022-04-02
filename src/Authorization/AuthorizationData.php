@@ -9,13 +9,13 @@ final class AuthorizationData
 {
 
 	/** @var array<string, null> */
-	protected array $rawRoles = [];
+	private array $rawRoles;
 
 	/** @var array<mixed> */
-	protected array $rawPrivileges = [];
+	private array $rawPrivileges;
 
 	/** @var array<string, array<mixed>> */
-	protected array $rawRoleAllowedPrivileges = [];
+	private array $rawRoleAllowedPrivileges;
 
 	private bool $throwOnUnknownPrivilege;
 

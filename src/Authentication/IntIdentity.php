@@ -5,15 +5,15 @@ namespace Orisai\Auth\Authentication;
 class IntIdentity extends BaseIdentity
 {
 
-	protected int $id;
+	private int $id;
 
 	/**
-	 * @param array<string> $roles
+	 * @param array<int, string> $roles
 	 */
 	public function __construct(int $id, array $roles)
 	{
+		parent::__construct($roles);
 		$this->id = $id;
-		$this->roles = $roles;
 	}
 
 	public function getId(): int
