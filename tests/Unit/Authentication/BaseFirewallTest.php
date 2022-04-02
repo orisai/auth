@@ -12,6 +12,7 @@ use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\LogoutCode;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
@@ -678,6 +679,29 @@ MSG);
 
 		self::assertTrue($firewall->isAllowed('front'));
 		self::assertFalse($firewall->isAllowed('admin'));
+	}
+
+	public function testIsRoot(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+		$builder->addRole('root');
+		$builder->allow('root', Authorizer::ROOT_PRIVILEGE);
+
+		$storage = new ArrayLoginStorage();
+		$authorizer = $this->authorizer(null, $builder);
+		$firewall = new TestingFirewall($storage, $this->refresher(), $authorizer, null, 'test');
+
+		self::assertFalse($firewall->isRoot());
+
+		$identity = new IntIdentity(1, []);
+		$firewall->login($identity);
+		self::assertFalse($firewall->isAllowed(Authorizer::ROOT_PRIVILEGE));
+		self::assertFalse($firewall->isRoot());
+
+		$identity = new IntIdentity(1, ['root']);
+		$firewall->login($identity);
+		self::assertTrue($firewall->isAllowed(Authorizer::ROOT_PRIVILEGE));
+		self::assertTrue($firewall->isRoot());
 	}
 
 	public function testPolicy(): void

@@ -52,6 +52,8 @@ interface Firewall
 	 */
 	public function isAllowed(string $privilege, ?object $requirements = null, ?DecisionReason &$reason = null): bool;
 
+	public function isRoot(): bool;
+
 	/**
 	 * @throws NotLoggedIn
 	 */

@@ -205,6 +205,17 @@ abstract class BaseFirewall implements Firewall
 		);
 	}
 
+	public function isRoot(): bool
+	{
+		$identity = $this->fetchIdentity();
+
+		if ($identity === null) {
+			return false;
+		}
+
+		return $this->authorizer->isRoot($identity);
+	}
+
 	/**
 	 * @throws NotLoggedIn
 	 */

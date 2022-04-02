@@ -165,6 +165,11 @@ final class PrivilegeAuthorizer implements Authorizer
 		);
 	}
 
+	public function isRoot(Identity $identity): bool
+	{
+		return $this->hasRootPrivilege($identity);
+	}
+
 	private function isAllowedByPrivilege(
 		Identity $identity,
 		string $privilege,

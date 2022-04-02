@@ -26,4 +26,6 @@ interface Authorizer
 		?CurrentUserPolicyContext $context = null
 	): bool;
 
+	public function isRoot(Identity $identity): bool;
+
 }
