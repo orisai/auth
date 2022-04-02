@@ -53,11 +53,6 @@ interface Firewall
 	public function isAllowed(string $privilege, ?object $requirements = null, ?DecisionReason &$reason = null): bool;
 
 	/**
-	 * @phpstan-param literal-string $privilege
-	 */
-	public function hasPrivilege(string $privilege): bool;
-
-	/**
 	 * @throws NotLoggedIn
 	 */
 	public function getAuthenticationTime(): Instant;

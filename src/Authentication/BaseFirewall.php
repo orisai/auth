@@ -205,17 +205,6 @@ abstract class BaseFirewall implements Firewall
 		);
 	}
 
-	public function hasPrivilege(string $privilege): bool
-	{
-		$identity = $this->fetchIdentity();
-
-		if ($identity === null) {
-			return false;
-		}
-
-		return $this->authorizer->hasPrivilege($identity, $privilege);
-	}
-
 	/**
 	 * @throws NotLoggedIn
 	 */

@@ -671,17 +671,13 @@ MSG);
 		$firewall = new TestingFirewall($storage, $this->refresher(), $authorizer, null, 'test');
 
 		self::assertFalse($firewall->isAllowed('front'));
-		self::assertFalse($firewall->hasPrivilege('front'));
 		self::assertFalse($firewall->isAllowed('admin'));
-		self::assertFalse($firewall->hasPrivilege('admin'));
 
 		$identity = new IntIdentity(1, ['guest']);
 		$firewall->login($identity);
 
 		self::assertTrue($firewall->isAllowed('front'));
-		self::assertTrue($firewall->hasPrivilege('front'));
 		self::assertFalse($firewall->isAllowed('admin'));
-		self::assertFalse($firewall->hasPrivilege('admin'));
 	}
 
 	public function testPolicy(): void
