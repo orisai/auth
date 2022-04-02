@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
+use Orisai\Exceptions\Logic\InvalidState;
+
 final class DecisionReason
 {
 
@@ -45,6 +47,11 @@ final class DecisionReason
 	 */
 	public function getParameters(): array
 	{
+		if (!$this->isTranslatable()) {
+			throw InvalidState::create()
+				->withMessage('Only translatable reason has parameters.');
+		}
+
 		return $this->parameters;
 	}
 

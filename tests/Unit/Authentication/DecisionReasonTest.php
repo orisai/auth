@@ -3,6 +3,7 @@
 namespace Tests\Orisai\Auth\Unit\Authentication;
 
 use Orisai\Auth\Authentication\DecisionReason;
+use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use function serialize;
 use function unserialize;
@@ -15,10 +16,13 @@ final class DecisionReasonTest extends TestCase
 		$reason = DecisionReason::create('Message');
 
 		self::assertSame('Message', $reason->getMessage());
-		self::assertSame([], $reason->getParameters());
 		self::assertFalse($reason->isTranslatable());
 
 		self::assertEquals($reason, unserialize(serialize($reason)));
+
+		$this->expectException(InvalidState::class);
+		$this->expectExceptionMessage('Only translatable reason has parameters.');
+		self::assertSame([], $reason->getParameters());
 	}
 
 	public function testTranslatable(): void
@@ -40,7 +44,6 @@ final class DecisionReasonTest extends TestCase
 
 		self::assertInstanceOf(DecisionReason::class, $reason);
 		self::assertSame('Message', $reason->getMessage());
-		self::assertSame([], $reason->getParameters());
 		self::assertFalse($reason->isTranslatable());
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
