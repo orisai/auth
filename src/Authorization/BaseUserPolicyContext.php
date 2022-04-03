@@ -14,9 +14,6 @@ abstract class BaseUserPolicyContext implements PolicyContext
 
 	private ?DecisionReason $decisionReason = null;
 
-	/**
-	 * @internal
-	 */
 	public function __construct(Authorizer $authorizer)
 	{
 		$this->authorizer = $authorizer;

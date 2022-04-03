@@ -18,6 +18,8 @@ final class AnyUserPolicyContextTest extends TestCase
 		$context = new AnyUserPolicyContext($authorizer);
 
 		self::assertSame($authorizer, $context->getAuthorizer());
+		self::assertFalse($context->isCurrentUser());
+		self::assertSame([], $context->getExpiredLogins());
 
 		self::assertNull($context->getDecisionReason());
 		$context->setDecisionReason($reason = DecisionReason::create('Message'));

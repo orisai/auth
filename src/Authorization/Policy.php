@@ -27,7 +27,6 @@ interface Policy
 	public static function getRequirementsClass(): string;
 
 	/**
-	 * @param CurrentUserPolicyContext|AnyUserPolicyContext $context
 	 * @phpstan-param R $requirements
 	 */
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool;

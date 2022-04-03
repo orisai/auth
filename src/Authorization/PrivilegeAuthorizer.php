@@ -167,8 +167,7 @@ final class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
-	 * @param CurrentUserPolicyContext|AnyUserPolicyContext $context
-	 * @phpstan-param Policy<object>                        $policy
+	 * @phpstan-param Policy<object> $policy
 	 */
 	private function isAllowedByPolicy(
 		?Identity $identity,
