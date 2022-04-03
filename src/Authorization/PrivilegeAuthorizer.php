@@ -32,58 +32,22 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
-		if ($privilege === self::ROOT_PRIVILEGE) {
-			return $this->hasRootPrivilege($identity);
-		}
-
-		return $this->hasPrivilegeMatchSubsets($identity, $privilege, $function);
-	}
-
-	private function hasRootPrivilege(Identity $identity): bool
-	{
-		$identityAuthData = $identity->getAuthorizationData();
-		if ($identityAuthData !== null) {
-			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
-
-			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
-				return true;
-			}
-		}
-
-		$roleAllowedPrivileges = $this->data->getRawRoleAllowedPrivileges();
-		foreach ($identity->getRoles() as $role) {
-			if (!array_key_exists($role, $roleAllowedPrivileges)) {
-				continue;
-			}
-
-			$allowedPrivileges = &$roleAllowedPrivileges[$role];
-
-			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private function hasPrivilegeMatchSubsets(Identity $identity, string $privilege, string $function): bool
-	{
 		$privileges = $this->data->getRawPrivileges();
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$requiredPrivileges = PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $privileges);
+		$requiredPrivileges = Arrays::getKey($privileges, $privilegeParts);
 
 		if ($requiredPrivileges === null) {
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
+		if ($this->isRoot($identity)) {
+			return true;
+		}
+
 		$identityAuthData = $identity->getAuthorizationData();
 		if ($identityAuthData !== null) {
 			$allowedPrivileges = $identityAuthData->getRawAllowedPrivileges();
-
-			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
-				return true;
-			}
 
 			if ($this->hasPrivilegeSubtractSubset(
 				$requiredPrivileges,
@@ -101,10 +65,6 @@ final class PrivilegeAuthorizer implements Authorizer
 			}
 
 			$allowedPrivileges = &$roleAllowedPrivileges[$role];
-
-			if (array_key_exists(self::ROOT_PRIVILEGE, $allowedPrivileges)) {
-				return true;
-			}
 
 			if ($this->hasPrivilegeSubtractSubset(
 				$requiredPrivileges,
@@ -167,7 +127,19 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	public function isRoot(Identity $identity): bool
 	{
-		return $this->hasRootPrivilege($identity);
+		$identityAuthData = $identity->getAuthorizationData();
+		if ($identityAuthData !== null && $identityAuthData->isRoot()) {
+			return true;
+		}
+
+		$rootRoles = $this->data->getRawRootRoles();
+		foreach ($identity->getRoles() as $role) {
+			if (array_key_exists($role, $rootRoles)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function isAllowedByPrivilege(
@@ -196,7 +168,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	/**
 	 * @param CurrentUserPolicyContext|AnyUserPolicyContext $context
-	 * @phpstan-param Policy<object> $policy
+	 * @phpstan-param Policy<object>                        $policy
 	 */
 	private function isAllowedByPolicy(
 		?Identity $identity,
@@ -252,7 +224,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			return false;
 		}
 
-		if ($identity !== null && $this->hasRootPrivilege($identity)) {
+		if ($identity !== null && $this->isRoot($identity)) {
 			return true;
 		}
 

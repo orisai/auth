@@ -8,8 +8,6 @@ use Orisai\Auth\Authentication\Identity;
 interface Authorizer
 {
 
-	public const ROOT_PRIVILEGE = '*';
-
 	/**
 	 * @phpstan-param literal-string $privilege
 	 */

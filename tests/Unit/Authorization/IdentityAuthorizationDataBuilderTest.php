@@ -4,7 +4,6 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use PHPUnit\Framework\TestCase;
@@ -62,6 +61,24 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 			],
 			$identity2Data->getRawAllowedPrivileges(),
 		);
+	}
+
+	public function testRoot(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+		$data = $builder->build();
+		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
+
+		$identity = new IntIdentity(1, []);
+		$identityBuilder->addRoot($identity);
+		$identityData = $identityBuilder->build($identity);
+		self::assertTrue($identityData->isRoot());
+
+		$identity2 = new IntIdentity(2, []);
+		$identityBuilder->addRoot($identity2);
+		$identityBuilder->removeRoot($identity2);
+		$identity2Data = $identityBuilder->build($identity2);
+		self::assertFalse($identity2Data->isRoot());
 	}
 
 	public function testAllowDenyA(): void
@@ -162,86 +179,6 @@ final class IdentityAuthorizationDataBuilderTest extends TestCase
 		);
 
 		$identityBuilder->removeAllow($identity, 'article');
-		$identityData = $identityBuilder->build($identity);
-
-		self::assertSame(
-			[],
-			$identityData->getRawAllowedPrivileges(),
-		);
-	}
-
-	public function testAllowDenyD(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('something');
-		$data = $builder->build();
-
-		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
-		$identity = new IntIdentity(1, []);
-
-		$identityBuilder->allow($identity, 'article');
-		$identityBuilder->allow($identity, 'something');
-		$identityData = $identityBuilder->build($identity);
-
-		self::assertSame(
-			[
-				'article' => [
-					'view' => [],
-					'edit' => [],
-				],
-				'something' => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		$identityBuilder->removeAllow($identity, Authorizer::ROOT_PRIVILEGE);
-		$identityData = $identityBuilder->build($identity);
-
-		self::assertSame(
-			[],
-			$identityData->getRawAllowedPrivileges(),
-		);
-	}
-
-	public function testAllowDenyE(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('something');
-
-		$data = $builder->build();
-
-		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
-		$identity = new IntIdentity(1, []);
-
-		$identityBuilder->allow($identity, Authorizer::ROOT_PRIVILEGE);
-		$identityData = $identityBuilder->build($identity);
-
-		self::assertSame(
-			[
-				Authorizer::ROOT_PRIVILEGE => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		// Can't remove part of root privilege
-		$identityBuilder->removeAllow($identity, 'something');
-		$identityData = $identityBuilder->build($identity);
-
-		self::assertSame(
-			[
-				Authorizer::ROOT_PRIVILEGE => [],
-			],
-			$identityData->getRawAllowedPrivileges(),
-		);
-
-		// Root privilege itself can be removed
-		$identityBuilder->removeAllow($identity, Authorizer::ROOT_PRIVILEGE);
 		$identityData = $identityBuilder->build($identity);
 
 		self::assertSame(

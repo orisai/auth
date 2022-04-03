@@ -3,9 +3,7 @@
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
-use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
 use PHPUnit\Framework\TestCase;
 use Throwable;
@@ -53,26 +51,10 @@ final class AuthorizationDataBuilderTest extends TestCase
 		);
 	}
 
-	public function testPrivilegeIsReserved(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to add privilege '*' via
-         Orisai\Auth\Authorization\AuthorizationDataBuilder->addPrivilege().
-Problem: Privilege '*' is reserved representation of root privilege and cannot
-         be added.
-MSG);
-
-		$builder->addPrivilege(Authorizer::ROOT_PRIVILEGE);
-	}
-
 	public function testPrivilegeExists(): void
 	{
 		$builder = new AuthorizationDataBuilder();
 		$data = $builder->build();
-		self::assertTrue($data->privilegeExists(Authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($data->privilegeExists('article'));
 		self::assertFalse($data->privilegeExists('article.edit'));
 		self::assertFalse($data->privilegeExists('article.edit.all'));
@@ -88,7 +70,6 @@ MSG);
 		self::assertTrue($data->privilegeExists('article'));
 		self::assertTrue($data->privilegeExists('article.edit'));
 		self::assertTrue($data->privilegeExists('article.edit.all'));
-		self::assertTrue($data->privilegeExists(Authorizer::ROOT_PRIVILEGE));
 	}
 
 	public function testRoles(): void
@@ -155,6 +136,24 @@ MSG);
 				],
 			],
 			$data->getRawRoleAllowedPrivileges(),
+		);
+	}
+
+	public function testRoot(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$builder->addRole('a');
+		$builder->addRole('b');
+
+		$builder->addRoot('a');
+		$builder->addRoot('b');
+		$builder->removeRoot('b');
+
+		$data = $builder->build();
+		self::assertSame(
+			['a' => null],
+			$data->getRawRootRoles(),
 		);
 	}
 
@@ -273,93 +272,6 @@ MSG);
 		);
 	}
 
-	public function testAllowDenyD(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('something');
-
-		$role = 'editor';
-		$builder->addRole($role);
-
-		$builder->allow($role, 'article');
-		$builder->allow($role, 'something');
-		$data = $builder->build();
-
-		self::assertSame(
-			[
-				'editor' => [
-					'article' => [
-						'view' => [],
-						'edit' => [],
-					],
-					'something' => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		$builder->removeAllow($role, Authorizer::ROOT_PRIVILEGE);
-		$data = $builder->build();
-
-		self::assertSame(
-			[
-				'editor' => [],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-	}
-
-	public function testAllowDenyE(): void
-	{
-		$builder = new AuthorizationDataBuilder();
-
-		$builder->addPrivilege('article.view');
-		$builder->addPrivilege('article.edit');
-		$builder->addPrivilege('something');
-
-		$role = 'editor';
-		$builder->addRole($role);
-
-		$builder->allow($role, Authorizer::ROOT_PRIVILEGE);
-		$data = $builder->build();
-
-		self::assertSame(
-			[
-				'editor' => [
-					Authorizer::ROOT_PRIVILEGE => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		// Can't remove part of root privilege
-		$builder->removeAllow($role, 'something');
-		$data = $builder->build();
-
-		self::assertSame(
-			[
-				'editor' => [
-					Authorizer::ROOT_PRIVILEGE => [],
-				],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-
-		// Root privilege itself can be removed
-		$builder->removeAllow($role, Authorizer::ROOT_PRIVILEGE);
-		$data = $builder->build();
-
-		self::assertSame(
-			[
-				'editor' => [],
-			],
-			$data->getRawRoleAllowedPrivileges(),
-		);
-	}
-
 	public function testRolesPrivilegesNotOverridden(): void
 	{
 		$builder = new AuthorizationDataBuilder();
@@ -409,6 +321,30 @@ MSG);
 		);
 
 		$builder->removeAllow('role', 'article');
+	}
+
+	public function testAddRootChecksRole(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$this->expectException(InvalidState::class);
+		$this->expectExceptionMessage(
+			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
+		);
+
+		$builder->addRoot('role');
+	}
+
+	public function testRemoveRootChecksRole(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+
+		$this->expectException(InvalidState::class);
+		$this->expectExceptionMessage(
+			'Role role does not exist, add it with Orisai\Auth\Authorization\AuthorizationDataBuilder->addRole($role)',
+		);
+
+		$builder->removeRoot('role');
 	}
 
 	public function testAllowChecksPrivilege(): void

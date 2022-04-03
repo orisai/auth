@@ -20,6 +20,7 @@ final class IdentityAuthorizationDataTest extends TestCase
 					'edit' => [],
 				],
 			],
+			true,
 		);
 
 		self::assertSame($id, $data->getId());
@@ -28,6 +29,7 @@ final class IdentityAuthorizationDataTest extends TestCase
 			['article.view', 'article.edit'],
 			$data->getAllowedPrivileges(),
 		);
+		self::assertTrue($data->isRoot());
 
 		self::assertEquals($data, unserialize(serialize($data)));
 	}
@@ -41,6 +43,7 @@ final class IdentityAuthorizationDataTest extends TestCase
 		self::assertInstanceOf(IdentityAuthorizationData::class, $data);
 		self::assertSame(1, $data->getId());
 		self::assertSame([], $data->getRawAllowedPrivileges());
+		self::assertFalse($data->isRoot());
 	}
 
 }

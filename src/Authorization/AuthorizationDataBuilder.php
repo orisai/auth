@@ -3,9 +3,7 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Utils\Arrays;
-use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Logic\InvalidState;
-use Orisai\Exceptions\Message;
 use function array_key_exists;
 
 final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
@@ -20,6 +18,9 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 	/** @var array<string, array<mixed>> */
 	private array $rawRoleAllowedPrivileges = [];
 
+	/** @var array<string, null> */
+	private array $rawRootRoles = [];
+
 	public bool $throwOnUnknownPrivilege = true;
 
 	public function addRole(string $role): void
@@ -30,23 +31,13 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 
 	public function addPrivilege(string $privilege): void
 	{
-		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
-			$class = self::class;
-			$function = __FUNCTION__;
-			$message = Message::create()
-				->withContext("Trying to add privilege '$privilege' via $class->$function().")
-				->withProblem("Privilege '$privilege' is reserved representation of root privilege and " .
-					'cannot be added.');
-
-			throw InvalidArgument::create()
-				->withMessage($message);
-		}
-
-		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-
 		$privilegesCurrent = &$this->rawPrivileges;
 
-		Arrays::addKeyValue($privilegesCurrent, $privilegeParts, []);
+		Arrays::addKeyValue(
+			$privilegesCurrent,
+			PrivilegeProcessor::parsePrivilege($privilege),
+			[],
+		);
 	}
 
 	public function allow(string $role, string $privilege): void
@@ -79,6 +70,20 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 		);
 	}
 
+	public function addRoot(string $role): void
+	{
+		$this->checkRole($role);
+
+		$this->rawRootRoles[$role] = null;
+	}
+
+	public function removeRoot(string $role): void
+	{
+		$this->checkRole($role);
+
+		unset($this->rawRootRoles[$role]);
+	}
+
 	private function checkRole(string $role): void
 	{
 		if (!array_key_exists($role, $this->rawRoles)) {
@@ -95,6 +100,7 @@ final class AuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 			$this->rawRoles,
 			$this->rawPrivileges,
 			$this->rawRoleAllowedPrivileges,
+			$this->rawRootRoles,
 			$this->throwOnUnknownPrivilege,
 		);
 	}

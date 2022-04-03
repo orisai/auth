@@ -3,6 +3,7 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Identity;
+use function array_key_exists;
 
 final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilder
 {
@@ -11,6 +12,9 @@ final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilde
 
 	/** @var array<int|string, array<mixed>> */
 	private array $identityAllowedPrivileges = [];
+
+	/** @var array<int|string, null> */
+	private array $rawRootIds = [];
 
 	public function __construct(AuthorizationData $data)
 	{
@@ -43,13 +47,24 @@ final class IdentityAuthorizationDataBuilder extends BaseAuthorizationDataBuilde
 		);
 	}
 
+	public function addRoot(Identity $identity): void
+	{
+		$this->rawRootIds[$identity->getId()] = null;
+	}
+
+	public function removeRoot(Identity $identity): void
+	{
+		unset($this->rawRootIds[$identity->getId()]);
+	}
+
 	public function build(Identity $identity): IdentityAuthorizationData
 	{
 		$id = $identity->getId();
 
 		return new IdentityAuthorizationData(
 			$id,
-			$this->identityAllowedPrivileges[$identity->getId()] ?? [],
+			$this->identityAllowedPrivileges[$id] ?? [],
+			array_key_exists($id, $this->rawRootIds),
 		);
 	}
 

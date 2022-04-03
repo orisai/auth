@@ -28,14 +28,8 @@ abstract class BaseAuthorizationDataBuilder
 		string $function
 	): void
 	{
-		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
-			$allowed[$ownerId] = [Authorizer::ROOT_PRIVILEGE => []];
-
-			return;
-		}
-
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $allPrivileges);
+		$privilegeValue = Arrays::getKey($allPrivileges, $privilegeParts);
 
 		if ($privilegeValue === null) {
 			if ($throwOnUnknownPrivilege) {
@@ -70,14 +64,8 @@ abstract class BaseAuthorizationDataBuilder
 		string $function
 	): void
 	{
-		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
-			$denied[$ownerId] = [];
-
-			return;
-		}
-
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
-		$privilegeValue = PrivilegeProcessor::getAnyRawPrivilege($privilegeParts, $allPrivileges);
+		$privilegeValue = Arrays::getKey($allPrivileges, $privilegeParts);
 
 		if ($privilegeValue === null) {
 			if ($throwOnUnknownPrivilege) {

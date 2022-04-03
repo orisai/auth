@@ -5,7 +5,6 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use Orisai\Auth\Authorization\NoRequirements;
@@ -48,11 +47,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
-		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isAllowed($identity, 'article'));
 		self::assertFalse($authorizer->isAllowed($identity, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something'));
-		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isRoot($identity));
 	}
 
@@ -62,12 +59,13 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$builder = new AuthorizationDataBuilder();
 		$builder->addRole($role);
+		$builder->addPrivilege('something');
 
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, [$role]);
 
-		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
-		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
+		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
+		self::assertFalse($authorizer->isAllowed($identity, 'something'));
 		self::assertFalse($authorizer->isRoot($identity));
 	}
 
@@ -80,7 +78,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$builder->addRole('leeroy');
 
-		$builder->allow('leeroy', Authorizer::ROOT_PRIVILEGE);
+		$builder->addRoot('leeroy');
 
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$identity = new IntIdentity(1, ['leeroy']);
@@ -89,12 +87,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something.else'));
-		self::assertTrue($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
-		self::assertTrue($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isRoot($identity));
 
 		// Can't remove part of root privilege
@@ -105,28 +101,24 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something.else'));
-		self::assertTrue($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
-		self::assertTrue($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isRoot($identity));
 
 		// Removing root is allowed
-		$builder->removeAllow('leeroy', $authorizer::ROOT_PRIVILEGE);
+		$builder->removeRoot('leeroy');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'something.else'));
-		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something.else'));
-		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isRoot($identity));
 	}
 
@@ -149,12 +141,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something.else'));
-		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
-		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isRoot($identity));
 
 		$builder->removeAllow('garry', 'foo.bar');
@@ -164,27 +154,10 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'something.else'));
-		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
-		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
-		self::assertFalse($authorizer->isRoot($identity));
-
-		$builder->removeAllow('garry', $authorizer::ROOT_PRIVILEGE);
-		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
-
-		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
-		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
-		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar.baz'));
-		self::assertFalse($authorizer->hasPrivilege($identity, 'something.else'));
-		self::assertFalse($authorizer->hasPrivilege($identity, $authorizer::ROOT_PRIVILEGE));
-		self::assertFalse($authorizer->isAllowed($identity, 'foo'));
-		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
-		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
-		self::assertFalse($authorizer->isAllowed($identity, 'something.else'));
-		self::assertFalse($authorizer->isAllowed($identity, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isRoot($identity));
 	}
 
@@ -197,22 +170,18 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$builder->addRole('supervisor');
 		$builder->addRole('admin');
 
-		$builder->allow('supervisor', Authorizer::ROOT_PRIVILEGE);
+		$builder->addRoot('supervisor');
 
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 		$supervisor = new IntIdentity(1, ['supervisor']);
 		$admin = new IntIdentity(2, ['admin']);
 
 		self::assertTrue($authorizer->hasPrivilege($supervisor, 'foo'));
-		self::assertTrue($authorizer->hasPrivilege($supervisor, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isAllowed($supervisor, 'foo'));
-		self::assertTrue($authorizer->isAllowed($supervisor, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isRoot($supervisor));
 
 		self::assertFalse($authorizer->hasPrivilege($admin, 'foo'));
-		self::assertFalse($authorizer->hasPrivilege($admin, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isAllowed($admin, 'foo'));
-		self::assertFalse($authorizer->isAllowed($admin, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isRoot($admin));
 	}
 
@@ -321,7 +290,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$identity = new IntIdentity(1, []);
 
 		$identityBuilder = new IdentityAuthorizationDataBuilder($data);
-		$identityBuilder->allow($identity, Authorizer::ROOT_PRIVILEGE);
+		$identityBuilder->addRoot($identity);
 
 		$identityData = $identityBuilder->build($identity);
 		$identity->setAuthorizationData($identityData);
@@ -331,11 +300,9 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.view'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.owned'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'article.edit.all'));
-		self::assertTrue($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.owned'));
 		self::assertTrue($authorizer->isAllowed($identity, 'article.edit.all'));
-		self::assertTrue($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isRoot($identity));
 	}
 
@@ -354,15 +321,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$supervisor = new IntIdentity(1, ['supervisor']);
 		$admin = new IntIdentity(2, ['admin']);
 
-		self::assertFalse($authorizer->hasPrivilege($supervisor, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->hasPrivilege($supervisor, 'foo'));
-		self::assertFalse($authorizer->isAllowed($supervisor, $authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isAllowed($supervisor, 'foo'));
 		self::assertFalse($authorizer->isRoot($supervisor));
 
-		self::assertFalse($authorizer->hasPrivilege($admin, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->hasPrivilege($admin, 'foo'));
-		self::assertFalse($authorizer->isAllowed($admin, $authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isAllowed($admin, 'foo'));
 		self::assertFalse($authorizer->isRoot($admin));
 	}
@@ -569,19 +532,20 @@ final class PrivilegeAuthorizerTest extends TestCase
 	public function testSkipUnknownRolesForRoot(): void
 	{
 		$builder = new AuthorizationDataBuilder();
-		$identity = new IntIdentity(1, ['unknown']);
-
 		$builder->addRole('known');
-		$builder->allow('known', Authorizer::ROOT_PRIVILEGE);
+		$builder->addRoot('known');
+		$builder->addPrivilege('something');
+
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $builder->build());
 
-		self::assertFalse($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
-		self::assertFalse($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
+		$identity = new IntIdentity(1, ['unknown']);
+		self::assertFalse($authorizer->hasPrivilege($identity, 'something'));
+		self::assertFalse($authorizer->isAllowed($identity, 'something'));
 		self::assertFalse($authorizer->isRoot($identity));
 
 		$identity = new IntIdentity(1, ['unknown', 'known']);
-		self::assertTrue($authorizer->hasPrivilege($identity, Authorizer::ROOT_PRIVILEGE));
-		self::assertTrue($authorizer->isAllowed($identity, Authorizer::ROOT_PRIVILEGE));
+		self::assertTrue($authorizer->hasPrivilege($identity, 'something'));
+		self::assertTrue($authorizer->isAllowed($identity, 'something'));
 		self::assertTrue($authorizer->isRoot($identity));
 	}
 
@@ -796,7 +760,7 @@ MSG);
 
 		$builder->allow('editor', 'article.edit.all');
 		$builder->allow('owner', 'article.edit.owned');
-		$builder->allow('supervisor', Authorizer::ROOT_PRIVILEGE);
+		$builder->addRoot('supervisor');
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, $builder->build());
 
@@ -830,7 +794,6 @@ MSG);
 		// - but not other resources
 		self::assertFalse($authorizer->isAllowed($identity1, 'article.view'));
 		self::assertFalse($authorizer->isAllowed($identity1, 'article'));
-		self::assertFalse($authorizer->isAllowed($identity1, Authorizer::ROOT_PRIVILEGE));
 		self::assertFalse($authorizer->isRoot($identity1));
 
 		// Has access to all resources as a root
@@ -840,7 +803,6 @@ MSG);
 
 		self::assertTrue($authorizer->isAllowed($identity1, 'article.view'));
 		self::assertTrue($authorizer->isAllowed($identity1, 'article'));
-		self::assertTrue($authorizer->isAllowed($identity1, Authorizer::ROOT_PRIVILEGE));
 		self::assertTrue($authorizer->isRoot($identity1));
 
 		// - including these with policy which does not allow it

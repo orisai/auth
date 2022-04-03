@@ -17,6 +17,9 @@ final class AuthorizationData
 	/** @var array<string, array<mixed>> */
 	private array $rawRoleAllowedPrivileges;
 
+	/** @var array<string, null> */
+	private array $rawRootRoles;
+
 	private bool $throwOnUnknownPrivilege;
 
 	/**
@@ -25,6 +28,7 @@ final class AuthorizationData
 	 * @param array<string, null>         $rawRoles
 	 * @param array<mixed>                $rawPrivileges
 	 * @param array<string, array<mixed>> $rawRoleAllowedPrivileges
+	 * @param array<string, null>         $rawRootRoles
 	 *
 	 * @internal
 	 * @see AuthorizationDataBuilder::build()
@@ -33,12 +37,14 @@ final class AuthorizationData
 		array $rawRoles,
 		array $rawPrivileges,
 		array $rawRoleAllowedPrivileges,
+		array $rawRootRoles,
 		bool $throwOnUnknownPrivilege
 	)
 	{
 		$this->rawRoles = $rawRoles;
 		$this->rawPrivileges = $rawPrivileges;
 		$this->rawRoleAllowedPrivileges = $rawRoleAllowedPrivileges;
+		$this->rawRootRoles = $rawRootRoles;
 		$this->throwOnUnknownPrivilege = $throwOnUnknownPrivilege;
 	}
 
@@ -76,10 +82,6 @@ final class AuthorizationData
 
 	public function privilegeExists(string $privilege): bool
 	{
-		if ($privilege === Authorizer::ROOT_PRIVILEGE) {
-			return true;
-		}
-
 		$privileges = $this->rawPrivileges;
 		$privilegeValue = Arrays::getKey($privileges, PrivilegeProcessor::parsePrivilege($privilege));
 
@@ -105,6 +107,22 @@ final class AuthorizationData
 		return Arrays::keysToStrings($privileges);
 	}
 
+	/**
+	 * @return array<string, null>
+	 */
+	public function getRawRootRoles(): array
+	{
+		return $this->rawRootRoles;
+	}
+
+	/**
+	 * @return array<int, string>
+	 */
+	public function getRootRoles(): array
+	{
+		return array_keys($this->rawRootRoles);
+	}
+
 	public function shouldThrowOnUnknownPrivilege(): bool
 	{
 		return $this->throwOnUnknownPrivilege;
@@ -119,6 +137,7 @@ final class AuthorizationData
 			'rawRoles' => $this->rawRoles,
 			'rawPrivileges' => $this->rawPrivileges,
 			'rawRoleAllowedPrivileges' => $this->rawRoleAllowedPrivileges,
+			'rawRootRoles' => $this->rawRootRoles,
 			'throwOnUnknownPrivilege' => $this->throwOnUnknownPrivilege,
 		];
 	}
@@ -131,6 +150,7 @@ final class AuthorizationData
 		$this->rawRoles = $data['rawRoles'];
 		$this->rawPrivileges = $data['rawPrivileges'];
 		$this->rawRoleAllowedPrivileges = $data['rawRoleAllowedPrivileges'];
+		$this->rawRootRoles = $data['rawRootRoles'] ?? [];
 		$this->throwOnUnknownPrivilege = $data['throwOnUnknownPrivilege'];
 	}
 

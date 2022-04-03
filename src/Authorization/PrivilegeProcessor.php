@@ -2,7 +2,6 @@
 
 namespace Orisai\Auth\Authorization;
 
-use Orisai\Auth\Utils\Arrays;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use function explode;
 use function str_contains;
@@ -32,11 +31,6 @@ final class PrivilegeProcessor
 				->withMessage("Privilege {$privilege} ends with dot `.`, which is not allowed.");
 		}
 
-		if ($privilege !== Authorizer::ROOT_PRIVILEGE && str_contains($privilege, Authorizer::ROOT_PRIVILEGE)) {
-			throw InvalidArgument::create()
-				->withMessage("Privilege {$privilege} contains `*`, which can be used only standalone.");
-		}
-
 		if (str_contains($privilege, '..')) {
 			throw InvalidArgument::create()
 				->withMessage("Privilege {$privilege} contains multiple adjacent dots, which is not allowed.");
@@ -48,14 +42,9 @@ final class PrivilegeProcessor
 	/**
 	 * @return array<string>
 	 */
-	public static function getPrivilegeParents(string $privilege, bool $includePowerUser): array
+	public static function getPrivilegeParents(string $privilege): array
 	{
 		$all = [];
-
-		if ($includePowerUser) {
-			$all[] = Authorizer::ROOT_PRIVILEGE;
-		}
-
 		$parts = self::parsePrivilege($privilege);
 		$current = null;
 		foreach ($parts as $part) {
@@ -64,20 +53,6 @@ final class PrivilegeProcessor
 		}
 
 		return $all;
-	}
-
-	/**
-	 * @param non-empty-array<string> $privilegeParts
-	 * @param array<mixed>            $rawPrivileges
-	 * @return array<mixed>|null
-	 */
-	public static function getAnyRawPrivilege(array $privilegeParts, array $rawPrivileges): ?array
-	{
-		if ($privilegeParts === [Authorizer::ROOT_PRIVILEGE]) {
-			return $rawPrivileges;
-		}
-
-		return Arrays::getKey($rawPrivileges, $privilegeParts);
 	}
 
 }

@@ -2,13 +2,14 @@
 
 namespace Tests\Orisai\Auth\Unit\Utils;
 
+use Generator;
 use Orisai\Auth\Utils\Arrays;
 use PHPUnit\Framework\TestCase;
 
 final class ArraysTest extends TestCase
 {
 
-	public function test(): void
+	public function testKeysToStrings(): void
 	{
 		$array = [
 			'article' => [
@@ -38,6 +39,56 @@ final class ArraysTest extends TestCase
 			],
 			Arrays::keysToStrings($array),
 		);
+	}
+
+	/**
+	 * @param non-empty-array<string> $keys
+	 * @param array<mixed>            $array
+	 * @param array<mixed>|null       $expected
+	 *
+	 * @dataProvider getKeyProvider
+	 */
+	public function testGetKey(array $keys, array $array, ?array $expected): void
+	{
+		self::assertSame(
+			$expected,
+			Arrays::getKey($array, $keys),
+		);
+	}
+
+	/**
+	 * @return Generator<array<mixed>>
+	 */
+	public function getKeyProvider(): Generator
+	{
+		yield [
+			['app', 'article'],
+			[
+				'app' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			[
+				'view' => [],
+				'edit' => [],
+			],
+		];
+
+		yield [
+			['app', 'article', 'create'],
+			[
+				'app' => [
+					'article' => [
+						'view' => [],
+						'edit' => [],
+					],
+				],
+			],
+			null,
+		];
 	}
 
 }

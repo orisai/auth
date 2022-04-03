@@ -12,7 +12,6 @@ use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\LogoutCode;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
-use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
@@ -685,7 +684,8 @@ MSG);
 	{
 		$builder = new AuthorizationDataBuilder();
 		$builder->addRole('root');
-		$builder->allow('root', Authorizer::ROOT_PRIVILEGE);
+		$builder->addRoot('root');
+		$builder->addPrivilege('something');
 
 		$storage = new ArrayLoginStorage();
 		$authorizer = $this->authorizer(null, $builder);
@@ -695,12 +695,12 @@ MSG);
 
 		$identity = new IntIdentity(1, []);
 		$firewall->login($identity);
-		self::assertFalse($firewall->isAllowed(Authorizer::ROOT_PRIVILEGE));
+		self::assertFalse($firewall->isAllowed('something'));
 		self::assertFalse($firewall->isRoot());
 
 		$identity = new IntIdentity(1, ['root']);
 		$firewall->login($identity);
-		self::assertTrue($firewall->isAllowed(Authorizer::ROOT_PRIVILEGE));
+		self::assertTrue($firewall->isAllowed('something'));
 		self::assertTrue($firewall->isRoot());
 	}
 

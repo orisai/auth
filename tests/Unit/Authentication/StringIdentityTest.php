@@ -25,7 +25,7 @@ final class StringIdentityTest extends TestCase
 
 		self::assertNull($identity->getAuthorizationData());
 
-		$data = new IdentityAuthorizationData($identity->getId(), []);
+		$data = new IdentityAuthorizationData($identity->getId(), [], false);
 		$identity->setAuthorizationData($data);
 		self::assertSame($data, $identity->getAuthorizationData());
 
@@ -42,7 +42,7 @@ final class StringIdentityTest extends TestCase
 			"Identity data with identity ID '456' can't be used with identity with ID '123'.",
 		);
 
-		$identity->setAuthorizationData(new IdentityAuthorizationData('456', []));
+		$identity->setAuthorizationData(new IdentityAuthorizationData('456', [], false));
 	}
 
 	public function testSerializationBC(): void

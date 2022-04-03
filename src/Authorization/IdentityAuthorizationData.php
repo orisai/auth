@@ -13,6 +13,8 @@ final class IdentityAuthorizationData
 	/** @var array<mixed> */
 	private array $rawAllowedPrivileges;
 
+	private bool $root;
+
 	/**
 	 * Accepts preprocessed data from builder
 	 *
@@ -22,10 +24,11 @@ final class IdentityAuthorizationData
 	 * @internal
 	 * @see IdentityAuthorizationDataBuilder::build()
 	 */
-	public function __construct($id, array $rawAllowedPrivileges)
+	public function __construct($id, array $rawAllowedPrivileges, bool $root)
 	{
 		$this->id = $id;
 		$this->rawAllowedPrivileges = $rawAllowedPrivileges;
+		$this->root = $root;
 	}
 
 	/**
@@ -52,6 +55,11 @@ final class IdentityAuthorizationData
 		return Arrays::keysToStrings($this->rawAllowedPrivileges);
 	}
 
+	public function isRoot(): bool
+	{
+		return $this->root;
+	}
+
 	/**
 	 * @return array<mixed>
 	 */
@@ -60,6 +68,7 @@ final class IdentityAuthorizationData
 		return [
 			'id' => $this->id,
 			'rawAllowedPrivileges' => $this->rawAllowedPrivileges,
+			'root' => $this->root,
 		];
 	}
 
@@ -70,6 +79,7 @@ final class IdentityAuthorizationData
 	{
 		$this->id = $data['id'];
 		$this->rawAllowedPrivileges = $data['rawAllowedPrivileges'];
+		$this->root = $data['root'] ?? false;
 	}
 
 }

@@ -29,6 +29,10 @@ final class AuthorizationDataTest extends TestCase
 					],
 				],
 			],
+			$rootRoles = [
+				'root' => null,
+				'groot' => null,
+			],
 			false,
 		);
 
@@ -60,6 +64,12 @@ final class AuthorizationDataTest extends TestCase
 		self::assertSame(
 			[],
 			$data->getAllowedPrivilegesForRole('unknown'),
+		);
+
+		self::assertSame($rootRoles, $data->getRawRootRoles());
+		self::assertSame(
+			['root', 'groot'],
+			$data->getRootRoles(),
 		);
 
 		self::assertEquals($data, unserialize(serialize($data)));
@@ -98,6 +108,7 @@ final class AuthorizationDataTest extends TestCase
 			[],
 			$data->getAllowedPrivilegesForRole('unknown'),
 		);
+		self::assertSame([], $data->getRootRoles());
 		self::assertTrue($data->shouldThrowOnUnknownPrivilege());
 	}
 
