@@ -21,7 +21,7 @@ interface Authorizer
 		string $privilege,
 		?object $requirements = null,
 		?DecisionReason &$reason = null,
-		?CurrentUserPolicyContext $context = null
+		?CurrentUserPolicyContextCreator $creator = null
 	): bool;
 
 	public function isRoot(Identity $identity): bool;

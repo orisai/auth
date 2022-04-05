@@ -14,7 +14,7 @@ use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\CurrentUserPolicyContext;
+use Orisai\Auth\Authorization\CurrentUserPolicyContextCreator;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 
@@ -45,6 +45,8 @@ abstract class BaseFirewall implements Firewall
 	/** @var array<Closure(): void> */
 	private array $onLogout = [];
 
+	private CurrentUserPolicyContextCreator $contextCreator;
+
 	/**
 	 * @phpstan-param IdentityRefresher<I> $refresher
 	 */
@@ -59,6 +61,7 @@ abstract class BaseFirewall implements Firewall
 		$this->refresher = $refresher;
 		$this->authorizer = $authorizer;
 		$this->clock = $clock ?? new SystemClock();
+		$this->contextCreator = new CurrentUserPolicyContextCreator($this);
 	}
 
 	abstract protected function getNamespace(): string;
@@ -201,7 +204,7 @@ abstract class BaseFirewall implements Firewall
 			$privilege,
 			$requirements,
 			$reason,
-			new CurrentUserPolicyContext($this),
+			$this->contextCreator,
 		);
 	}
 

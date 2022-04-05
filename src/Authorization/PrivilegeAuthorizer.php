@@ -105,7 +105,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		string $privilege,
 		?object $requirements = null,
 		?DecisionReason &$reason = null,
-		?CurrentUserPolicyContext $context = null
+		?CurrentUserPolicyContextCreator $creator = null
 	): bool
 	{
 		$policy = $this->policyManager->get($privilege);
@@ -119,7 +119,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$identity,
 			$policy,
 			$requirements,
-			$context ?? new AnyUserPolicyContext($this),
+			$creator !== null ? $creator->create() : new AnyUserPolicyContext($this),
 			$reason,
 			__FUNCTION__,
 		);
