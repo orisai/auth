@@ -3,18 +3,39 @@
 Authentication and authorization
 
 ## Content
+
 - [Setup](#setup)
-- [Password encoders](#password-encoders)
-    - [Sodium](#sodium-encoder)
-    - [Bcrypt](#bcrypt-encoder)
-	- [Unsafe MD5](#unsafe-md5-encoder)
-    - [Backward compatibility](#backward-compatibility---upgrading-encoder)
-    - [Extending](#extending)
 - [Authentication](#authentication)
-    - [Setup](#authentication-setup)
-    - [Usage](#authentication-usage)
+	- [Setup](#authentication-setup)
+	- [Identity](#identity)
+	- [Log-in](#log-in)
+	- [Log-in expiration](#log-in-expiration)
+	- [Identity refreshing](#identity-refreshing)
+	- [Log-out](#log-out)
+	- [Fetch database user](#fetch-database-user)
+	- [Expired logins](#expired-logins)
+	- [Login storage](#login-storage)
+	- [Separate login for each application section](#separate-login-for-each-application-section)
 - [Authorization](#authorization)
-	- [Policies](#policies)
+	- [Setup](#authorization-setup)
+		- [Verifying privileges on assign](#verifying-privileges-on-assign)
+	- [Roles](#roles)
+	- [Privileges](#privileges)
+		- [Identity privileges](#identity-privileges)
+	- [Policies - customized authorization](#policies---customized-authorization)
+		- [Policy context](#policy-context)
+		- [Policy with optional log-in check](#policy-with-optional-log-in-check)
+		- [Policy with optional requirements](#policy-with-optional-requirements)
+		- [Policy with no requirements](#policy-with-no-requirements)
+		- [Policy with default-like privilege check](#policy-with-default-like-privilege-check)
+	- [Root - bypass all checks](#root---bypass-all-checks)
+	- [Check authorization of not current user](#check-authorization-of-not-current-user)
+	- [Decision reason](#decision-reason)
+- [Passwords](#passwords)
+	- [Sodium](#sodium-encoder)
+	- [Bcrypt](#bcrypt-encoder)
+	- [Unsafe MD5](#unsafe-md5-encoder)
+	- [Backward compatibility](#backward-compatibility---upgrading-encoder)
 
 ## Setup
 
@@ -24,173 +45,340 @@ Install with [Composer](https://getcomposer.org)
 composer require orisai/auth
 ```
 
-## Password encoders
-
-Encode (hash) and verify passwords.
-
-```php
-use Orisai\Auth\Passwords\PasswordEncoder;
-
-final class UserLogin
-{
-
-	private PasswordEncoder $passwordEncoder;
-
-	public function __construct(PasswordEncoder $passwordEncoder)
-	{
-		$this->passwordEncoder = $passwordEncoder;
-	}
-
-	public function signIn(string $password): void
-	{
-		$user; // Query user from database
-
-		if ($this->passwordEncoder->isValid($password, $user->encodedPassword)) {
-			$this->updateEncodedPassword($user, $password);
-
-			// Login user
-		}
-	}
-
-	public function signUp(string $password): void
-	{
-		$encodedPassword = $this->passwordEncoder->encode($password);
-
-		// Register user
-	}
-
-	private function updateEncodedPassword(User $user, string $password): void
-	{
-		if (!$this->passwordEncoder->needsReEncode($user->encodedPassword)) {
-			return;
-		}
-
-		$user->encodedPassword = $this->passwordEncoder->encode($password);
-	}
-
-}
-```
-
-Make sure your passwords storage allows at least 255 characters.
-Each algorithm produces encoded strings of different length and even different settings of one algorithms may vary in results.
-
-### Sodium encoder
-
-Hash passwords with **argon2id** algorithm. This encoder is **recommended**.
-
-```php
-use Orisai\Auth\Passwords\SodiumPasswordEncoder;
-
-$encoder = new SodiumPasswordEncoder();
-```
-
-Options:
-- `SodiumPasswordEncoder(?int $timeCost, ?int $memoryCost)`
-    - `$timeCost`
-        - Maximum number of computations to perform
-        - By default is set to higher one of `4` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
-    - `$memoryCost`
-        - Maximum number of memory consumed
-        - Defined in bytes
-        - By default is set to higher one of `~67 MB` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
-
-### Bcrypt encoder
-
-Hash passwords with **bcrypt** algorithm. Unless sodium php extension is not available on your setup then always prefer [sodium encoder](#sodium-encoder).
-
-*Note:* bcrypt algorithm trims password before hashing to 72 characters. You should not worry about it because it does not have any usage impact,
-but it may cause issues if you are migrating from a bcrypt-encoder which modified password to be 72 characters or less before hashing, so please ensure produced hashes are same.
-
-```php
-use Orisai\Auth\Passwords\BcryptPasswordEncoder;
-
-$encoder = new BcryptPasswordEncoder();
-```
-
-Options:
-- `BcryptPasswordEncoder(int $cost)`
-    - `$cost`
-        - Cost of the algorithm
-        - Must be in range `4-31`
-        - By default is set to `10`
-
-### Unsafe MD5 encoder
-
-**Use only for testing**
-
-Encoding passwords with sodium is safe option, but also time and resource intensive.
-For automated tests purposes it may be helpful to choose faster MD5 algorithm which would be **unsafe** in production environment.
-
-```php
-use Orisai\Auth\Passwords\UnsafeMD5PasswordEncoder;
-
-$encoder = new UnsafeMD5PasswordEncoder();
-```
-
-### Backward compatibility - upgrading encoder
-
-If you are migrating to new algorithm, use `UpgradingPasswordEncoder`.  It requires a preferred encoder and optionally accepts fallback encoders.
-
-If you migrate from a `password_verify()`-compatible password validation method then you don't need any fallback encoders
-as it is done automatically for you. These passwords should always start with string like `$2a$`, `$2x$`, `$argon2id$` etc.
-
-If you need fallback to a *custom encoder*, then check [how to implement your own](#extending).
-
-```php
-use Orisai\Auth\Passwords\SodiumPasswordEncoder;
-use Orisai\Auth\Passwords\UpgradingPasswordEncoder;
-
-// With only preferred encoder
-$encoder = new UpgradingPasswordEncoder(
-    new SodiumPasswordEncoder()
-);
-
-// With outdated fallback encoders
-$encoder = new UpgradingPasswordEncoder(
-    new SodiumPasswordEncoder(),
-    [
-        new ExamplePasswordEncoder(),
-    ]
-);
-```
-
-### Extending
-
-While it's not recommended to do so, unless you require it for backward compatibility or deeply understand secure hashing and encryption algorithms,
-you can implement own encoder. Simply implement `PasswordEncoder` interface. `BcryptPasswordEncoder` is simple example of a working implementation.
-
-```php
-use Orisai\Auth\Passwords\PasswordEncoder;
-
-final class CustomEncoder implements PasswordEncoder
-{
-
-	public function encode(string $raw): string
-	{
-		// An implementation
-	}
-
-	public function needsReEncode(string $encoded): bool
-	{
-		// An implementation
-	}
-
-	public function isValid(string $raw, string $encoded): bool
-	{
-		// An implementation
-	}
-
-}
-```
+Check [authentication](#authentication), [authorization](#authorization) and [passwords](#passwords) for their
+individual setup.
 
 ## Authentication
 
-Log in user into application via a firewall.
+[Log-in](#log-in), [log-out](#log-out), access [expired log-ins](#expired-logins) and check *current*
+user [permissions](#authorization) to perform actions via Firewall interface.
 
 ### Authentication setup
 
-Create firewall
-- Should extend `BaseFirewall`
+Create a firewall, with following dependencies:
+
+- Namespace - a unique identifier, used to separate logins of each firewall in login storage
+- [Login storage](#login-storage) - choose one of available or implement your own
+- [Identity refresher](#identity-refreshing) - implement your own, it is required to keep user login up-to-date
+- [Authorizer](#authorization) - authorizer can be left not configured for authentication, it is used only for privilege
+  and policy-based authorization
+
+```php
+use Orisai\Auth\Authentication\ArrayLoginStorage;
+use Orisai\Auth\Authentication\SimpleFirewall;
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\AuthorizationData;
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimplePolicyManager;
+
+$loginStorage = new ArrayLoginStorage();
+$identityRefresher = new ExampleIdentityRefresher();
+$authorizer = new PrivilegeAuthorizer(
+	new SimplePolicyManager(),
+	(new AuthorizationDataBuilder())->build(),
+);
+$firewall = new SimpleFirewall(
+	'namespace',
+	$loginStorage,
+	$identityRefresher,
+	$authorizer,
+);
+```
+
+### Identity
+
+Identity is a storage for user unique ID and authorization-related data - [roles](#roles) and
+user-specific [privileges](#privileges).
+
+It is required for [logging into firewall](#log-in) and authorization via [authorizer](#authorization).
+
+For numeric ID:
+
+```php
+use Orisai\Auth\Authentication\IntIdentity;
+
+$identity = new IntIdentity(123, ['list', 'of', 'roles']);
+```
+
+For string ID (e.g. UUID/ULID):
+
+```php
+use Orisai\Auth\Authentication\StringIdentity;
+
+$identity = new StringIdentity('1fdc5f77-4254-4888-99b2-bce81bb4fa39', ['list', 'of', 'roles']);
+```
+
+You can also extend `Orisai\Auth\Authentication\BaseIdentity` or implement `Orisai\Auth\Authentication\Identity` to
+store additional data into identity. But usually it's more convenient
+to [get user data from database](#fetch-database-user).
+
+### Log-in
+
+Log-in user:
+
+```php
+$firewall->login($identity);
+```
+
+Firewall itself does **no credentials checks**, you have to log-in user with an [identity](#identity) you already
+verified user has access to.
+
+After log-in, several methods become accessible:
+
+```php
+$firewall->isLoggedIn() // true
+if ($firewall->isLoggedIn()) {
+	$firewall->getIdentity(); // Identity
+
+	$firewall->getAuthenticationTime(); // Instant
+	$firewall->getExpirationTime(); // Instant
+	$firewall->setExpirationTime($instant); // void
+
+	$firewall->refreshIdentity($newIdentity); // void
+}
+```
+
+You can listen to log-in via callback:
+
+```php
+$firewall->addLoginCallback(function() use($firewall): void {
+	// After log-in
+});
+```
+
+### Log-in expiration
+
+Set login to expire after certain amount of time. Expiration is sliding, each request in which firewall is used,
+expiration is extended.
+
+```php
+use Brick\DateTime\Instant;
+
+$firewall->setExpiration(Instant::now()->plusDays(7));
+$firewall->removeExpiration();
+```
+
+Firewall uses a `Brick\DateTime\Clock` instance for getting time, you may set custom instance through constructor for
+testing expiration with fixed time.
+
+### Identity refreshing
+
+Identity is refreshed on each request through an `IdentityRefresher` to keep roles and privileges of active logins
+up-to-date.
+
+```php
+use Example\Core\User\UserRepository;
+use Orisai\Auth\Authentication\DecisionReason;
+use Orisai\Auth\Authentication\Exception\IdentityExpired;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authentication\IdentityRefresher;
+use Orisai\Auth\Authentication\IntIdentity;
+
+/**
+ * @phpstan-implements IdentityRefresher<IntIdentity>
+ */
+final class AdminIdentityRefresher implements IdentityRefresher
+{
+
+    private UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+    public function refresh(Identity $identity): Identity
+    {
+        $user = $this->userRepository->getById($identity->getId());
+
+		// User no longer exists, log them out
+        if ($user === null) {
+            throw IdentityExpired::create();
+        }
+
+        return new IntIdentity($user->id, $user->roles);
+    }
+
+}
+```
+
+`IdentityExpired` exception accepts parameter with reason why user was logged out. Together with logout code is
+accessible through [expired login](#expired-logins):
+
+```php
+use Orisai\Auth\Authentication\DecisionReason;
+use Orisai\Auth\Authentication\Exception\IdentityExpired;
+
+throw IdentityExpired::create(DecisionReason::create('decision reason'));
+// or
+throw IdentityExpired::create(DecisionReason::createTranslatable(
+	'logout.reason.key',
+	[/* message parameters */],
+));
+```
+
+Identity can be refreshed also manually on current request. Unlike `$firewall->login()` it keeps the previous
+authentication and expiration times.
+
+```php
+use Orisai\Auth\Authentication\IntIdentity;
+
+$identity = new IntIdentity($user->getId(), $user->getRoles());
+$firewall->refreshIdentity($identity);
+```
+
+### Log-out
+
+Manual log-out:
+
+```php
+$firewall->logout();
+```
+
+User is automatically logged-out in case their [login expired](#log-in-expiration)
+or [identity refresher](#identity-refreshing) invalidated identity.
+
+Several methods are accessible only for logged-in users and should be preceded by `isLoggedIn()` check:
+
+```php
+$firewall->isLoggedIn() // false
+if (!$firewall->isLoggedIn()) {
+	$firewall->getIdentity(); // exception
+
+	$firewall->getAuthenticationTime(); // exception
+	$firewall->getExpirationTime(); // exception
+	$firewall->setExpirationTime($instant); // exception
+
+	$firewall->refreshIdentity($newIdentity); // exception
+}
+```
+
+You can listen to *any* if the log-out methods via callback:
+
+```php
+$firewall->addLogoutCallback(function() use($firewall): void {
+	// After log-out
+});
+```
+
+### Fetch database user
+
+Get user entity directly from firewall
+
+```php
+use Brick\DateTime\Clock;
+use Example\Core\User\UserRepository;
+use Orisai\Auth\Authentication\BaseFirewall;
+use Orisai\Auth\Authentication\Exception\NotLoggedIn;
+use Orisai\Auth\Authentication\IdentityRefresher;
+use Orisai\Auth\Authentication\LoginStorage;
+use Orisai\Auth\Authorization\Authorizer;
+
+final class UserAwareFirewall extends BaseFirewall
+{
+
+	private UserRepository $userRepository;
+
+	public function __construct(
+		UserRepository $userRepository,
+		LoginStorage $storage,
+		IdentityRefresher $refresher,
+		Authorizer $authorizer,
+		?Clock $clock = null
+	) {
+		parent::__construct($storage, $refresher, $authorizer, $clock);
+		$this->userRepository = $userRepository;
+	}
+
+	public function getUser(): User
+	{
+		$identity = $this->fetchIdentity();
+
+		// Method can't be used for logged-out user
+		if ($identity === null) {
+			throw NotLoggedIn::create(static::class, __FUNCTION__);
+		}
+
+		return $this->userRepository->getByIdChecked($identity->getId());
+	}
+
+}
+```
+
+### Expired logins
+
+After user is logged out you may still access all data about this login. This way you may e.g. offer user to log back
+into their account.
+
+```php
+$expiredLogin = $firewall->getLastExpiredLogin();
+
+if ($expiredLogin !== null) {
+	$identity = $expiredLogin->getIdentity(); // Identity
+
+	$authenticationTime = $expiredLogin->getAuthenticationTime(); // Instant
+	$expiration = $expiredLogin->getExpiration();
+	$expirationTime = $expiration !== null ? $expiration->getTime() : null; // Instant|null
+
+	$logoutCode = $expiredLogin->getLogoutCode(); // LogoutCode
+	$logoutReason = $expiredLogin->getLogoutReason(); // DecisionReason|null
+
+	if ($logoutReason !== null) {
+		$message = $logoutReason->isTranslatable()
+			? $translator->translate($logoutReason->getMessage(), $logoutReason->getParameters())
+			: $logoutReason->getMessage();
+	}
+}
+```
+
+Access all expired logins, ordered from oldest to newest:
+
+```php
+foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
+	// ...
+}
+```
+
+Remove all expired logins:
+
+```php
+$firewall->removeExpiredLogins();
+```
+
+Remove expired login by ID from `Identity` - for one ID is always stored only the newest:
+
+```php
+$firewall->removeExpiredLogin($identityId);
+```
+
+Only 3 expired identities are stored by default. These out of limit are removed from the oldest. To change the limit,
+call:
+
+```php
+$firewall->setExpiredIdentitiesLimit(0);
+```
+
+### Login storage
+
+Information about current login and expired logins has to be stored somewhere. For this purpose you may use two types of
+storages - for single request and across requests.
+
+Single request storage is useful for APIs where user authorizes with each request. For this purpose use:
+
+- `Orisai\Auth\Authentication\ArrayLoginStorage`
+
+For standard across requests authentication:
+
+- `OriNette\Auth\SessionLoginStorage` (from [orisai/nette-auth](https://github.com/orisai/nette-auth) package, uses
+  session mechanism from [nette/http](https://github.com/nette/http))
+
+### Separate login for each application section
+
+Each section of application, like administration, frontend and API can have fully separate login. For each section you
+just need to create firewall instance, with a unique *namespace*.
+
+`SimpleFirewall` accepts *namespace* in constructor, yet it may be more convenient to extend `BaseFirewall` and
+differentiate each firewall by class name.
 
 ```php
 <?php
@@ -211,233 +399,332 @@ final class AdminFirewall extends BaseFirewall
 }
 ```
 
-Create an identity renewer
-- allows you to log out user on each request at which firewall is used - throw `IdentityExpired` exception
-- renews identity on each request so data in user Identity and class itself are always actual
+## Authorization
+
+Check *any* user [permissions](#authorization) to perform actions via [privilege](#privileges)-based system.
 
 ```php
-use Orisai\Auth\Authentication\Exception\IdentityExpired;
-use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authentication\IdentityRefresher;
-use Orisai\Auth\Authentication\IntIdentity;
-
-/**
- * @phpstan-implements IdentityRefresher<IntIdentity>
- */
-final class AdminIdentityRenewer implements IdentityRefresher
-{
-
-    private UserRepository $userRepository;
-
-    public function __construct(UserRepository $userRepository)
-    {
-        $this->userRepository = $userRepository;
-    }
-
-    public function renewIdentity(Identity $identity): Identity
-    {
-        $user = $this->userRepository->getById($identity->getId());
-
-        if ($user === null) {
-            throw IdentityExpired::create();
-            //throw IdentityExpired::create('logout reason description');
-        }
-
-        return new IntIdentity($user->getId(), $user->getRoles());
-    }
-
-}
+$firewall->isAllowed('privilege');
+$authorizer->isAllowed($identity, 'privilege');
 ```
 
-Create firewall instance
+User has no access to anything, unless explicitly allowed by [privilege](#privileges) or
+by [policy](#policies---customized-authorization).
+
+### Authorization setup
+
+As a first step, create an authorizer, a policy manager and empty authorization data:
 
 ```php
-use Orisai\Auth\Authorization\PrivilegeAuthorizer;
-use Orisai\Auth\Authorization\SimplePolicyManager;
-use Orisai\Auth\Bridge\NetteHttp\SessionLoginStorage;
-
-$identityRenewer = new AdminIdentityRenewer($userRepository);
-$loginStorage = new SessionLoginStorage($session);
-$authorizer = new PrivilegeAuthorizer();
-$policyManager = new SimplePolicyManager();
-$firewall = new AdminFirewall($loginStorage, $identityRenewer, $authorizer, $policyManager);
-```
-
-### Authentication usage
-
-#### Log in user
-
-```php
-use Orisai\Auth\Authentication\IntIdentity;
-
-$identity = new IntIdentity($user->getId(), $user->getRoles());
-$firewall->login($identity);
-$firewall->isLoggedIn(); // true
-$firewall->getIdentity(); // $identity
-$firewall->getAuthenticationTime(); // Instant
-$firewall->getExpirationTime(); // Instant|null
-$firewall->hasRole($role); // bool
-$firewall->isAllowed($privilege); // bool
-```
-
-#### Set or remove login expiration
-
-- Expiration is sliding, each request when firewall is used is expiration extended
-- After expiration is user logged out (`ExpiredLogin->getLogoutReason()` returns `$firewall::REASON_INACTIVITY`)
-
-```php
-use Brick\DateTime\Instant;
-
-$firewall->setExpiration(Instant::now()->plusDays(7));
-$firewall->removeExpiration();
-```
-
-#### Renew `Identity`
-
-- use in case you need to change `Identity` on current request (on next request is called `IdentityRenewer`, if set)
-- `$firewall->login()` would reset authentication time, don't use it for `Identity` update
-
-```php
-use Orisai\Auth\Authentication\IntIdentity;
-
-$identity = new IntIdentity($user->getId(), $user->getRoles());
-$firewall->renewIdentity($identity);
-```
-
-##### Log out user
-
-- After manual logout `ExpiredLogin->getLogoutReason()` returns `$firewall::REASON_MANUAL`
-- `$firewall->getIdentity()` raises an exception, check with `$firewall->isLoggedIn()` or use `$firewall->getExpiredLogins()` instead
-
-```php
-$firewall->logout();
-$firewall->isLoggedIn(); // false
-$firewall->getIdentity(); // exception
-
-$firewall->removeExpiredLogins();
-$firewall->setExpiredIdentitiesLimit($count); // Maximum number of expired logins to store, defaults to 3
-
-$firewall->getLastExpiredLogin(); // ExpiredLogin|null
-$firewall->getExpiredLogins(); // array<ExpiredLogin>
-foreach ($firewall->getExpiredLogins() as $identityId => $expiredLogin) {
-    $firewall->removeExpiredLogin($identityId);
-
-    $expiredLogin->getIdentity(); // Identity
-    $expiredLogin->getAuthenticationTime(); // Instant
-    $expiredLogin->getLogoutReason(); // $firewall::REASON_* - REASON_MANUAL | REASON_INACTIVITY | REASON_INVALID_IDENTITY
-    $expiredLogin->getLogoutReasonDescription(); // string|null
-    $expiredLogin->getExpiration(); // Expiration|null
-}
-```
-
-# Authorization
-
-Represent your app permissions with privilege hierarchy
-
-```
-✓ article
-	✓ view
-	✓ publish
-	✓ edit
-		✓ all
-		✓ owned
-	✓ delete
-```
-
-```php
+use Orisai\Auth\Authorization\AuthorizationData;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 
-// Create data builder
-$builder = new AuthorizationDataBuilder();
-
-// Add roles
-$builder->addRole('editor');
-
-// Add privileges
-//	- they support hierarchy via dot (e.g article.view is part of article)
-$builder->addPrivilege('article.view');
-$builder->addPrivilege('article.publish');
-$builder->addPrivilege('article.delete');
-$builder->addPrivilege('article.edit.owned');
-$builder->addPrivilege('article.edit.all');
-
-// Allow role to work with specified privileges
-$builder->allow('editor', $authorizer::ALL_PRIVILEGES); // Everything
-$builder->allow('editor', 'article.edit'); // Everything from article.edit
-$builder->allow('editor', 'article'); // Everything from article
-
-// Deny role to work with privileges (you shouldn't need to do this explicitly, everything is disallowed by default)
-$builder->removeAllow('editor', 'article');
-
-// Create data object
-$data = $builder->build();
-
-// Create authorizer
+$dataBuilder = new AuthorizationDataBuilder();
+$data = $dataBuilder->build();
 $policyManager = new SimplePolicyManager();
 $authorizer = new PrivilegeAuthorizer($policyManager, $data);
-
-// Check if user has privilege
-$authorizer->isAllowed($identity, 'article'); // bool, required to have all article sub-privileges
-$firewall->isAllowed('article'); // shortcut to $authorizer->isAllowed(), but also checks whether user is logged in
-
-// Check privilege is registered
-$data->privilegeExists('article'); // bool
 ```
 
-## Policies
+Step 2 (optional):
 
-To check whether user has privilege to edit an article, you have to call `$firewall->isAllowed('article.edit')`.
-Firewall then (via authorizer) performs checks if user has that privilege and, if any are defined,
-also all child privileges like `article.edit.owned` and `article.edit.all`.
-This approach is safe but may impractical. To customize that behavior, define a policy:
+- Create data builder
+- Add [privileges](#privileges) and [roles](#roles)
+- Assign privileges to roles
+- Build the data
 
 ```php
-use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\AuthorizationData;
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Auth\Authorization\Policy;
-use Orisai\Auth\Authorization\PolicyContext;
 
-/**
- * @phpstan-implements Policy<Article>
- */
-final class ArticleEditPolicy implements Policy
+// Create data builder
+$dataBuilder = new AuthorizationDataBuilder();
+
+// Add privileges
+$dataBuilder->addPrivilege('article.delete');
+$dataBuilder->addPrivilege('article.edit.all');
+$dataBuilder->addPrivilege('article.edit.owned');
+$dataBuilder->addPrivilege('article.publish');
+
+// Add roles
+$dataBuilder->addRole('editor');
+$dataBuilder->addRole('chief-editor');
+$dataBuilder->addRole('supervisor');
+
+// Allow role to work with specified privileges
+$dataBuilder->allow('chief-editor', 'article.edit'); // Edit both owned and all articles
+$dataBuilder->allow('chief-editor', 'article.publish'); // Publish article
+$dataBuilder->allow('chief-editor', 'article.delete'); // Delete articles
+$dataBuilder->allow('editor', 'article.edit.owned'); // Edit owned articles
+
+// Give role a root access
+$dataBuilder->addRoot('supervisor');
+
+// Create data object
+$data = $dataBuilder->build();
+```
+
+Step 3 (optional):
+
+- Abstract data creation with an object
+
+```php
+use Orisai\Auth\Authorization\AuthorizationData;
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\Authorizer;
+
+final class AuthorizationDataCreator
 {
 
-	public const EDIT_ALL = 'article.edit.all';
-
-	public static function getPrivilege(): string
+	public function create(): AuthorizationData
 	{
-		return 'article.edit';
-	}
+		$dataBuilder = new AuthorizationDataBuilder();
 
-	public static function getRequirementsClass(): string
-	{
-		return Article::class;
+		foreach ($this->getPrivileges() as $privilege) {
+			// $dataBuilder->addPrivilege('article.publish');
+			$dataBuilder->addPrivilege($privilege);
+		}
+
+		foreach ($this->getRolePrivileges() as $role => $privileges) {
+			// $dataBuilder->addRole('chief-editor');
+			$dataBuilder->addRole($role);
+
+			if ($privileges === true) {
+				$dataBuilder->addRoot($role);
+			} else {
+				foreach ($privileges as $privilege) {
+					// $dataBuilder->allow('chief-editor', 'article.publish');
+					$dataBuilder->allow($role, $privilege);
+				}
+			}
+
+		}
+
+		return $dataBuilder->build();
 	}
 
 	/**
-	 * @param Article $requirements
+	 * @return array<string>
 	 */
-	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
+	private function getPrivileges(): array
 	{
-		$authorizer = $context->getAuthorizer();
-
-		// User is allowed to edit an article, if is allowed to edit all of them or is the article author
-		return $authorizer->isAllowed($identity, self::EDIT_ALL)
-			|| $authorizer->isAllowed($identity, ...ArticleEditOwnedPolicy::get($requirements));
+		return [
+			'article.delete',
+			'article.edit.all',
+			'article.edit.owned',
+			'article.publish',
+		];
 	}
 
 	/**
-	 * @return array{string, object}
+	 * @return array<string, true|array<string>>
 	 */
-	public static function get(Article $article): array
+	private function getRolePrivileges(): array
 	{
-		return [self::getPrivilege(), $article];
+		return [
+			'supervisor' => true,
+			'editor' => [
+				'article.edit.owned',
+			],
+			'chief-editor' => [
+				'article.delete',
+				'article.edit',
+				'article.publish',
+			],
+		];
 	}
 
 }
+```
+
+Step 4 (optional):
+
+- Move privileges to an external source (config, editable by programmer)
+- Move roles and their privileges to an external source (database, editable by system supervisor)
+- Cache created data - instead of building data on each request, serialize them in cache and invalidate on change
+
+```php
+namespace Example\Core\Auth;
+
+use Example\Core\Role\RoleRepository;
+use ExampleLib\Caching\Cache;
+use Orisai\Auth\Authorization\AuthorizationData;
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+
+final class AuthorizationDataCreator
+{
+
+	private const CACHE_KEY = 'Example.Core.Auth.Data';
+
+	/** @var array<string> */
+	private array $privileges;
+
+	private RoleRepository $roleRepository;
+
+	private Cache $cache;
+
+	/**
+	 * @param array<string> $privileges
+	 */
+	public function __construct(array $privileges, RoleRepository $roleRepository, Cache $cache)
+	{
+		$this->privileges = $privileges;
+		$this->roleRepository = $roleRepository;
+		$this->cache = $cache;
+
+		$this->roleRepository->onFlush[] = fn () => $this->rebuild();
+	}
+
+	public function create(): AuthorizationData
+	{
+		$data = $this->cache->load(self::CACHE_KEY);
+		if ($data instanceof AuthorizationData) {
+			return $data;
+		}
+
+		$data = $this->buildData();
+
+		$this->cache->save(self::CACHE_KEY, $data);
+
+		return $data;
+	}
+
+	private function rebuild(): void
+	{
+		$data = $this->buildData();
+		$this->cache->save(self::CACHE_KEY, $data);
+	}
+
+	private function buildData(): AuthorizationData
+	{
+		$dataBuilder = new AuthorizationDataBuilder();
+
+		foreach ($this->privileges as $privilege) {
+			$dataBuilder->addPrivilege($privilege);
+		}
+
+		$roles = $this->roleRepository->findAll();
+
+		foreach ($roles as $role) {
+			$dataBuilder->addRole($role->name);
+
+			if ($role->root) {
+				$dataBuilder->addRoot($role->name);
+			}
+
+			foreach ($role->privileges as $privilege) {
+				$dataBuilder->allow($role->name, $privilege);
+			}
+		}
+
+		return $dataBuilder->build();
+	}
+
+}
+```
+
+#### Verifying privileges on assign
+
+When an unknown privilege is assigned to role or identity, an exception is thrown. This behavior is correct, but it also
+means you have to migrate assigned privileges when you remove or rename one.
+
+If it is too complicated, you may just turn it off and re-assign renamed privileges to user:
+
+> This is just a workaround, preferably never use this option
+
+```php
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+
+$dataBuilder = new AuthorizationDataBuilder();
+$dataBuilder->throwOnUnknownPrivilege = false;
+
+// ...
+
+$data = $dataBuilder->build();
+```
+
+### Roles
+
+User roles like developer, admin and editor are the most basic form of authorization. User can have multiple roles
+assigned through their identity.
+
+```php
+$firewall->hasRole('admin'); // bool
+$identity->hasRole('admin'); // bool
+```
+
+Although it's easy to set up roles-based authorization, it may backfire as the app gets more complicated. Usually in a
+company not just single role has access to single action and relying on roles may lead to conditions
+like `$firewall->hasRole('supervisor') || $firewall->hasRole('admin') || $firewall->hasRole('editor') || ...`. Instead,
+we use [privilege-based authorization](#privileges).
+
+### Privileges
+
+Privilege is a right to commit an action.
+
+Privileges are checked via `$firewall->isAllowed()` and `$authorizer->isAllowed()` methods. There is
+also `$authorizer->hasPrivilege()` method, but it should not be used outside of policies because its purpose is to
+bypass policy checks to prevent infinite loops (like `ArticleEditPolicy`
+calling `isAllowed('article.edit')`).
+
+User privileges have two sources, combined into one during check:
+
+- [role](#roles) privileges, assigned during [authorization setup](#authorization-setup)
+- [identity](#identity) privileges, assigned to identity [directly](#identity-privileges)
+
+Privileges are composed in a hierarchical structure, in which individual sub-privileges are separated by a dot.
+
+- Adding privilege `article.edit.all` via `$builder->addPrivilege()`adds also privileges `article.edit` and `article`.
+- Assigning privilege `article` to user gives them also all the sub-privileges - all these whose name starts
+  with `article.`.
+- Checking whether user has privilege `article` checks also all sub-privileges - user has to have all which start
+  with `article.`.
+	- Policy is checked **only for exact privilege**, not for sub-privileges nor parent privileges. That means
+	  when `article.edit` has a policy and `isAllowed('article')` is called, the `article.edit` policy is not checked.
+	- To check whether user has a privilege, all roles and identity privileges are combined. Having each sub-privilege
+	  at least from one role or identity is enough to have the whole privilege.
+
+#### Identity privileges
+
+Each user can have their privileges assigned directly, without any roles.
+
+```php
+use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
+use Orisai\Auth\Authentication\IntIdentity;
+
+$dataBuilder = new AuthorizationDataBuilder();
+// ...
+$data = $dataBuilder->build();
+
+$identity = new IntIdentity($user->id, $user->roles);
+$identityDataBuilder = new IdentityAuthorizationDataBuilder($data);
+
+if ($user->root) {
+	$identityDataBuilder->addRoot($identity);
+}
+
+foreach ($user->privileges as $privilege) {
+	$identityDataBuilder->allow($identity, $privilege);
+}
+
+$identity->setAuthorizationData($identityDataBuilder->build($identity));
+```
+
+### Policies - customized authorization
+
+Policy is a class used for custom implementation of privilege check, completely replacing default full privilege match.
+It may request an object from `isAllowed()` call and services via constructor to perform any checks needed.
+
+> `hasPrivilege()` checks only privilege, without calling policy
+
+```php
+$policyManager->add(new ArticleEditOwnedPolicy());
+// ...
+$authorizer->isAllowed($identity, 'article.edit.owned', $article); // bool
+$firewall->isAllowed('article.edit.owned', $article); // bool
 ```
 
 ```php
@@ -473,41 +760,420 @@ final class ArticleEditOwnedPolicy implements Policy
 			&& $identity->getId() === $requirements->getAuthor()->getId();
 	}
 
-	/**
-	 * @return array{string, object}
-	 */
-	public static function get(Article $article): array
+}
+```
+
+Each policy has to be registered by `PolicyManager`:
+
+```php
+use Orisai\Auth\Authorization\SimplePolicyManager;
+
+$policyManager = new SimplePolicyManager();
+$policyManager->add(new ArticleEditPolicy());
+$policyManager->add(new ArticleEditOwnedPolicy());
+```
+
+Alternative, lazy implementations available are in:
+
+- [orisai/nette-auth](https://github.com/orisai/nette-auth) - for [nette/di](https://github.com/nette/di)
+
+Requirements can be made [optional](#policy-with-optional-requirements) or even [none](#policy-with-no-requirements) at
+all.
+
+Policy is called only when user is logged-in. For logged-out
+users, [make Identity optional](#policy-with-optional-log-in-check).
+
+For privileges with registered policy, privilege itself **is not checked**. Policy has
+to [do the check itself](#policy-with-default-like-privilege-check).
+
+Policy is always skipped by [root](#root---bypass-all-checks).
+
+#### Policy context
+
+Policy provides a context to make authorizer calls to subsequent policies, access current users expired logins, ...:
+
+```php
+use Orisai\Auth\Authentication\DecisionReason;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
+
+final class ContextAwarePolicy implements Policy
+{
+
+	// ...
+
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
-		return [self::getPrivilege(), $article];
+		$context->isCurrentUser(); // bool
+
+		foreach ($context->getExpiredLogins() as $expiredLogin) {
+			// ...
+		}
+
+		$authorizer = $context->getAuthorizer();
+
+		return $authorizer->isAllowed('contextAware.subprivilege1')
+			&& $authorizer->isAllowed('contextAware.subprivilege2');
 	}
 
 }
 ```
 
-Now you have to register these policies in policy manager:
+#### Policy with optional log-in check
 
-- registration example is for `SimplePolicyManager`, other implementations may require different approach
-
-```php
-$policyManager->add(new ArticleEditPolicy());
-$policyManager->add(new ArticleEditOwnedPolicy());
-```
-
-And check if user is allowed by that policy to perform actions:
+Only logged-in users are checked via policy, logged-out users are not allowed to do anything. If you want to authorize
+also logged-out users, implement the `OptionalIdentityPolicy`.
 
 ```php
-$firewall->isAllowed(...ArticleEditPolicy::get($article));
+$firewall->isAllowed(OnlyLoggedOutUserPolicy::getPrivilege(), new stdClass());
+$authorizer->isAllowed($identity, OnlyLoggedOutUserPolicy::getPrivilege(), new stdClass());
+$authorizer->isAllowed(null, OnlyLoggedOutUserPolicy::getPrivilege(), new stdClass());
 ```
 
-Be aware that in case of policy firewall itself don't perform any checks except the logged-in check, so you have to do
-all the required privilege checks yourself in the policy. It is possible to fallback to default behavior with
-`$authorizer->hasPrivilege($identity, self::getPrivilege())`
+```php
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\NoRequirements;
+use Orisai\Auth\Authorization\OptionalRequirementsPolicy;
+use Orisai\Auth\Authorization\PolicyContext;
+use stdClass;
 
-Once the policy is registered, firewall will require you to pass policy requirements.
-You may choose to make requirements nullable and change `object $requirements` to `?object $requirements`.
-Other possibility is to not have any requirements at all - in that case use requirement `Orisai\Auth\Authorization\NoRequirement`
-and firewall will auto-create it for you.
+final class OnlyLoggedOutUserPolicy implements OptionalIdentityPolicy
+{
 
-Always check against the most specific permissions you need. If user is allowed to do everything, `article` privilege
-check would be successful, but `ArticleEditOwnedPolicy` check (`article.edit.owned` privilege) may return false in case
-user is not author of that article.
+	// ...
+
+	public static function getRequirementsClass(): string
+	{
+		return stdClass::class;
+	}
+
+	public function isAllowed(?Identity $identity, object $requirements, PolicyContext $context): bool
+	{
+		// Only logged-out user is allowed
+
+		return $identity === null;
+	}
+
+}
+```
+
+#### Policy with optional requirements
+
+Requirements may be marked optional by implementing `OptionalRequirementsPolicy`. It allows requirements to be null:
+
+```php
+$firewall->isAllowed(OptionalRequirementsPolicy::getPrivilege());
+$firewall->isAllowed(OptionalRequirementsPolicy::getPrivilege(), new stdClass());
+$authorizer->isAllowed($identity, OptionalRequirementsPolicy::getPrivilege());
+$authorizer->isAllowed($identity, OptionalRequirementsPolicy::getPrivilege(), new stdClass());
+```
+
+```php
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\NoRequirements;
+use Orisai\Auth\Authorization\OptionalRequirementsPolicy;
+use Orisai\Auth\Authorization\PolicyContext;
+use stdClass;
+
+final class OptionalRequirementsPolicy implements OptionalRequirementsPolicy
+{
+
+	// ...
+
+	public static function getRequirementsClass(): string
+	{
+		return stdClass::class;
+	}
+
+	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): bool
+	{
+		if ($requirements === null) {
+			// ...
+		} else {
+			// ...
+		}
+	}
+
+}
+```
+
+#### Policy with no requirements
+
+Policy which does not have any requirements may use `NoRequirements`. Authorizer will create this object for you so you
+don't have to pass it via `isAllowed()`:
+
+```php
+$firewall->isAllowed(NoRequirementsPolicy::getPrivilege());
+$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege());
+```
+
+```php
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\NoRequirements;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
+
+final class NoRequirementsPolicy implements Policy
+{
+
+	// ...
+
+	public static function getRequirementsClass(): string
+	{
+		return NoRequirements::class;
+	}
+
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
+	{
+		assert($requirements instanceof NoRequirements);
+
+		return 2b || !2b;
+	}
+
+}
+```
+
+#### Policy with default-like privilege check
+
+Setting a policy makes the privilege itself **optional and therefore not checked**. To fall back to default behavior,
+check privilege via authorizer yourself:
+
+```php
+$firewall->isAllowed(DefaultCheckPolicy::getPrivilege());
+$authorizer->isAllowed($identity, DefaultCheckPolicy::getPrivilege());
+```
+
+```php
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\NoRequirements;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
+
+final class DefaultCheckPolicy implements Policy
+{
+
+	// ...
+
+	public static function getRequirementsClass(): string
+	{
+		return NoRequirements::class;
+	}
+
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
+	{
+		$authorizer = $context->getAuthorizer();
+
+		return $authorizer->hasPrivilege($identity, self::getPrivilege());
+	}
+
+}
+```
+
+### Root - bypass all checks
+
+Root privilege is a special privilege which bypasses both privilege and policy checks - neither of them is called,
+everything is accessible by root.
+
+```php
+$builder->addRoot('groot');
+// ...
+$firewall->login(new IntIdentity(123, ['groot']));
+$firewall->isAllowed('anything'); // true
+$firewall->isRoot(); // true
+```
+
+### Check authorization of not current user
+
+User does not have to be logged into firewall in order to check their permissions. Just create an identity for the user
+and use authorizer instead of firewall:
+
+```php
+$authorizer->isAllowed($identity, 'privilege.name');
+```
+
+### Decision reason
+
+Reason why user has or does not have permission can be described by a policy:
+
+```php
+use Orisai\Auth\Authentication\DecisionReason;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
+
+final class WillTellYouWhyPolicy implements Policy
+{
+
+	// ...
+
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
+	{
+		if (/* user likes cats */) {
+			return true;
+		}
+
+		$context->setDecisionReason(DecisionReason::create('You just don\'t understand their personality.'));
+
+		return false;
+	}
+
+}
+```
+
+Both authorizer and firewall return reason via reference:
+
+```php
+$firewall->isAllowed(DefaultCheckPolicy::getPrivilege(), $requirements, $reason);
+$authorizer->isAllowed($identity, DefaultCheckPolicy::getPrivilege(), $requirements, $reason);
+
+if ($reason !== null) {
+	$message = $reason->isTranslatable()
+		? $translator->translate($reason->getMessage(), $reason->getParameters())
+		: $reason->getMessage();
+}
+```
+
+## Passwords
+
+Encode (hash) and verify passwords.
+
+```php
+use Example\Core\User\User;
+use Example\Front\Auth\FrontFirewall;
+use Orisai\Auth\Authentication\IntIdentity;
+use Orisai\Auth\Passwords\PasswordEncoder;
+
+final class UserLogin
+{
+
+	private PasswordEncoder $passwordEncoder;
+
+	private FrontFirewall $frontFirewall;
+
+	public function __construct(PasswordEncoder $passwordEncoder, FrontFirewall $frontFirewall)
+	{
+		$this->passwordEncoder = $passwordEncoder;
+		$this->frontFirewall = $frontFirewall;
+	}
+
+	public function login(string $email, string $password): void
+	{
+		$user; // Query user from database by $email
+
+		if ($this->passwordEncoder->isValid($password, $user->encodedPassword)) {
+			$this->updateEncodedPassword($user, $password);
+
+			// Login user
+			$this->frontFirewall->login(new IntIdentity($user->id, $user->roles));
+		}
+	}
+
+	public function register(string $password): void
+	{
+		$encodedPassword = $this->passwordEncoder->encode($password);
+
+		// Register user
+	}
+
+	private function updateEncodedPassword(User $user, string $password): void
+	{
+		if (!$this->passwordEncoder->needsReEncode($user->encodedPassword)) {
+			return;
+		}
+
+		$user->encodedPassword = $this->passwordEncoder->encode($password);
+		// Persist user to database
+	}
+
+}
+```
+
+Make sure your password storage allows at least 255 characters. Each algorithm produces encoded strings of different
+length and even different settings of an algorithm may vary in results.
+
+### Sodium encoder
+
+Hash passwords with **argon2id** algorithm. This encoder is **recommended**.
+
+```php
+use Orisai\Auth\Passwords\SodiumPasswordEncoder;
+
+$encoder = new SodiumPasswordEncoder();
+```
+
+Options:
+
+- `SodiumPasswordEncoder(?int $timeCost, ?int $memoryCost)`
+	- `$timeCost`
+		- Maximum number of computations to perform
+		- Default: higher one of `4` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
+	- `$memoryCost`
+		- Maximum number of memory consumed
+		- Defined in bytes
+		- Default: higher one of `~67 MB` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
+
+### Bcrypt encoder
+
+Hash passwords with **bcrypt** algorithm. Unless sodium php extension is not available on your setup then always
+prefer [sodium encoder](#sodium-encoder).
+
+*Note:* bcrypt algorithm trims password before hashing to 72 characters. You should not worry about it because it does
+not have any usage impact, but it may cause issues if you are migrating from a bcrypt-encoder which modified password to
+be 72 characters or fewer before hashing, so please ensure produced hashes are considered valid by password encoder.
+
+```php
+use Orisai\Auth\Passwords\BcryptPasswordEncoder;
+
+$encoder = new BcryptPasswordEncoder();
+```
+
+Options:
+
+- `BcryptPasswordEncoder(int $cost)`
+	- `$cost`
+		- Cost of the algorithm
+		- Must be in range `4-31`
+		- Default: `10`
+
+### Unsafe MD5 encoder
+
+**Use only for testing**
+
+Encoding passwords with sodium is safe option, but also time and resource intensive. For automated tests purposes it may
+be helpful to choose faster MD5 algorithm which would be **unsafe** in production environment.
+
+```php
+use Orisai\Auth\Passwords\UnsafeMD5PasswordEncoder;
+
+$encoder = new UnsafeMD5PasswordEncoder();
+```
+
+### Backward compatibility - upgrading encoder
+
+If you are migrating to new algorithm, use `UpgradingPasswordEncoder`. It requires a preferred encoder and optionally
+accepts fallback encoders.
+
+If you migrate from a `password_verify()`-compatible password validation method then you don't need any fallback
+encoders as it is done automatically for you. These passwords should always start with string like `$2a$`, `$2x$`,
+`$argon2id$` etc.
+
+If you need fallback to a *custom encoder*, implement an `Orisai\Auth\Passwords\PasswordEncoder`.
+
+```php
+use Orisai\Auth\Passwords\SodiumPasswordEncoder;
+use Orisai\Auth\Passwords\UpgradingPasswordEncoder;
+
+// With only preferred encoder
+$encoder = new UpgradingPasswordEncoder(
+    new SodiumPasswordEncoder()
+);
+
+// With outdated fallback encoders
+$encoder = new UpgradingPasswordEncoder(
+    new SodiumPasswordEncoder(),
+    [
+        new ExamplePasswordEncoder(),
+    ]
+);
+```
