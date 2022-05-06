@@ -11,7 +11,7 @@ use function str_starts_with;
 final class StaticListPasswordEncoder implements PasswordEncoder
 {
 
-	private const PREFIX = 'static_';
+	private const Prefix = 'static_';
 
 	/** @var array<string, string> */
 	private array $list = [];
@@ -27,7 +27,7 @@ final class StaticListPasswordEncoder implements PasswordEncoder
 
 	public function needsReEncode(string $encoded): bool
 	{
-		if (!str_starts_with($encoded, self::PREFIX)) {
+		if (!str_starts_with($encoded, self::Prefix)) {
 			return true;
 		}
 
@@ -47,7 +47,7 @@ final class StaticListPasswordEncoder implements PasswordEncoder
 
 	public static function createEncoded(string $raw): string
 	{
-		return self::PREFIX . md5($raw);
+		return self::Prefix . md5($raw);
 	}
 
 }

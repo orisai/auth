@@ -14,11 +14,11 @@ final class UnsafeMD5PasswordEncoder implements PasswordEncoder
 	 *
 	 * @see https://www.php.net/manual/en/function.crypt.php
 	 */
-	private const PREFIX = '$1$';
+	private const Prefix = '$1$';
 
 	public function encode(string $raw): string
 	{
-		return self::PREFIX . md5($raw);
+		return self::Prefix . md5($raw);
 	}
 
 	public function needsReEncode(string $encoded): bool

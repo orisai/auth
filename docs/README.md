@@ -556,7 +556,7 @@ use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 final class AuthorizationDataCreator
 {
 
-	private const CACHE_KEY = 'Example.Core.Auth.Data';
+	private const CacheKey = 'Example.Core.Auth.Data';
 
 	/** @var array<string> */
 	private array $privileges;
@@ -579,14 +579,14 @@ final class AuthorizationDataCreator
 
 	public function create(): AuthorizationData
 	{
-		$data = $this->cache->load(self::CACHE_KEY);
+		$data = $this->cache->load(self::CacheKey);
 		if ($data instanceof AuthorizationData) {
 			return $data;
 		}
 
 		$data = $this->buildData();
 
-		$this->cache->save(self::CACHE_KEY, $data);
+		$this->cache->save(self::CacheKey, $data);
 
 		return $data;
 	}
@@ -594,7 +594,7 @@ final class AuthorizationDataCreator
 	private function rebuild(): void
 	{
 		$data = $this->buildData();
-		$this->cache->save(self::CACHE_KEY, $data);
+		$this->cache->save(self::CacheKey, $data);
 	}
 
 	private function buildData(): AuthorizationData

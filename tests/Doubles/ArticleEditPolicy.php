@@ -12,7 +12,7 @@ use Orisai\Auth\Authorization\PolicyContext;
 final class ArticleEditPolicy implements Policy
 {
 
-	public const EDIT_ALL = 'article.edit.all';
+	public const EditAll = 'article.edit.all';
 
 	public static function getPrivilege(): string
 	{
@@ -31,7 +31,7 @@ final class ArticleEditPolicy implements Policy
 	{
 		$authorizer = $context->getAuthorizer();
 
-		return $authorizer->isAllowed($identity, self::EDIT_ALL)
+		return $authorizer->isAllowed($identity, self::EditAll)
 			|| $authorizer->isAllowed($identity, ArticleEditOwnedPolicy::getPrivilege(), $requirements);
 	}
 
