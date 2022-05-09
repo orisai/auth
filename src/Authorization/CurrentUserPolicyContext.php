@@ -13,6 +13,8 @@ final class CurrentUserPolicyContext extends BaseUserPolicyContext
 
 	/**
 	 * @param Firewall<Identity> $firewall
+	 *
+	 * @internal
 	 */
 	public function __construct(Firewall $firewall)
 	{
