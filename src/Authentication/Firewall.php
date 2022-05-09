@@ -14,6 +14,8 @@ use Orisai\Auth\Authorization\Authorizer;
 interface Firewall
 {
 
+	public function getNamespace(): string;
+
 	public function isLoggedIn(): bool;
 
 	/**

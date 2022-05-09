@@ -377,6 +377,8 @@ For standard across requests authentication:
 Each section of application, like administration, frontend and API can have fully separate login. For each section you
 just need to create firewall instance, with a unique *namespace*.
 
+Namespace of a firewall can be accessed via `$firewall->getNamespace();`.
+
 `SimpleFirewall` accepts *namespace* in constructor, yet it may be more convenient to extend `BaseFirewall` and
 differentiate each firewall by class name.
 
@@ -391,7 +393,7 @@ use Orisai\Auth\Authentication\BaseFirewall;
 final class AdminFirewall extends BaseFirewall
 {
 
-	protected function getNamespace(): string
+	public function getNamespace(): string
 	{
 		return 'admin';
 	}

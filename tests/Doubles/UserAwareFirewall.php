@@ -30,7 +30,7 @@ final class UserAwareFirewall extends BaseFirewall
 		$this->userGetter = $userGetter;
 	}
 
-	protected function getNamespace(): string
+	public function getNamespace(): string
 	{
 		return 'user-aware';
 	}

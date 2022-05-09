@@ -64,7 +64,7 @@ abstract class BaseFirewall implements Firewall
 		$this->contextCreator = new CurrentUserPolicyContextCreator($this);
 	}
 
-	abstract protected function getNamespace(): string;
+	abstract public function getNamespace(): string;
 
 	public function isLoggedIn(): bool
 	{
