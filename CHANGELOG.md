@@ -9,32 +9,39 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-Passwords
-- `PasswordEncoder` interface
-    - `BcryptPasswordEncoder`
-    - `SodiumPasswordEncoder`
-    - `UnsafeMD5PasswordEncoder`
-    - `UpgradingPasswordEncoder`
-
 Authentication
+
 - `Firewall` interface
-    - `BaseFirewall`
+	- abstract `BaseFirewall`
+	- `SimpleFirewall`
+	- current login, expired logins
 - `Identity` interface
-    - `IntIdentity`
-    - `StringIdentity`
+	- abstract `BaseIdentity`
+	- `IntIdentity`
+	- `StringIdentity`
 - `LoginStorage` interface
-    - `ArrayLoginStorage`
-- `IdentityRenewer` interface
+	- `ArrayLoginStorage`
+- `IdentityRefresher` interface
+	- `IdentityExpired` exception with `DecisionReason` support
 
 Authorization
-- `Authorizer` interface
-	- `PermissionAuthorizer`
-- `Policy` interface
-	- `PolicyManager` interface
-	- `SimplePolicyManager`
-- `NoRequirements` Policy requirement
 
-Bridges
-- Nette
-	- `SessionLoginStorage`
-	- `LazyPolicyManager`
+- `Authorizer` interface
+	- `PrivilegeAuthorizer`
+	- roles, role privileges, identity privileges, policies, root, current/any user check
+- `Policy` interface
+	- `OptionalIdentityPolicy`
+	- `OptionalRequirementsPolicy`
+	- `NoRequirements`
+	- `DecisionReason`
+	- `PolicyContext`
+	- `PolicyManager` interface
+		- `SimplePolicyManager`
+
+Passwords
+
+- `PasswordEncoder` interface
+	- `BcryptPasswordEncoder`
+	- `SodiumPasswordEncoder`
+	- `UnsafeMD5PasswordEncoder`
+	- `UpgradingPasswordEncoder`
