@@ -1,0 +1,103 @@
+name: "docs"
+
+on:
+  pull_request:
+    types: [ "opened", "synchronize", "edited", "reopened" ]
+  push:
+    branches:
+      - "**"
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref_name }}"
+  cancel-in-progress: true
+
+jobs:
+  convert:
+    name: "Convert R Markdown files to regular Markdown"
+    runs-on: "ubuntu-latest"
+    env:
+      R_COMPILE_AND_INSTALL_PACKAGES: "never"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v2"
+
+      - name: "Rrrr DESCRIPTION file"
+        run: |
+          cat <<EOF >DESCRIPTION
+          Package: Rrrrrrrrr Markdown generator
+          Version: 0.1
+          EOF
+
+      - name: "Rrrr"
+        uses: "r-lib/actions/setup-r@v1"
+
+      - name: "Rrrr dependencies"
+        uses: "r-lib/actions/setup-r-dependencies@v2"
+        with:
+          cache-version: 1
+          extra-packages: |
+            any::rmarkdown
+
+      - name: "Pandoc"
+        uses: "r-lib/actions/setup-pandoc@v1"
+
+      - name: "Find removed files"
+        uses: "dorny/paths-filter@v2"
+        id: "removed"
+        with:
+          list-files: "shell"
+          filters: |
+            Rmd:
+              - removed: '*.Rmd'
+
+      - name: "Cleanup"
+        if: "steps.removed.outputs.Rmd == 'true'"
+        run: |
+          for Rmd in ${{ steps.removed.outputs.Rmd_files }}
+          do
+            md="${Rmd%.*}.md"
+            rm $md
+          done
+
+      - name: "Find changed files"
+        uses: "dorny/paths-filter@v2"
+        id: "changed"
+        with:
+          list-files: "shell"
+          filters: |
+            Rmd:
+              - '*.Rmd'
+
+      - name: "Convert"
+        if: "steps.changed.outputs.Rmd == 'true'"
+        run: |
+          for Rmd in ${{ steps.changed.outputs.Rmd_files }}
+          do
+            Rscript -e 'rmarkdown::render("'${Rmd}'", output_format = "md_document")'
+          done
+
+      - name: "Commit"
+        uses: "stefanzweifel/git-auto-commit-action@v4"
+        with:
+          file_pattern: "*.md"
+          commit_message: "Build .md files from .Rmd [skip ci]"
+
+  status-check:
+    name: "Status check - docs"
+    runs-on: "ubuntu-latest"
+    needs: [ "convert" ]
+
+    if: "${{ always() }}"
+
+    steps:
+      - name: "Check required jobs are successful"
+        env:
+          RESULTS: "${{ join(needs.*.result, ' ') }}"
+        run: |
+          for res in $RESULTS
+          do
+            if [ $res != 'success' ] && [ $res != 'cancelled' ]; then
+              exit 1
+            fi
+          done
