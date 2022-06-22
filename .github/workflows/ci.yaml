@@ -26,8 +26,7 @@ jobs:
       matrix:
         include:
           - operating-system: "ubuntu-latest"
-            php-version: "8.0"
-      fail-fast: false
+            php-version: "8.1"
 
     steps:
       - name: "Checkout"
@@ -56,8 +55,7 @@ jobs:
       matrix:
         include:
           - operating-system: "ubuntu-latest"
-            php-version: "8.0"
-      fail-fast: false
+            php-version: "8.1"
 
     steps:
       - name: "Checkout"
@@ -81,17 +79,23 @@ jobs:
   tests:
     name: "Tests"
     runs-on: "${{ matrix.operating-system }}"
+    continue-on-error: "${{ matrix.experimental }}"
 
     strategy:
       matrix:
         operating-system: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
         php-version: [ "7.4", "8.0", "8.1" ]
         composer-flags: [ "" ]
+        experimental: [ false ]
         include:
           - operating-system: "ubuntu-latest"
             php-version: "7.4"
-            composer-flags: "--prefer-lowest"
-      fail-fast: false
+            composer-flags: "--prefer-lowest --prefer-stable"
+            experimental: false
+          - operating-system: "ubuntu-latest"
+            php-version: "8.2"
+            composer-flags: "--ignore-platform-req=php+"
+            experimental: true
 
     steps:
       - name: "Checkout"
@@ -106,6 +110,8 @@ jobs:
 
       - name: "Composer"
         uses: "orisai/github-workflows/.github/actions/setup-composer@v1"
+        with:
+          command: "composer update --no-interaction --no-progress --prefer-dist ${{ matrix.composer-flags }}"
 
       - name: "PHPUnit"
         uses: "orisai/github-workflows/.github/actions/phpunit@v1"
@@ -136,8 +142,7 @@ jobs:
       matrix:
         include:
           - operating-system: "ubuntu-latest"
-            php-version: "8.0"
-      fail-fast: false
+            php-version: "8.1"
 
     steps:
       - name: "Coveralls"
@@ -154,7 +159,7 @@ jobs:
       matrix:
         include:
           - operating-system: "ubuntu-latest"
-            php-version: "8.0"
+            php-version: "8.1"
 
     if: "github.event_name == 'push'"
 
@@ -191,3 +196,22 @@ jobs:
           name: "Logs - Mutations"
           path: "var/coverage/mutations/infection.log"
           if-no-files-found: "ignore"
+
+  status-check:
+    name: "Status check"
+    runs-on: "ubuntu-latest"
+    needs: [ "coding-standard", "static-analysis", "tests" ]
+
+    if: "${{ always() }}"
+
+    steps:
+      - name: "Check required jobs are successful"
+        env:
+          RESULTS: "${{ join(needs.*.result, ' ') }}"
+        run: |
+          for res in $RESULTS
+          do
+            if [ $res != 'success' ]; then
+              exit 1
+            fi
+          done
