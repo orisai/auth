@@ -1,4 +1,4 @@
-name: "ci"
+name: "CI"
 
 on:
   pull_request:
@@ -198,20 +198,14 @@ jobs:
           if-no-files-found: "ignore"
 
   status-check:
-    name: "Status check"
+    name: "Status check - ${{ github.workflow }}"
     runs-on: "ubuntu-latest"
-    needs: [ "coding-standard", "static-analysis", "tests" ]
+    needs: [ "coding-standard", "static-analysis", "tests", "tests-mutations" ]
 
     if: "${{ always() }}"
 
     steps:
       - name: "Check required jobs are successful"
-        env:
-          RESULTS: "${{ join(needs.*.result, ' ') }}"
-        run: |
-          for res in $RESULTS
-          do
-            if [ $res != 'success' ]; then
-              exit 1
-            fi
-          done
+        uses: "orisai/github-workflows/.github/actions/status-check@v1.x"
+        with:
+          needs: "${{ toJSON(needs) }}"
