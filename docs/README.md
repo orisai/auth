@@ -35,7 +35,8 @@ Authentication and authorization
 - [Passwords](#passwords)
 	- [Sodium](#sodium-hasher)
 	- [Bcrypt](#bcrypt-hasher)
-	- [Backward compatibility](#backward-compatibility---upgrading-hasher)
+	- [Backward compatibility - upgrading when user logs in](#backward-compatibility---upgrading-when-user-logs-in)
+	- [Backward compatibility - migrating from an unsafe algorithm](#backward-compatibility---migrating-from-an-unsafe-algorithm)
 
 ## Setup
 
@@ -1120,6 +1121,9 @@ final class UserLogin
 Make sure your password storage allows at least 255 characters. Each algorithm produces hashed strings of different
 length and even different settings of an algorithm may vary in results.
 
+All hashes produced by this library follow
+[PHC string format](https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md)
+
 ### Sodium hasher
 
 Hash passwords with **argon2id** algorithm. This hasher is **recommended**.
@@ -1131,6 +1135,9 @@ $hasher = new SodiumPasswordHasher();
 ```
 
 Options:
+
+> Don't set any options on lower than default unless it's configuration for tests. Lower values may make algorithm usage
+> not secure enough.
 
 - `SodiumPasswordHasher(?int $timeCost, ?int $memoryCost)`
 	- `$timeCost`
@@ -1158,13 +1165,18 @@ $hasher = new BcryptPasswordHasher();
 
 Options:
 
+> Don't set any options on lower than default unless it's configuration for tests. Lower values may make algorithm usage
+> not secure enough.
+
 - `BcryptPasswordHasher(int $cost)`
 	- `$cost`
 		- Cost of the algorithm
 		- Must be in range `4-31`
 		- Default: `10`
 
-### Backward compatibility - upgrading hasher
+### Backward compatibility - upgrading when user logs in
+
+> Following approach is suitable only if we are migrating from secure settings of a secure algorithm. For or
 
 If you are migrating to new algorithm, use `UpgradingPasswordHasher`. It requires a preferred hasher and optionally
 accepts fallback hashers.
@@ -1192,3 +1204,13 @@ $hasher = new UpgradingPasswordHasher(
     ]
 );
 ```
+
+### Backward compatibility - migrating from an unsafe algorithm
+
+When we have an unsafe hashing algorithm like md5, sha-* or even safer one but with low settings, we should not wait
+with rehash on user logging in.
+
+Instead, use the existing password hashes as inputs for a more secure algorithm. For example, if the application
+originally stored passwords as `md5($password)`, this could be easily upgraded to `bcrypt(md5($password))`. Layering the
+hashes avoids the need to know the original password; however, it can make the hashes easier to crack. These hashes
+should be replaced with direct hashes of the users' passwords next time the user logs in.
