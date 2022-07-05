@@ -33,7 +33,7 @@ Authentication and authorization
 	- [Decision reason](#decision-reason)
 	- [Access data](#access-authorization-data)
 - [Passwords](#passwords)
-	- [Sodium](#sodium-hasher)
+	- [Argon2](#argon2-hasher)
 	- [Bcrypt](#bcrypt-hasher)
 	- [Backward compatibility - upgrading when user logs in](#backward-compatibility---upgrading-when-user-logs-in)
 	- [Backward compatibility - migrating from an unsafe algorithm](#backward-compatibility---migrating-from-an-unsafe-algorithm)
@@ -1090,7 +1090,7 @@ final class UserLogin
 	{
 		$user; // Query user from database by $email
 
-		if ($this->passwordHasher->isValid($password, $user->hashedPassword)) {
+		if ($this->passwordHasher->isValid($password, $user->password)) {
 			$this->updateHashedPassword($user, $password);
 
 			// Login user
@@ -1107,11 +1107,11 @@ final class UserLogin
 
 	private function updateHashedPassword(User $user, string $password): void
 	{
-		if (!$this->passwordHasher->needsRehash($user->hashedPassword)) {
+		if (!$this->passwordHasher->needsRehash($user->password)) {
 			return;
 		}
 
-		$user->hashedPassword = $this->passwordHasher->hash($password);
+		$user->password = $this->passwordHasher->hash($password);
 		// Persist user to database
 	}
 
@@ -1124,14 +1124,14 @@ length and even different settings of an algorithm may vary in results.
 All hashes produced by this library follow
 [PHC string format](https://github.com/P-H-C/phc-string-format/blob/master/phc-sf-spec.md)
 
-### Sodium hasher
+### Argon2 hasher
 
 Hash passwords with **argon2id** algorithm. This hasher is **recommended**.
 
 ```php
-use Orisai\Auth\Passwords\SodiumPasswordHasher;
+use Orisai\Auth\Passwords\Argon2PasswordHasher;
 
-$hasher = new SodiumPasswordHasher();
+$hasher = new Argon2PasswordHasher();
 ```
 
 Options:
@@ -1139,19 +1139,25 @@ Options:
 > Don't set any options on lower than default unless it's configuration for tests. Lower values may make algorithm usage
 > not secure enough.
 
-- `SodiumPasswordHasher(?int $timeCost, ?int $memoryCost)`
-	- `$timeCost`
-		- Maximum number of computations to perform
-		- Default: higher one of `4` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
-	- `$memoryCost`
-		- Maximum number of memory consumed
-		- Defined in bytes
-		- Default: higher one of `~67 MB` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
+- `Argon2PasswordHasher(?int $timeCost, ?int $memoryCost, ?int $threads)`
+    - `$timeCost`
+        - Maximum amount of time it may take to compute the hash
+        - Increase to make computing of hash harder (more secure, but longer and more CPU intensive)
+        - Default: `32`
+    - `$memoryCost`
+        - Maximum memory that may be used to compute the hash
+        - Increase to make hash computing consume more memory (be aware using more memory increases computation time)
+        - Defined in KiB (kibibytes)
+        - Default: `15_000`
+    - `$threads`
+      - Number of threads to use for computing the hash
+      - Increase to make computing of hash faster without making it less secure
+      - default: `2`
 
 ### Bcrypt hasher
 
 Hash passwords with **bcrypt** algorithm. Unless sodium php extension is not available on your setup then always
-prefer [sodium hasher](#sodium-hasher).
+prefer [argon2 hasher](#argon2-hasher).
 
 *Note:* bcrypt algorithm trims password before hashing to 72 characters. You should not worry about it because it does
 not have any usage impact, but it may cause issues if you are migrating from a bcrypt-hasher which modified password to
@@ -1176,7 +1182,9 @@ Options:
 
 ### Backward compatibility - upgrading when user logs in
 
-> Following approach is suitable only if we are migrating from secure settings of a secure algorithm. For or
+> Following approach is suitable only if we are migrating from secure settings of a secure algorithm. For upgrade from
+> an unsecure algorithm, check
+> [migrating from an unsafe algorithm](#backward-compatibility---migrating-from-an-unsafe-algorithm).
 
 If you are migrating to new algorithm, use `UpgradingPasswordHasher`. It requires a preferred hasher and optionally
 accepts fallback hashers.
@@ -1188,17 +1196,17 @@ hashers as it is done automatically for you. These passwords should always start
 If you need fallback to a *custom hasher*, implement an `Orisai\Auth\Passwords\PasswordHasher`.
 
 ```php
-use Orisai\Auth\Passwords\SodiumPasswordHasher;
+use Orisai\Auth\Passwords\Argon2PasswordHasher;
 use Orisai\Auth\Passwords\UpgradingPasswordHasher;
 
 // With only preferred hasher
 $hasher = new UpgradingPasswordHasher(
-    new SodiumPasswordHasher()
+    new Argon2PasswordHasher()
 );
 
 // With outdated fallback hashers
 $hasher = new UpgradingPasswordHasher(
-    new SodiumPasswordHasher(),
+    new Argon2PasswordHasher(),
     [
         new ExamplePasswordHasher(),
     ]

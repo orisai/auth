@@ -3,19 +3,19 @@
 namespace Tests\Orisai\Auth\Unit\Passwords;
 
 use Generator;
-use Orisai\Auth\Passwords\SodiumPasswordHasher;
+use Orisai\Auth\Passwords\Argon2PasswordHasher;
 use Orisai\Utils\Dependencies\DependenciesTester;
 use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
 use PHPUnit\Framework\TestCase;
 
-final class SodiumPasswordHasherTest extends TestCase
+final class Argon2PasswordHasherTest extends TestCase
 {
 
 	protected function setUp(): void
 	{
 		parent::setUp();
 
-		if (!SodiumPasswordHasher::isSupported()) {
+		if (!Argon2PasswordHasher::isSupported()) {
 			self::markTestSkipped('php extension sodium is not installed');
 		}
 	}
@@ -24,7 +24,7 @@ final class SodiumPasswordHasherTest extends TestCase
 	{
 		$raw = 'password';
 
-		$hasher = new SodiumPasswordHasher();
+		$hasher = new Argon2PasswordHasher();
 		$hashed = $hasher->hash($raw);
 
 		self::assertFalse($hasher->needsRehash($hashed));
@@ -35,7 +35,7 @@ final class SodiumPasswordHasherTest extends TestCase
 	{
 		$raw = 'password';
 
-		$hasher = new SodiumPasswordHasher(3, 10 * 1_024);
+		$hasher = new Argon2PasswordHasher(3, 10 * 1_024);
 		$hashed = $hasher->hash($raw);
 
 		self::assertFalse($hasher->needsRehash($hashed));
@@ -47,7 +47,7 @@ final class SodiumPasswordHasherTest extends TestCase
 	 */
 	public function testPreGeneratedPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$hasher = new SodiumPasswordHasher();
+		$hasher = new Argon2PasswordHasher();
 		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
@@ -58,9 +58,9 @@ final class SodiumPasswordHasherTest extends TestCase
 	public function providePreGeneratedPasses(): Generator
 	{
 		// Same settings
-		yield ['password', '$argon2id$v=19$m=65536,t=4,p=1$FAVkaIWcsmaiBc5rPjHkQQ$vFWkqcLV0q1aXneWvrp4w0m35xZrSJyB7yHh5By4FsE', false];
-		yield ['password', '$argon2id$v=19$m=65536,t=4,p=1$TVhGnWEIR0E3q3CHEf0ZmQ$jtEtQDEP9SIs4r4x84ELG3DOEqB20d+M+cP6Z+J3bOQ', false];
-		yield ['1234', '$argon2id$v=19$m=65536,t=4,p=1$JX8zPDMpDk/MYdcwfOHIRw$BUOtILBXRuJqE2QnurzBwnIrU0pCIhU0XN5pPcVTKnM', false];
+		yield ['password', '$argon2id$v=19$m=15000,t=16,p=2$Yi84WUhFNFdzSC9JR1UvcA$Kqz4eoD7hmu94v4gDa7ZN50ECZ4CJM8oRLcAsWwcDIU', false];
+		yield ['password', '$argon2id$v=19$m=15000,t=16,p=2$QXh2emouc01VLzVXWjFiRg$J/2jz5+bE0tSOuke3dDK3qrEz37yjJZTc0EwbYOg8JI', false];
+		yield ['1234', '$argon2id$v=19$m=15000,t=16,p=2$TWpCbkcvNFFFQzk2Ty5Oeg$dWdAsFvWuIF3ESleRBh6Kl0zItNkij47crqmj7z2zlo', false];
 
 		// Different settings
 		yield ['password', '$argon2id$v=19$m=10,t=3,p=1$aM3h+Sq0LVbxdB/LNrL3hA$pd0VCPIAmMpJH4CbsaFpvzFhK0YMzK2aZYkin+sTR74', true];
@@ -73,7 +73,7 @@ final class SodiumPasswordHasherTest extends TestCase
 	 */
 	public function testPreGeneratedNotPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$hasher = new SodiumPasswordHasher();
+		$hasher = new Argon2PasswordHasher();
 		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
 		self::assertFalse($hasher->isValid($raw, $hashed));
 	}
@@ -84,8 +84,8 @@ final class SodiumPasswordHasherTest extends TestCase
 	public function providePreGeneratedNotPasses(): Generator
 	{
 		// Invalid hash
-		yield ['password', '$argon2id$v=19$m=65536,t=4,p=1$JX8zPDMpDk/MYdcwfOHIRw$BUOtILBXRuJqE2QnurzBwnIrU0pCIhU0XN5pPcVTKnM', false];
-		yield ['1234', '$argon2id$v=19$m=65536,t=4,p=1$FAVkaIWcsmaiBc5rPjHkQQ$vFWkqcLV0q1aXneWvrp4w0m35xZrSJyB7yHh5By4FsE', false];
+		yield ['password', '$argon2id$v=19$m=15000,t=16,p=2$JX8zPDMpDk/MYdcwfOHIRw$BUOtILBXRuJqE2QnurzBwnIrU0pCIhU0XN5pPcVTKnM', false];
+		yield ['1234', '$argon2id$v=19$m=15000,t=16,p=2$FAVkaIWcsmaiBc5rPjHkQQ$vFWkqcLV0q1aXneWvrp4w0m35xZrSJyB7yHh5By4FsE', false];
 
 		// Different algorithm
 		yield ['password', '$5y$09$tD9kmDjFoiws/6ioiR.25uwPuC0Cn9MWPKUn9Uugb5IqA.3HpN8Hq', true];
@@ -103,7 +103,7 @@ final class SodiumPasswordHasherTest extends TestCase
 		$exception = null;
 
 		try {
-			new SodiumPasswordHasher();
+			new Argon2PasswordHasher();
 		} catch (ExtensionRequired $exception) {
 			// Handled below
 		}

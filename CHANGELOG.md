@@ -41,6 +41,6 @@ Authorization
 Passwords
 
 - `PasswordHasher` interface
+	- `ArgonPasswordHasher`
 	- `BcryptPasswordHasher`
-	- `SodiumPasswordHasher`
 	- `UpgradingPasswordHasher`
