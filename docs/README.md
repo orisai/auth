@@ -31,6 +31,7 @@ Authentication and authorization
 	- [Root - bypass all checks](#root---bypass-all-checks)
 	- [Check authorization of not current user](#check-authorization-of-not-current-user)
 	- [Decision reason](#decision-reason)
+	- [Access data](#access-authorization-data)
 - [Passwords](#passwords)
 	- [Sodium](#sodium-hasher)
 	- [Bcrypt](#bcrypt-hasher)
@@ -1033,6 +1034,20 @@ if ($reason !== null) {
 		? $translator->translate($reason->getMessage(), $reason->getParameters())
 		: $reason->getMessage();
 }
+```
+
+### Access authorization data
+
+Access authorization data from authorizer
+
+```php
+$data = $authorizer->getData(); // AuthorizationData
+
+$data->getRoles(); // array<int, string>
+$data->getPrivileges(); // array<int, string>
+$data->getRootRoles(); // array<int, string>
+$data->getAllowedPrivilegesForRole('role'); // array<int, string>
+$data->privilegeExists('privilege.name'); // bool
 ```
 
 ## Passwords

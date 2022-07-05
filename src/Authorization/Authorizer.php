@@ -26,4 +26,6 @@ interface Authorizer
 
 	public function isRoot(Identity $identity): bool;
 
+	public function getData(): AuthorizationData;
+
 }

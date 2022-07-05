@@ -234,4 +234,9 @@ final class PrivilegeAuthorizer implements Authorizer
 		return $isAllowed;
 	}
 
+	public function getData(): AuthorizationData
+	{
+		return $this->data;
+	}
+
 }
