@@ -32,9 +32,9 @@ Authentication and authorization
 	- [Check authorization of not current user](#check-authorization-of-not-current-user)
 	- [Decision reason](#decision-reason)
 - [Passwords](#passwords)
-	- [Sodium](#sodium-encoder)
-	- [Bcrypt](#bcrypt-encoder)
-	- [Backward compatibility](#backward-compatibility---upgrading-encoder)
+	- [Sodium](#sodium-hasher)
+	- [Bcrypt](#bcrypt-hasher)
+	- [Backward compatibility](#backward-compatibility---upgrading-hasher)
 
 ## Setup
 
@@ -1037,24 +1037,24 @@ if ($reason !== null) {
 
 ## Passwords
 
-Encode (hash) and verify passwords.
+Hash and verify passwords.
 
 ```php
 use Example\Core\User\User;
 use Example\Front\Auth\FrontFirewall;
 use Orisai\Auth\Authentication\IntIdentity;
-use Orisai\Auth\Passwords\PasswordEncoder;
+use Orisai\Auth\Passwords\PasswordHasher;
 
 final class UserLogin
 {
 
-	private PasswordEncoder $passwordEncoder;
+	private PasswordHasher $passwordHasher;
 
 	private FrontFirewall $frontFirewall;
 
-	public function __construct(PasswordEncoder $passwordEncoder, FrontFirewall $frontFirewall)
+	public function __construct(PasswordHasher $passwordHasher, FrontFirewall $frontFirewall)
 	{
-		$this->passwordEncoder = $passwordEncoder;
+		$this->passwordHasher = $passwordHasher;
 		$this->frontFirewall = $frontFirewall;
 	}
 
@@ -1062,8 +1062,8 @@ final class UserLogin
 	{
 		$user; // Query user from database by $email
 
-		if ($this->passwordEncoder->isValid($password, $user->encodedPassword)) {
-			$this->updateEncodedPassword($user, $password);
+		if ($this->passwordHasher->isValid($password, $user->hashedPassword)) {
+			$this->updateHashedPassword($user, $password);
 
 			// Login user
 			$this->frontFirewall->login(new IntIdentity($user->id, $user->roles));
@@ -1072,40 +1072,40 @@ final class UserLogin
 
 	public function register(string $password): void
 	{
-		$encodedPassword = $this->passwordEncoder->encode($password);
+		$hashedPassword = $this->passwordHasher->hash($password);
 
 		// Register user
 	}
 
-	private function updateEncodedPassword(User $user, string $password): void
+	private function updateHashedPassword(User $user, string $password): void
 	{
-		if (!$this->passwordEncoder->needsReEncode($user->encodedPassword)) {
+		if (!$this->passwordHasher->needsRehash($user->hashedPassword)) {
 			return;
 		}
 
-		$user->encodedPassword = $this->passwordEncoder->encode($password);
+		$user->hashedPassword = $this->passwordHasher->hash($password);
 		// Persist user to database
 	}
 
 }
 ```
 
-Make sure your password storage allows at least 255 characters. Each algorithm produces encoded strings of different
+Make sure your password storage allows at least 255 characters. Each algorithm produces hashed strings of different
 length and even different settings of an algorithm may vary in results.
 
-### Sodium encoder
+### Sodium hasher
 
-Hash passwords with **argon2id** algorithm. This encoder is **recommended**.
+Hash passwords with **argon2id** algorithm. This hasher is **recommended**.
 
 ```php
-use Orisai\Auth\Passwords\SodiumPasswordEncoder;
+use Orisai\Auth\Passwords\SodiumPasswordHasher;
 
-$encoder = new SodiumPasswordEncoder();
+$hasher = new SodiumPasswordHasher();
 ```
 
 Options:
 
-- `SodiumPasswordEncoder(?int $timeCost, ?int $memoryCost)`
+- `SodiumPasswordHasher(?int $timeCost, ?int $memoryCost)`
 	- `$timeCost`
 		- Maximum number of computations to perform
 		- Default: higher one of `4` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
@@ -1114,54 +1114,54 @@ Options:
 		- Defined in bytes
 		- Default: higher one of `~67 MB` and `SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE`
 
-### Bcrypt encoder
+### Bcrypt hasher
 
 Hash passwords with **bcrypt** algorithm. Unless sodium php extension is not available on your setup then always
-prefer [sodium encoder](#sodium-encoder).
+prefer [sodium hasher](#sodium-hasher).
 
 *Note:* bcrypt algorithm trims password before hashing to 72 characters. You should not worry about it because it does
-not have any usage impact, but it may cause issues if you are migrating from a bcrypt-encoder which modified password to
-be 72 characters or fewer before hashing, so please ensure produced hashes are considered valid by password encoder.
+not have any usage impact, but it may cause issues if you are migrating from a bcrypt-hasher which modified password to
+be 72 characters or fewer before hashing, so please ensure produced hashes are considered valid by password hasher.
 
 ```php
-use Orisai\Auth\Passwords\BcryptPasswordEncoder;
+use Orisai\Auth\Passwords\BcryptPasswordHasher;
 
-$encoder = new BcryptPasswordEncoder();
+$hasher = new BcryptPasswordHasher();
 ```
 
 Options:
 
-- `BcryptPasswordEncoder(int $cost)`
+- `BcryptPasswordHasher(int $cost)`
 	- `$cost`
 		- Cost of the algorithm
 		- Must be in range `4-31`
 		- Default: `10`
 
-### Backward compatibility - upgrading encoder
+### Backward compatibility - upgrading hasher
 
-If you are migrating to new algorithm, use `UpgradingPasswordEncoder`. It requires a preferred encoder and optionally
-accepts fallback encoders.
+If you are migrating to new algorithm, use `UpgradingPasswordHasher`. It requires a preferred hasher and optionally
+accepts fallback hashers.
 
 If you migrate from a `password_verify()`-compatible password validation method then you don't need any fallback
-encoders as it is done automatically for you. These passwords should always start with string like `$2a$`, `$2x$`,
+hashers as it is done automatically for you. These passwords should always start with string like `$2a$`, `$2x$`,
 `$argon2id$` etc.
 
-If you need fallback to a *custom encoder*, implement an `Orisai\Auth\Passwords\PasswordEncoder`.
+If you need fallback to a *custom hasher*, implement an `Orisai\Auth\Passwords\PasswordHasher`.
 
 ```php
-use Orisai\Auth\Passwords\SodiumPasswordEncoder;
-use Orisai\Auth\Passwords\UpgradingPasswordEncoder;
+use Orisai\Auth\Passwords\SodiumPasswordHasher;
+use Orisai\Auth\Passwords\UpgradingPasswordHasher;
 
-// With only preferred encoder
-$encoder = new UpgradingPasswordEncoder(
-    new SodiumPasswordEncoder()
+// With only preferred hasher
+$hasher = new UpgradingPasswordHasher(
+    new SodiumPasswordHasher()
 );
 
-// With outdated fallback encoders
-$encoder = new UpgradingPasswordEncoder(
-    new SodiumPasswordEncoder(),
+// With outdated fallback hashers
+$hasher = new UpgradingPasswordHasher(
+    new SodiumPasswordHasher(),
     [
-        new ExamplePasswordEncoder(),
+        new ExamplePasswordHasher(),
     ]
 );
 ```

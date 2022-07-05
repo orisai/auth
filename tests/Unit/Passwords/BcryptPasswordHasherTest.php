@@ -3,42 +3,42 @@
 namespace Tests\Orisai\Auth\Unit\Passwords;
 
 use Generator;
-use Orisai\Auth\Passwords\BcryptPasswordEncoder;
+use Orisai\Auth\Passwords\BcryptPasswordHasher;
 use PHPUnit\Framework\TestCase;
 
-final class BcryptPasswordEncoderTest extends TestCase
+final class BcryptPasswordHasherTest extends TestCase
 {
 
 	public function testPasses(): void
 	{
 		$raw = 'password';
 
-		$encoder = new BcryptPasswordEncoder();
-		$encoded = $encoder->encode($raw);
+		$hasher = new BcryptPasswordHasher();
+		$hashed = $hasher->hash($raw);
 
-		self::assertFalse($encoder->needsReEncode($encoded));
-		self::assertTrue($encoder->isValid($raw, $encoded));
+		self::assertFalse($hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
 
 	public function testParameters(): void
 	{
 		$raw = '1234';
 
-		$encoder = new BcryptPasswordEncoder(4);
-		$encoded = $encoder->encode($raw);
+		$hasher = new BcryptPasswordHasher(4);
+		$hashed = $hasher->hash($raw);
 
-		self::assertFalse($encoder->needsReEncode($encoded));
-		self::assertTrue($encoder->isValid($raw, $encoded));
+		self::assertFalse($hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
 
 	/**
 	 * @dataProvider providePreGeneratedPasses
 	 */
-	public function testPreGeneratedPasses(string $raw, string $encoded, bool $needsReEncode): void
+	public function testPreGeneratedPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$encoder = new BcryptPasswordEncoder();
-		self::assertSame($needsReEncode, $encoder->needsReEncode($encoded));
-		self::assertTrue($encoder->isValid($raw, $encoded));
+		$hasher = new BcryptPasswordHasher();
+		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
 
 	/**
@@ -60,11 +60,11 @@ final class BcryptPasswordEncoderTest extends TestCase
 	/**
 	 * @dataProvider providePreGeneratedNotPasses
 	 */
-	public function testPreGeneratedNotPasses(string $raw, string $encoded, bool $needsReEncode): void
+	public function testPreGeneratedNotPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$encoder = new BcryptPasswordEncoder();
-		self::assertSame($needsReEncode, $encoder->needsReEncode($encoded));
-		self::assertFalse($encoder->isValid($raw, $encoded));
+		$hasher = new BcryptPasswordHasher();
+		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
+		self::assertFalse($hasher->isValid($raw, $hashed));
 	}
 
 	/**
@@ -90,18 +90,18 @@ final class BcryptPasswordEncoderTest extends TestCase
 		$passwordWith72Chars = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 		$passwordWith73Chars = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
-		$encoder = new BcryptPasswordEncoder();
-		$encoded1 = $encoder->encode($passwordWith72Chars);
-		$encoded2 = $encoder->encode($passwordWith73Chars);
+		$hasher = new BcryptPasswordHasher();
+		$hashed1 = $hasher->hash($passwordWith72Chars);
+		$hashed2 = $hasher->hash($passwordWith73Chars);
 
-		self::assertTrue($encoder->isValid($passwordWith72Chars, $encoded1));
-		self::assertTrue($encoder->isValid($passwordWith72Chars, $encoded2));
+		self::assertTrue($hasher->isValid($passwordWith72Chars, $hashed1));
+		self::assertTrue($hasher->isValid($passwordWith72Chars, $hashed2));
 
-		self::assertTrue($encoder->isValid($passwordWith73Chars, $encoded1));
-		self::assertTrue($encoder->isValid($passwordWith73Chars, $encoded2));
+		self::assertTrue($hasher->isValid($passwordWith73Chars, $hashed1));
+		self::assertTrue($hasher->isValid($passwordWith73Chars, $hashed2));
 
-		self::assertFalse($encoder->needsReEncode($encoded1));
-		self::assertFalse($encoder->needsReEncode($encoded2));
+		self::assertFalse($hasher->needsRehash($hashed1));
+		self::assertFalse($hasher->needsRehash($hashed2));
 	}
 
 }

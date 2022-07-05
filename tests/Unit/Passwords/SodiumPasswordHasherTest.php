@@ -3,19 +3,19 @@
 namespace Tests\Orisai\Auth\Unit\Passwords;
 
 use Generator;
-use Orisai\Auth\Passwords\SodiumPasswordEncoder;
+use Orisai\Auth\Passwords\SodiumPasswordHasher;
 use Orisai\Utils\Dependencies\DependenciesTester;
 use Orisai\Utils\Dependencies\Exception\ExtensionRequired;
 use PHPUnit\Framework\TestCase;
 
-final class SodiumPasswordEncoderTest extends TestCase
+final class SodiumPasswordHasherTest extends TestCase
 {
 
 	protected function setUp(): void
 	{
 		parent::setUp();
 
-		if (!SodiumPasswordEncoder::isSupported()) {
+		if (!SodiumPasswordHasher::isSupported()) {
 			self::markTestSkipped('php extension sodium is not installed');
 		}
 	}
@@ -24,32 +24,32 @@ final class SodiumPasswordEncoderTest extends TestCase
 	{
 		$raw = 'password';
 
-		$encoder = new SodiumPasswordEncoder();
-		$encoded = $encoder->encode($raw);
+		$hasher = new SodiumPasswordHasher();
+		$hashed = $hasher->hash($raw);
 
-		self::assertFalse($encoder->needsReEncode($encoded));
-		self::assertTrue($encoder->isValid($raw, $encoded));
+		self::assertFalse($hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
 
 	public function testParameters(): void
 	{
 		$raw = 'password';
 
-		$encoder = new SodiumPasswordEncoder(3, 10 * 1_024);
-		$encoded = $encoder->encode($raw);
+		$hasher = new SodiumPasswordHasher(3, 10 * 1_024);
+		$hashed = $hasher->hash($raw);
 
-		self::assertFalse($encoder->needsReEncode($encoded));
-		self::assertTrue($encoder->isValid($raw, $encoded));
+		self::assertFalse($hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
 
 	/**
 	 * @dataProvider providePreGeneratedPasses
 	 */
-	public function testPreGeneratedPasses(string $raw, string $encoded, bool $needsReEncode): void
+	public function testPreGeneratedPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$encoder = new SodiumPasswordEncoder();
-		self::assertSame($needsReEncode, $encoder->needsReEncode($encoded));
-		self::assertTrue($encoder->isValid($raw, $encoded));
+		$hasher = new SodiumPasswordHasher();
+		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
 
 	/**
@@ -71,11 +71,11 @@ final class SodiumPasswordEncoderTest extends TestCase
 	/**
 	 * @dataProvider providePreGeneratedNotPasses
 	 */
-	public function testPreGeneratedNotPasses(string $raw, string $encoded, bool $needsReEncode): void
+	public function testPreGeneratedNotPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$encoder = new SodiumPasswordEncoder();
-		self::assertSame($needsReEncode, $encoder->needsReEncode($encoded));
-		self::assertFalse($encoder->isValid($raw, $encoded));
+		$hasher = new SodiumPasswordHasher();
+		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
+		self::assertFalse($hasher->isValid($raw, $hashed));
 	}
 
 	/**
@@ -103,7 +103,7 @@ final class SodiumPasswordEncoderTest extends TestCase
 		$exception = null;
 
 		try {
-			new SodiumPasswordEncoder();
+			new SodiumPasswordHasher();
 		} catch (ExtensionRequired $exception) {
 			// Handled below
 		}

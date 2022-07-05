@@ -40,8 +40,7 @@ Authorization
 
 Passwords
 
-- `PasswordEncoder` interface
-	- `BcryptPasswordEncoder`
-	- `SodiumPasswordEncoder`
-	- `UnsafeMD5PasswordEncoder`
-	- `UpgradingPasswordEncoder`
+- `PasswordHasher` interface
+	- `BcryptPasswordHasher`
+	- `SodiumPasswordHasher`
+	- `UpgradingPasswordHasher`

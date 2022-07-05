@@ -12,7 +12,7 @@ use function strpos;
 use const SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE;
 use const SODIUM_CRYPTO_PWHASH_OPSLIMIT_INTERACTIVE;
 
-final class SodiumPasswordEncoder implements PasswordEncoder
+final class SodiumPasswordHasher implements PasswordHasher
 {
 
 	/** @var int<3, max> */
@@ -39,27 +39,27 @@ final class SodiumPasswordEncoder implements PasswordEncoder
 			?? max(64 * 1_024 * 1_024, SODIUM_CRYPTO_PWHASH_MEMLIMIT_INTERACTIVE);
 	}
 
-	public function encode(string $raw): string
+	public function hash(string $raw): string
 	{
 		return sodium_crypto_pwhash_str($raw, $this->timeCost, $this->memoryCost);
 	}
 
-	public function needsReEncode(string $encoded): bool
+	public function needsRehash(string $hashed): bool
 	{
-		if (!$this->isArgonHashed($encoded)) {
+		if (!$this->isArgonHashed($hashed)) {
 			return true;
 		}
 
-		return sodium_crypto_pwhash_str_needs_rehash($encoded, $this->timeCost, $this->memoryCost);
+		return sodium_crypto_pwhash_str_needs_rehash($hashed, $this->timeCost, $this->memoryCost);
 	}
 
-	public function isValid(string $raw, string $encoded): bool
+	public function isValid(string $raw, string $hashed): bool
 	{
-		if (!$this->isArgonHashed($encoded)) {
+		if (!$this->isArgonHashed($hashed)) {
 			return false;
 		}
 
-		return sodium_crypto_pwhash_str_verify($encoded, $raw);
+		return sodium_crypto_pwhash_str_verify($hashed, $raw);
 	}
 
 	public static function isSupported(): bool
@@ -67,9 +67,9 @@ final class SodiumPasswordEncoder implements PasswordEncoder
 		return Dependencies::isExtensionLoaded('sodium');
 	}
 
-	private function isArgonHashed(string $encoded): bool
+	private function isArgonHashed(string $hashed): bool
 	{
-		return strpos($encoded, '$argon') === 0;
+		return strpos($hashed, '$argon') === 0;
 	}
 
 }
