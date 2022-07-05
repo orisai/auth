@@ -994,6 +994,18 @@ and use authorizer instead of firewall:
 $authorizer->isAllowed($identity, 'privilege.name');
 ```
 
+We may also access authorizer used in firewall. This is useful for verifying user permissions before logging in:
+
+```php
+$firewall = $this->getFirewall();
+if (!$firewall->getAuthorizer()->isAllowed($identity, 'administration.entry')) {
+	// Not an admin
+	return;
+}
+
+$firewall->login($identity);
+```
+
 ### Decision reason
 
 Reason why user has or does not have permission can be described by a policy:
