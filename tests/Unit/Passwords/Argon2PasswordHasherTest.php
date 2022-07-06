@@ -35,9 +35,17 @@ final class Argon2PasswordHasherTest extends TestCase
 	{
 		$raw = 'password';
 
-		$hasher = new Argon2PasswordHasher(3, 10 * 1_024);
+		$hasher = new Argon2PasswordHasher(2, 8, 1);
 		$hashed = $hasher->hash($raw);
 
+		self::assertStringStartsWith('$argon2id$v=19$m=8,t=2,p=1$', $hashed);
+		self::assertFalse($hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
+
+		$hasher = new Argon2PasswordHasher();
+		$hashed = $hasher->hash($raw);
+
+		self::assertStringStartsWith('$argon2id$v=19$m=15000,t=16,p=2$', $hashed);
 		self::assertFalse($hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}

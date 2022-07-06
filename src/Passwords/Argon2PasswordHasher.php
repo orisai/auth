@@ -19,6 +19,11 @@ final class Argon2PasswordHasher implements PasswordHasher
 
 	private int $threads;
 
+	/**
+	 * @param int<1, max>|null $timeCost
+	 * @param int<8, max>|null $memoryCost
+	 * @param int<1, max>|null $threads
+	 */
 	public function __construct(?int $timeCost = null, ?int $memoryCost = null, ?int $threads = null)
 	{
 		if (!self::isSupported()) {

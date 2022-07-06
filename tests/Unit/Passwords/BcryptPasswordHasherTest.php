@@ -26,7 +26,13 @@ final class BcryptPasswordHasherTest extends TestCase
 
 		$hasher = new BcryptPasswordHasher(4);
 		$hashed = $hasher->hash($raw);
+		self::assertStringStartsWith('$2y$04$', $hashed);
+		self::assertFalse($hasher->needsRehash($hashed));
+		self::assertTrue($hasher->isValid($raw, $hashed));
 
+		$hasher = new BcryptPasswordHasher();
+		$hashed = $hasher->hash($raw);
+		self::assertStringStartsWith('$2y$10$', $hashed);
 		self::assertFalse($hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
