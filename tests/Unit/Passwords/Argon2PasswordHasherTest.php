@@ -45,7 +45,7 @@ final class Argon2PasswordHasherTest extends TestCase
 		$hasher = new Argon2PasswordHasher();
 		$hashed = $hasher->hash($raw);
 
-		self::assertStringStartsWith('$argon2id$v=19$m=15000,t=16,p=2$', $hashed);
+		self::assertStringStartsWith('$argon2id$v=19$m=65536,t=16,p=4$', $hashed);
 		self::assertFalse($hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
@@ -55,7 +55,7 @@ final class Argon2PasswordHasherTest extends TestCase
 	 */
 	public function testPreGeneratedPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$hasher = new Argon2PasswordHasher();
+		$hasher = new Argon2PasswordHasher(16, 15_000, 2);
 		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
@@ -81,7 +81,7 @@ final class Argon2PasswordHasherTest extends TestCase
 	 */
 	public function testPreGeneratedNotPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$hasher = new Argon2PasswordHasher();
+		$hasher = new Argon2PasswordHasher(16, 15_000, 2);
 		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
 		self::assertFalse($hasher->isValid($raw, $hashed));
 	}

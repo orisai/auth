@@ -33,9 +33,9 @@ final class Argon2PasswordHasher implements PasswordHasher
 		/** @infection-ignore-all */
 		$this->timeCost = $timeCost ?? 16;
 		/** @infection-ignore-all */
-		$this->memoryCost = $memoryCost ?? 15_000;
+		$this->memoryCost = $memoryCost ?? 65_536;
 		/** @infection-ignore-all */
-		$this->threads = $threads ?? 2;
+		$this->threads = $threads ?? 4;
 	}
 
 	public function hash(string $raw): string

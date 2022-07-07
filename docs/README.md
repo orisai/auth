@@ -1143,16 +1143,16 @@ Options:
     - `$timeCost`
         - Maximum amount of time it may take to compute the hash
         - Increase to make computing of hash harder (more secure, but longer and more CPU intensive)
-        - Default: `32`
+        - Default: `16`
     - `$memoryCost`
         - Maximum memory that may be used to compute the hash
         - Increase to make hash computing consume more memory (be aware using more memory increases computation time)
         - Defined in KiB (kibibytes)
-        - Default: `15_000`
+        - Default: `65_535`
     - `$threads`
       - Number of threads to use for computing the hash
       - Increase to make computing of hash faster without making it less secure
-      - default: `2`
+      - default: `4`
 
 ### Bcrypt hasher
 
@@ -1178,7 +1178,7 @@ Options:
 	- `$cost`
 		- Cost of the algorithm
 		- Must be in range `4-31`
-		- Default: `10`
+		- Default: `13`
 
 ### Backward compatibility - upgrading when user logs in
 

@@ -13,7 +13,7 @@ final class BcryptPasswordHasherTest extends TestCase
 	{
 		$raw = 'password';
 
-		$hasher = new BcryptPasswordHasher();
+		$hasher = new BcryptPasswordHasher(13);
 		$hashed = $hasher->hash($raw);
 
 		self::assertFalse($hasher->needsRehash($hashed));
@@ -32,7 +32,7 @@ final class BcryptPasswordHasherTest extends TestCase
 
 		$hasher = new BcryptPasswordHasher();
 		$hashed = $hasher->hash($raw);
-		self::assertStringStartsWith('$2y$10$', $hashed);
+		self::assertStringStartsWith('$2y$13$', $hashed);
 		self::assertFalse($hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
@@ -42,7 +42,7 @@ final class BcryptPasswordHasherTest extends TestCase
 	 */
 	public function testPreGeneratedPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$hasher = new BcryptPasswordHasher();
+		$hasher = new BcryptPasswordHasher(10);
 		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
 		self::assertTrue($hasher->isValid($raw, $hashed));
 	}
@@ -68,7 +68,7 @@ final class BcryptPasswordHasherTest extends TestCase
 	 */
 	public function testPreGeneratedNotPasses(string $raw, string $hashed, bool $needsRehash): void
 	{
-		$hasher = new BcryptPasswordHasher();
+		$hasher = new BcryptPasswordHasher(10);
 		self::assertSame($needsRehash, $hasher->needsRehash($hashed));
 		self::assertFalse($hasher->isValid($raw, $hashed));
 	}
@@ -96,7 +96,7 @@ final class BcryptPasswordHasherTest extends TestCase
 		$passwordWith72Chars = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 		$passwordWith73Chars = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
-		$hasher = new BcryptPasswordHasher();
+		$hasher = new BcryptPasswordHasher(10);
 		$hashed1 = $hasher->hash($passwordWith72Chars);
 		$hashed2 = $hasher->hash($passwordWith73Chars);
 

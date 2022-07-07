@@ -7,7 +7,6 @@ use function password_needs_rehash;
 use function password_verify;
 use function strpos;
 use const PASSWORD_BCRYPT;
-use const PASSWORD_BCRYPT_DEFAULT_COST;
 
 final class BcryptPasswordHasher implements PasswordHasher
 {
@@ -18,7 +17,7 @@ final class BcryptPasswordHasher implements PasswordHasher
 	/**
 	 * @param int<4, 31> $cost
 	 */
-	public function __construct(int $cost = PASSWORD_BCRYPT_DEFAULT_COST)
+	public function __construct(int $cost = 13)
 	{
 		$this->cost = $cost;
 	}
