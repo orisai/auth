@@ -474,11 +474,21 @@ Step 3 (optional):
 - Abstract data creation with an object
 
 ```php
+use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimplePolicyManager;
+
+$dataCreator = new AuthorizationDataCreatorImpl();
+$policyManager = new SimplePolicyManager();
+$authorizer = new PrivilegeAuthorizer($policyManager, $dataCreator);
+```
+
+```php
 use Orisai\Auth\Authorization\AuthorizationData;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\AuthorizationDataCreator;
 use Orisai\Auth\Authorization\Authorizer;
 
-final class AuthorizationDataCreator
+final class AuthorizationDataCreatorImpl implements AuthorizationDataCreator
 {
 
 	public function create(): AuthorizationData

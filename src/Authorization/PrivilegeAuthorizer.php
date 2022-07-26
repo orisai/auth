@@ -17,12 +17,19 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private PolicyManager $policyManager;
 
-	private AuthorizationData $data;
+	private AuthorizationDataCreator $dataCreator;
 
-	public function __construct(PolicyManager $policyManager, AuthorizationData $data)
+	private ?AuthorizationData $data = null;
+
+	/**
+	 * @param AuthorizationData|AuthorizationDataCreator $data
+	 */
+	public function __construct(PolicyManager $policyManager, $data)
 	{
 		$this->policyManager = $policyManager;
-		$this->data = $data;
+		$data instanceof AuthorizationData
+			? $this->data = $data
+			: $this->dataCreator = $data;
 	}
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool
@@ -32,7 +39,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
 	{
-		$privileges = $this->data->getRawPrivileges();
+		$privileges = $this->getData()->getRawPrivileges();
 
 		$privilegeParts = PrivilegeProcessor::parsePrivilege($privilege);
 		$requiredPrivileges = Arrays::getKey($privileges, $privilegeParts);
@@ -58,7 +65,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			}
 		}
 
-		$roleAllowedPrivileges = $this->data->getRawRoleAllowedPrivileges();
+		$roleAllowedPrivileges = $this->getData()->getRawRoleAllowedPrivileges();
 		foreach ($identity->getRoles() as $role) {
 			if (!array_key_exists($role, $roleAllowedPrivileges)) {
 				continue;
@@ -132,7 +139,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			return true;
 		}
 
-		$rootRoles = $this->data->getRawRootRoles();
+		$rootRoles = $this->getData()->getRawRootRoles();
 		foreach ($identity->getRoles() as $role) {
 			if (array_key_exists($role, $rootRoles)) {
 				return true;
@@ -179,7 +186,7 @@ final class PrivilegeAuthorizer implements Authorizer
 	): bool
 	{
 		$privilege = $policy::getPrivilege();
-		if (!$this->data->privilegeExists($privilege)) {
+		if (!$this->getData()->privilegeExists($privilege)) {
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
 		}
 
@@ -236,7 +243,8 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	public function getData(): AuthorizationData
 	{
-		return $this->data;
+		return $this->data
+			?? ($this->data = $this->dataCreator->create());
 	}
 
 }

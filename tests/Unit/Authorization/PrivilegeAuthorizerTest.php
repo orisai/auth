@@ -9,6 +9,7 @@ use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
@@ -38,6 +39,15 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$authorizer = new PrivilegeAuthorizer($this->policies(), $data);
 
 		self::assertSame($data, $authorizer->getData());
+	}
+
+	public function testDataCreator(): void
+	{
+		$builder = new AuthorizationDataBuilder();
+		$creator = new SimpleAuthorizationDataCreator($builder);
+		$authorizer = new PrivilegeAuthorizer($this->policies(), $creator);
+
+		self::assertEquals($creator->create(), $authorizer->getData());
 	}
 
 	public function testNothingSet(): void
