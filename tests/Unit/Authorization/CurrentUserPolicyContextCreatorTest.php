@@ -7,6 +7,7 @@ use Orisai\Auth\Authentication\SimpleFirewall;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\CurrentUserPolicyContextCreator;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRefresher;
@@ -18,7 +19,7 @@ final class CurrentUserPolicyContextCreatorTest extends TestCase
 	{
 		$authorizer = new PrivilegeAuthorizer(
 			new SimplePolicyManager(),
-			(new AuthorizationDataBuilder())->build(),
+			new SimpleAuthorizationDataCreator(new AuthorizationDataBuilder()),
 		);
 		$firewall = new SimpleFirewall(
 			'a',

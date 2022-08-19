@@ -21,15 +21,10 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	private ?AuthorizationData $data = null;
 
-	/**
-	 * @param AuthorizationData|AuthorizationDataCreator $data
-	 */
-	public function __construct(PolicyManager $policyManager, $data)
+	public function __construct(PolicyManager $policyManager, AuthorizationDataCreator $dataCreator)
 	{
 		$this->policyManager = $policyManager;
-		$data instanceof AuthorizationData
-			? $this->data = $data
-			: $this->dataCreator = $data;
+		$this->dataCreator = $dataCreator;
 	}
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool

@@ -421,13 +421,15 @@ As a first step, create an authorizer, a policy manager and empty authorization 
 ```php
 use Orisai\Auth\Authorization\AuthorizationData;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\AuthorizationDataCreator;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 
 $dataBuilder = new AuthorizationDataBuilder();
-$data = $dataBuilder->build();
+$dataCreator = new SimpleAuthorizationDataCreator($dataBuilder);
 $policyManager = new SimplePolicyManager();
-$authorizer = new PrivilegeAuthorizer($policyManager, $data);
+$authorizer = new PrivilegeAuthorizer($policyManager, $dataCreator);
 ```
 
 Step 2 (optional):
@@ -565,8 +567,9 @@ use Example\Core\Role\RoleRepository;
 use ExampleLib\Caching\Cache;
 use Orisai\Auth\Authorization\AuthorizationData;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
+use Orisai\Auth\Authorization\AuthorizationDataCreator;
 
-final class AuthorizationDataCreator
+final class AuthorizationDataCreator implements AuthorizationDataCreator
 {
 
 	private const CacheKey = 'Example.Core.Auth.Data';

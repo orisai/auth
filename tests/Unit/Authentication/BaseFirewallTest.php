@@ -13,6 +13,7 @@ use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
+use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Clock\FrozenClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
@@ -50,7 +51,7 @@ final class BaseFirewallTest extends TestCase
 
 		return new PrivilegeAuthorizer(
 			$policyManager ?? $this->policies(),
-			$builder->build(),
+			new SimpleAuthorizationDataCreator($builder),
 		);
 	}
 
