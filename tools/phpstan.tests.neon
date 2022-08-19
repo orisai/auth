@@ -18,3 +18,6 @@ parameters:
 		- message: '#^Call to static method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with (1|2|3) and (0|1|\*NEVER\*) will always evaluate to (true|false)\.$#'
 		  path: ../tests/Unit/Authentication/BaseFirewallTest.php
 		  count: 4
+
+		# Who cares
+		- '#^(.+)DateTimeImmutable\|false(.+)$#'

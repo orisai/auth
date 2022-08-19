@@ -2,7 +2,7 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Data\Logins;
@@ -24,7 +24,10 @@ final class LoginsTest extends TestCase
 		self::assertNull($logins->getCurrentLogin());
 		self::assertSame([], $logins->getExpiredLogins());
 
-		$currentLogin = new CurrentLogin(new StringIdentity('test', []), Instant::of(1));
+		$currentLogin = new CurrentLogin(
+			new StringIdentity('test', []),
+			DateTimeImmutable::createFromFormat('U', '1'),
+		);
 		$logins->setCurrentLogin($currentLogin);
 		self::assertSame($currentLogin, $logins->getCurrentLogin());
 
@@ -117,7 +120,7 @@ final class LoginsTest extends TestCase
 	private function expiredLogin(Identity $identity): ExpiredLogin
 	{
 		return new ExpiredLogin(
-			new CurrentLogin($identity, Instant::of(1)),
+			new CurrentLogin($identity, DateTimeImmutable::createFromFormat('U', '1')),
 			LogoutCode::manual(),
 		);
 	}

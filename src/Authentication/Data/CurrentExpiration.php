@@ -2,12 +2,12 @@
 
 namespace Orisai\Auth\Authentication\Data;
 
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 
 final class CurrentExpiration extends Expiration
 {
 
-	public function setTime(Instant $time): void
+	public function setTime(DateTimeImmutable $time): void
 	{
 		$this->time = $time;
 	}

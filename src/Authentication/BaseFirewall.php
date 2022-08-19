@@ -2,11 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
-use Brick\DateTime\Clock;
-use Brick\DateTime\Clock\SystemClock;
-use Brick\DateTime\Duration;
-use Brick\DateTime\Instant;
 use Closure;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
@@ -15,6 +12,8 @@ use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\CurrentUserPolicyContextCreator;
+use Orisai\Clock\Clock;
+use Orisai\Clock\SystemClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
 
@@ -76,7 +75,7 @@ abstract class BaseFirewall implements Firewall
 		$logins = $this->getLogins();
 
 		$this->unauthenticate($logins, LogoutCode::manual(), null);
-		$logins->setCurrentLogin(new CurrentLogin($identity, $this->clock->getTime()));
+		$logins->setCurrentLogin(new CurrentLogin($identity, $this->clock->now()));
 
 		foreach ($this->onLogin as $cb) {
 			$cb();
@@ -160,7 +159,7 @@ abstract class BaseFirewall implements Firewall
 		return $login === null ? null : $login->getIdentity();
 	}
 
-	public function getAuthenticationTime(): Instant
+	public function getAuthenticationTime(): DateTimeImmutable
 	{
 		$login = $this->fetchCurrentLogin();
 
@@ -171,7 +170,7 @@ abstract class BaseFirewall implements Firewall
 		return $login->getAuthenticationTime();
 	}
 
-	public function getExpirationTime(): ?Instant
+	public function getExpirationTime(): ?DateTimeImmutable
 	{
 		$login = $this->fetchCurrentLogin();
 
@@ -222,7 +221,7 @@ abstract class BaseFirewall implements Firewall
 	/**
 	 * @throws NotLoggedIn
 	 */
-	public function setExpirationTime(Instant $time): void
+	public function setExpirationTime(DateTimeImmutable $time): void
 	{
 		$login = $this->getLogins()->getCurrentLogin();
 
@@ -230,8 +229,8 @@ abstract class BaseFirewall implements Firewall
 			throw NotLoggedIn::create(static::class, __FUNCTION__);
 		}
 
-		$delta = $time->getEpochSecond() - $this->clock->getTime()->getEpochSecond();
-		$login->setExpiration(new CurrentExpiration($time, Duration::ofSeconds($delta)));
+		$delta = $time->getTimestamp() - $this->clock->now()->getTimestamp();
+		$login->setExpiration(new CurrentExpiration($time, $delta));
 
 		if ($delta <= 0) {
 			$message = Message::create()
@@ -269,12 +268,12 @@ abstract class BaseFirewall implements Firewall
 			return;
 		}
 
-		$now = $this->clock->getTime();
+		$now = $this->clock->now();
 
-		if ($expiration->getTime()->isBefore($now)) {
+		if ($expiration->getTime() < $now) {
 			$this->unauthenticate($logins, LogoutCode::inactivity(), null);
 		} else {
-			$expiration->setTime($now->plusSeconds($expiration->getDelta()->toSeconds()));
+			$expiration->setTime($now->modify("+{$expiration->getDelta()} seconds"));
 		}
 	}
 

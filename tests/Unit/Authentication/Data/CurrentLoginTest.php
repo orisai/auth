@@ -2,8 +2,7 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 
-use Brick\DateTime\Duration;
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\IntIdentity;
@@ -19,14 +18,17 @@ final class CurrentLoginTest extends TestCase
 	public function test(): void
 	{
 		$identity = new IntIdentity(1, []);
-		$authTime = Instant::of(2);
+		$authTime = DateTimeImmutable::createFromFormat('U', '2');
 		$login = new CurrentLogin($identity, $authTime);
 
 		self::assertSame($identity, $login->getIdentity());
 		self::assertSame($authTime, $login->getAuthenticationTime());
 		self::assertNull($login->getExpiration());
 
-		$expiration = new CurrentExpiration(Instant::of(123), Duration::ofSeconds(456));
+		$expiration = new CurrentExpiration(
+			DateTimeImmutable::createFromFormat('U', '123'),
+			456,
+		);
 		$login->setExpiration($expiration);
 		self::assertSame($expiration, $login->getExpiration());
 
@@ -44,7 +46,7 @@ final class CurrentLoginTest extends TestCase
 		$login = unserialize($serialized);
 
 		self::assertInstanceOf(CurrentLogin::class, $login);
-		self::assertSame(2, $login->getAuthenticationTime()->getEpochSecond());
+		self::assertSame(2, $login->getAuthenticationTime()->getTimestamp());
 		self::assertInstanceOf(IntIdentity::class, $login->getIdentity());
 		self::assertNull($login->getExpiration());
 	}
@@ -57,7 +59,7 @@ final class CurrentLoginTest extends TestCase
 
 		self::assertInstanceOf(CurrentLogin::class, $login);
 		self::assertInstanceOf(IntIdentity::class, $login->getIdentity());
-		self::assertSame(2, $login->getAuthenticationTime()->getEpochSecond());
+		self::assertSame(2, $login->getAuthenticationTime()->getTimestamp());
 		self::assertInstanceOf(CurrentExpiration::class, $login->getExpiration());
 	}
 

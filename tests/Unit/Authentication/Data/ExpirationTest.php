@@ -2,8 +2,7 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 
-use Brick\DateTime\Duration;
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\Expiration;
 use PHPUnit\Framework\TestCase;
 use function serialize;
@@ -14,8 +13,8 @@ final class ExpirationTest extends TestCase
 
 	public function test(): void
 	{
-		$time = Instant::of(123);
-		$delta = Duration::ofSeconds(456);
+		$time = DateTimeImmutable::createFromFormat('U', '123');
+		$delta = 456;
 		$expiration = new Expiration($time, $delta);
 		self::assertSame($time, $expiration->getTime());
 		self::assertSame($delta, $expiration->getDelta());
@@ -28,8 +27,8 @@ final class ExpirationTest extends TestCase
 		$expiration = unserialize($serialized);
 
 		self::assertInstanceOf(Expiration::class, $expiration);
-		self::assertSame(123, $expiration->getTime()->getEpochSecond());
-		self::assertSame(456, $expiration->getDelta()->getSeconds());
+		self::assertSame(123, $expiration->getTime()->getTimestamp());
+		self::assertSame(456, $expiration->getDelta());
 	}
 
 }

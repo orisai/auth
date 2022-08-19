@@ -2,13 +2,13 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Brick\DateTime\Clock;
 use Orisai\Auth\Authentication\BaseFirewall;
 use Orisai\Auth\Authentication\Data\Logins;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Clock\Clock;
 
 /**
  * @phpstan-extends BaseFirewall<Identity>

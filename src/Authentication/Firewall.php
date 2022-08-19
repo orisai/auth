@@ -2,8 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
-use Brick\DateTime\Instant;
 use Closure;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
@@ -59,17 +59,17 @@ interface Firewall
 	/**
 	 * @throws NotLoggedIn
 	 */
-	public function getAuthenticationTime(): Instant;
+	public function getAuthenticationTime(): DateTimeImmutable;
 
 	/**
 	 * @throws NotLoggedIn
 	 */
-	public function getExpirationTime(): ?Instant;
+	public function getExpirationTime(): ?DateTimeImmutable;
 
 	/**
 	 * @throws NotLoggedIn
 	 */
-	public function setExpirationTime(Instant $time): void;
+	public function setExpirationTime(DateTimeImmutable $time): void;
 
 	public function removeExpirationTime(): void;
 

@@ -30,3 +30,6 @@ parameters:
 		  paths:
 		  	- ../src/Authorization/PolicyManager.php
 		  	- ../src/Authorization/SimplePolicyManager.php
+
+		# Who cares
+		- '#^(.+)DateTimeImmutable\|false(.+)$#'

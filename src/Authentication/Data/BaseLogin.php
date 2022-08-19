@@ -3,7 +3,7 @@
 namespace Orisai\Auth\Authentication\Data;
 
 use __PHP_Incomplete_Class;
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Identity;
 
 abstract class BaseLogin
@@ -11,11 +11,11 @@ abstract class BaseLogin
 
 	protected Identity $identity;
 
-	private Instant $authenticationTime;
+	private DateTimeImmutable $authenticationTime;
 
 	private bool $hasInvalidIdentity = false;
 
-	public function __construct(Identity $identity, Instant $authenticationTime)
+	public function __construct(Identity $identity, DateTimeImmutable $authenticationTime)
 	{
 		$this->identity = $identity;
 		$this->authenticationTime = $authenticationTime;
@@ -26,7 +26,7 @@ abstract class BaseLogin
 		return $this->identity;
 	}
 
-	public function getAuthenticationTime(): Instant
+	public function getAuthenticationTime(): DateTimeImmutable
 	{
 		return $this->authenticationTime;
 	}
@@ -46,7 +46,7 @@ abstract class BaseLogin
 	{
 		return [
 			'identity' => $this->identity,
-			'authenticationTime' => $this->authenticationTime->getEpochSecond(),
+			'authenticationTime' => $this->authenticationTime->getTimestamp(),
 		];
 	}
 
@@ -61,7 +61,7 @@ abstract class BaseLogin
 			$this->identity = $data['identity'];
 		}
 
-		$this->authenticationTime = Instant::of($data['authenticationTime']);
+		$this->authenticationTime = DateTimeImmutable::createFromFormat('U', (string) $data['authenticationTime']);
 	}
 
 }

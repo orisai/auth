@@ -2,8 +2,8 @@
 
 namespace Orisai\Auth\Authentication;
 
-use Brick\DateTime\Clock;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Clock\Clock;
 
 /**
  * @phpstan-extends BaseFirewall<Identity>

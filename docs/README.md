@@ -131,9 +131,9 @@ $firewall->isLoggedIn() // true
 if ($firewall->isLoggedIn()) {
 	$firewall->getIdentity(); // Identity
 
-	$firewall->getAuthenticationTime(); // Instant
-	$firewall->getExpirationTime(); // Instant
-	$firewall->setExpirationTime($instant); // void
+	$firewall->getAuthenticationTime(); // DateTimeImmutable
+	$firewall->getExpirationTime(); // DateTimeImmutable
+	$firewall->setExpirationTime($datetime); // void
 
 	$firewall->refreshIdentity($newIdentity); // void
 }
@@ -153,13 +153,13 @@ Set login to expire after certain amount of time. Expiration is sliding, each re
 expiration is extended.
 
 ```php
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 
-$firewall->setExpiration(Instant::now()->plusDays(7));
+$firewall->setExpiration(new DateTimeImmutable('7 days'));
 $firewall->removeExpiration();
 ```
 
-Firewall uses a `Brick\DateTime\Clock` instance for getting time, you may set custom instance through constructor for
+Firewall uses a `Orisai\Clock\Clock` instance for getting time, you may set custom instance through constructor for
 testing expiration with fixed time.
 
 ### Identity refreshing
@@ -248,7 +248,7 @@ if (!$firewall->isLoggedIn()) {
 
 	$firewall->getAuthenticationTime(); // exception
 	$firewall->getExpirationTime(); // exception
-	$firewall->setExpirationTime($instant); // exception
+	$firewall->setExpirationTime($datetime); // exception
 
 	$firewall->refreshIdentity($newIdentity); // exception
 }
@@ -267,13 +267,13 @@ $firewall->addLogoutCallback(function() use($firewall): void {
 Get user entity directly from firewall
 
 ```php
-use Brick\DateTime\Clock;
 use Example\Core\User\UserRepository;
 use Orisai\Auth\Authentication\BaseFirewall;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Clock\Clock;
 
 final class UserAwareFirewall extends BaseFirewall
 {
@@ -317,9 +317,9 @@ $expiredLogin = $firewall->getLastExpiredLogin();
 if ($expiredLogin !== null) {
 	$identity = $expiredLogin->getIdentity(); // Identity
 
-	$authenticationTime = $expiredLogin->getAuthenticationTime(); // Instant
+	$authenticationTime = $expiredLogin->getAuthenticationTime(); // DateTimeImmutable
 	$expiration = $expiredLogin->getExpiration();
-	$expirationTime = $expiration !== null ? $expiration->getTime() : null; // Instant|null
+	$expirationTime = $expiration !== null ? $expiration->getTime() : null; // DateTimeImmutable|null
 
 	$logoutCode = $expiredLogin->getLogoutCode(); // LogoutCode
 	$logoutReason = $expiredLogin->getLogoutReason(); // DecisionReason|null

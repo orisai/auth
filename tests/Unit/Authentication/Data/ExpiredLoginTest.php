@@ -2,8 +2,7 @@
 
 namespace Tests\Orisai\Auth\Unit\Authentication\Data;
 
-use Brick\DateTime\Duration;
-use Brick\DateTime\Instant;
+use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\CurrentExpiration;
 use Orisai\Auth\Authentication\Data\CurrentLogin;
 use Orisai\Auth\Authentication\Data\Expiration;
@@ -22,7 +21,7 @@ final class ExpiredLoginTest extends TestCase
 	public function testBase(): void
 	{
 		$identity = new IntIdentity(1, []);
-		$authTime = Instant::of(2);
+		$authTime = DateTimeImmutable::createFromFormat('U', '2');
 		$currentLogin = new CurrentLogin($identity, $authTime);
 		$login = new ExpiredLogin($currentLogin, LogoutCode::manual());
 
@@ -43,9 +42,9 @@ final class ExpiredLoginTest extends TestCase
 	public function testExpiration(): void
 	{
 		$identity = new IntIdentity(1, []);
-		$currentLogin = new CurrentLogin($identity, Instant::of(2));
-		$time = Instant::of(123);
-		$delta = Duration::ofSeconds(456);
+		$currentLogin = new CurrentLogin($identity, DateTimeImmutable::createFromFormat('U', '2'));
+		$time = DateTimeImmutable::createFromFormat('U', '123');
+		$delta = 456;
 		$currentLogin->setExpiration(new CurrentExpiration($time, $delta));
 		$login = new ExpiredLogin($currentLogin, LogoutCode::manual());
 
@@ -75,7 +74,7 @@ final class ExpiredLoginTest extends TestCase
 		$login = unserialize($serialized);
 
 		self::assertInstanceOf(ExpiredLogin::class, $login);
-		self::assertSame(2, $login->getAuthenticationTime()->getEpochSecond());
+		self::assertSame(2, $login->getAuthenticationTime()->getTimestamp());
 		self::assertInstanceOf(IntIdentity::class, $login->getIdentity());
 		self::assertNull($login->getExpiration());
 		self::assertEquals(LogoutCode::manual(), $login->getLogoutCode());
@@ -88,8 +87,8 @@ final class ExpiredLoginTest extends TestCase
 		self::assertInstanceOf(ExpiredLogin::class, $login);
 		$expiration = $login->getExpiration();
 		self::assertInstanceOf(Expiration::class, $expiration);
-		self::assertSame(123, $expiration->getTime()->getEpochSecond());
-		self::assertSame(456, $expiration->getDelta()->getSeconds());
+		self::assertSame(123, $expiration->getTime()->getTimestamp());
+		self::assertSame(456, $expiration->getDelta());
 		$description = $login->getLogoutReason();
 		self::assertSame('reason', $description->getMessage());
 		self::assertFalse($description->isTranslatable());
