@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/orisai/auth/compare/1.0.0...HEAD)
 
+### Changed
+
+- `LogoutCode`
+  - cases reuse existing object instance (matches native enum behavior)
+
 ## [1.0.0](https://github.com/orisai/auth/releases/tag/1.0.0) - 2022-08-19
 
 ### Added

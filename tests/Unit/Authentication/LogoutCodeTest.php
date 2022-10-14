@@ -18,7 +18,7 @@ final class LogoutCodeTest extends TestCase
 		self::assertSame(3, LogoutCode::invalidIdentity()->value);
 		self::assertSame('invalidIdentity', LogoutCode::invalidIdentity()->name);
 
-		self::assertEquals(
+		self::assertSame(
 			[
 				LogoutCode::manual(),
 				LogoutCode::inactivity(),
@@ -27,8 +27,8 @@ final class LogoutCodeTest extends TestCase
 			LogoutCode::cases(),
 		);
 
-		self::assertEquals(LogoutCode::manual(), LogoutCode::from(1));
-		self::assertEquals(LogoutCode::manual(), LogoutCode::tryFrom(1));
+		self::assertSame(LogoutCode::manual(), LogoutCode::from(1));
+		self::assertSame(LogoutCode::manual(), LogoutCode::tryFrom(1));
 
 		self::assertNull(LogoutCode::tryFrom(4));
 		$this->expectException(ValueError::class);
