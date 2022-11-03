@@ -15,6 +15,7 @@ interface Authorizer
 
 	/**
 	 * @phpstan-param literal-string $privilege
+	 * @param-out DecisionReason|null $reason
 	 */
 	public function isAllowed(
 		?Identity $identity,

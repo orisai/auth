@@ -51,6 +51,7 @@ interface Firewall
 
 	/**
 	 * @phpstan-param literal-string $privilege
+	 * @param-out DecisionReason|null $reason
 	 */
 	public function isAllowed(string $privilege, ?object $requirements = null, ?DecisionReason &$reason = null): bool;
 
