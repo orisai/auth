@@ -12,9 +12,9 @@ final class LogoutCode
 		InvalidIdentity = 3;
 
 	private const ValuesAndNames = [
-		self::Manual => 'manual',
-		self::Inactivity => 'inactivity',
-		self::InvalidIdentity => 'invalidIdentity',
+		self::Manual => 'Manual',
+		self::Inactivity => 'Inactivity',
+		self::InvalidIdentity => 'InvalidIdentity',
 	];
 
 	/** @readonly */

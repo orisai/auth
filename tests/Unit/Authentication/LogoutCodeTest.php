@@ -12,11 +12,11 @@ final class LogoutCodeTest extends TestCase
 	public function test(): void
 	{
 		self::assertSame(1, LogoutCode::manual()->value);
-		self::assertSame('manual', LogoutCode::manual()->name);
+		self::assertSame('Manual', LogoutCode::manual()->name);
 		self::assertSame(2, LogoutCode::inactivity()->value);
-		self::assertSame('inactivity', LogoutCode::inactivity()->name);
+		self::assertSame('Inactivity', LogoutCode::inactivity()->name);
 		self::assertSame(3, LogoutCode::invalidIdentity()->value);
-		self::assertSame('invalidIdentity', LogoutCode::invalidIdentity()->name);
+		self::assertSame('InvalidIdentity', LogoutCode::invalidIdentity()->name);
 
 		self::assertSame(
 			[

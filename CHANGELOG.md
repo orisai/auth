@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/orisai/auth/compare/1.0.1...HEAD)
 
+### Changed
+
+- `LogoutCode`
+	- cases names are PascalCase (matches future enum behavior)
+
 ## [1.0.1](https://github.com/orisai/auth/compare/1.0.0...1.0.1) - 2022-10-14
 
 ### Changed
