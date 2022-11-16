@@ -39,6 +39,8 @@
 
 ##
 
+> This package is inspired by [nette/security](https://github.com/nette/security) from [David Grudl](https://github.com/dg). Thank you, David!
+
 ```php
 namespace App\Admin\Article\View;
 
