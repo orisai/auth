@@ -3,7 +3,7 @@
 namespace Orisai\Auth\Authentication;
 
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Clock\Clock;
+use Psr\Clock\ClockInterface;
 
 /**
  * @phpstan-extends BaseFirewall<Identity>
@@ -18,7 +18,7 @@ final class SimpleFirewall extends BaseFirewall
 		LoginStorage $storage,
 		IdentityRefresher $refresher,
 		Authorizer $authorizer,
-		?Clock $clock = null
+		?ClockInterface $clock = null
 	)
 	{
 		parent::__construct($storage, $refresher, $authorizer, $clock);

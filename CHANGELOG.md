@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/orisai/auth/compare/1.0.2...HEAD)
 
+### Added
+
+- `BaseFirewall`
+  - accepts `Psr\Clock\ClockInterface` instead of `Orisai\Clock\Clock` (backward compatible)
+
 ## [1.0.2](https://github.com/orisai/auth/compare/1.0.1...1.0.2) - 2022-11-03
 
 ### Added

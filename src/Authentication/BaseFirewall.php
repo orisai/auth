@@ -12,10 +12,10 @@ use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authorization\CurrentUserPolicyContextCreator;
-use Orisai\Clock\Clock;
 use Orisai\Clock\SystemClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
+use Psr\Clock\ClockInterface;
 
 /**
  * @phpstan-template I of Identity
@@ -31,7 +31,7 @@ abstract class BaseFirewall implements Firewall
 
 	private Authorizer $authorizer;
 
-	private Clock $clock;
+	private ClockInterface $clock;
 
 	protected ?Logins $logins = null;
 
@@ -53,7 +53,7 @@ abstract class BaseFirewall implements Firewall
 		LoginStorage $storage,
 		IdentityRefresher $refresher,
 		Authorizer $authorizer,
-		?Clock $clock = null
+		?ClockInterface $clock = null
 	)
 	{
 		$this->storage = $storage;

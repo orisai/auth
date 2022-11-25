@@ -159,8 +159,9 @@ $firewall->setExpiration(new DateTimeImmutable('7 days'));
 $firewall->removeExpiration();
 ```
 
-Firewall uses a `Orisai\Clock\Clock` instance for getting time, you may set custom instance through constructor for
-testing expiration with fixed time.
+Firewall uses a `Psr\Clock\ClockInterface` instance for getting time, you may set custom instance through constructor
+for testing expiration with fixed time. Check [orisai/clock](https://github.com/orisai/clock) for available
+implementations.
 
 ### Identity refreshing
 
@@ -273,7 +274,7 @@ use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\Auth\Authentication\LoginStorage;
 use Orisai\Auth\Authorization\Authorizer;
-use Orisai\Clock\Clock;
+use Psr\Clock\ClockInterface;
 
 final class UserAwareFirewall extends BaseFirewall
 {
@@ -285,7 +286,7 @@ final class UserAwareFirewall extends BaseFirewall
 		LoginStorage $storage,
 		IdentityRefresher $refresher,
 		Authorizer $authorizer,
-		?Clock $clock = null
+		?ClockInterface $clock = null
 	) {
 		parent::__construct($storage, $refresher, $authorizer, $clock);
 		$this->userRepository = $userRepository;
