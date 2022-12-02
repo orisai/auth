@@ -2,12 +2,14 @@
 	"name": "orisai/auth",
 	"description": "Authentication and authorization",
 	"keywords": [
+		"acl",
 		"auth",
 		"authentication",
 		"authorization",
 		"orisai",
 		"password",
 		"passwords",
+		"permissions",
 		"security"
 	],
 	"type": "library",
