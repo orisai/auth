@@ -23,7 +23,7 @@
 	],
 	"require": {
 		"php": ">=7.4.0 <8.2.0",
-		"orisai/clock": "^1.0.0",
+		"orisai/clock": "^1.1.0",
 		"orisai/exceptions": "^1.0.0",
 		"orisai/utils": "^1.0.0",
 		"symfony/polyfill-php80": "^1.20.0"
