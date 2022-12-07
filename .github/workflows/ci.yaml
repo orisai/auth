@@ -22,6 +22,7 @@ concurrency:
 permissions:
   contents: "read"
 
+
 jobs:
   coding-standard:
     name: "Coding standard"
