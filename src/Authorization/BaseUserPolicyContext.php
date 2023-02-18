@@ -10,7 +10,8 @@ abstract class BaseUserPolicyContext implements PolicyContext
 
 	private Authorizer $authorizer;
 
-	private ?AccessEntry $accessEntry = null;
+	/** @var list<AccessEntry> */
+	private array $accessEntries = [];
 
 	public function __construct(Authorizer $authorizer)
 	{
@@ -22,14 +23,14 @@ abstract class BaseUserPolicyContext implements PolicyContext
 		return $this->authorizer;
 	}
 
-	public function setAccessEntry(AccessEntry $entry): void
+	public function addAccessEntry(AccessEntry $entry): void
 	{
-		$this->accessEntry = $entry;
+		$this->accessEntries[] = $entry;
 	}
 
-	public function getAccessEntry(): ?AccessEntry
+	public function getAccessEntries(): array
 	{
-		return $this->accessEntry;
+		return $this->accessEntries;
 	}
 
 }

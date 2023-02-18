@@ -18,8 +18,9 @@ use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Clock\FrozenClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
-use Tests\Orisai\Auth\Doubles\AddAccessEntryPolicy;
+use Tests\Orisai\Auth\Doubles\AddAccessEntriesPolicy;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRefresher;
@@ -130,15 +131,15 @@ final class BaseFirewallTest extends TestCase
 		self::assertSame($identity, $firewall2->getIdentity());
 	}
 
-	public function testPolicyAccessEntry(): void
+	public function testPolicyAccessEntries(): void
 	{
 		$policyManager = $this->policies();
 		$policyManager->add(new NoRequirementsPolicy());
-		$policyManager->add(new AddAccessEntryPolicy());
+		$policyManager->add(new AddAccessEntriesPolicy());
 
 		$builder = new AuthorizationDataBuilder();
 		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
-		$builder->addPrivilege(AddAccessEntryPolicy::getPrivilege());
+		$builder->addPrivilege(AddAccessEntriesPolicy::getPrivilege());
 
 		$authorizer = $this->authorizer($policyManager, $builder);
 
@@ -146,11 +147,17 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->login(new IntIdentity(1, []));
 
-		$firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), null, $entry);
-		self::assertNull($entry);
+		$firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), null, $entries);
+		self::assertSame([], $entries);
 
-		$firewall->isAllowed(AddAccessEntryPolicy::getPrivilege(), null, $entry);
-		self::assertInstanceOf(AccessEntry::class, $entry);
+		$firewall->isAllowed(AddAccessEntriesPolicy::getPrivilege(), null, $entries);
+		self::assertEquals(
+			[
+				new AccessEntry('Message'),
+				new AccessEntry(new TranslatableMessage('message.id')),
+			],
+			$entries,
+		);
 	}
 
 	public function testIdentityClassUpdate(): void

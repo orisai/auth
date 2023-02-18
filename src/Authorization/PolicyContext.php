@@ -11,9 +11,12 @@ interface PolicyContext
 
 	public function getAuthorizer(): Authorizer;
 
-	public function setAccessEntry(AccessEntry $entry): void;
+	public function addAccessEntry(AccessEntry $entry): void;
 
-	public function getAccessEntry(): ?AccessEntry;
+	/**
+	 * @return list<AccessEntry>
+	 */
+	public function getAccessEntries(): array;
 
 	/**
 	 * @return array<ExpiredLogin>

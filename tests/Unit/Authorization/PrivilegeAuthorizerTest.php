@@ -12,9 +12,10 @@ use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use Tests\Orisai\Auth\Doubles\AddAccessEntryPolicy;
+use Tests\Orisai\Auth\Doubles\AddAccessEntriesPolicy;
 use Tests\Orisai\Auth\Doubles\Article;
 use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
@@ -727,25 +728,31 @@ MSG);
 		);
 	}
 
-	public function testPolicyAccessEntry(): void
+	public function testPolicyAccessEntries(): void
 	{
 		$policyManager = $this->policies();
 		$policyManager->add(new NoRequirementsPolicy());
-		$policyManager->add(new AddAccessEntryPolicy());
+		$policyManager->add(new AddAccessEntriesPolicy());
 
 		$builder = new AuthorizationDataBuilder();
 		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
-		$builder->addPrivilege(AddAccessEntryPolicy::getPrivilege());
+		$builder->addPrivilege(AddAccessEntriesPolicy::getPrivilege());
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
 
 		$identity = new IntIdentity(1, []);
 
-		$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entry);
-		self::assertNull($entry);
+		$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entries);
+		self::assertSame([], $entries);
 
-		$authorizer->isAllowed($identity, AddAccessEntryPolicy::getPrivilege(), null, $entry);
-		self::assertInstanceOf(AccessEntry::class, $entry);
+		$authorizer->isAllowed($identity, AddAccessEntriesPolicy::getPrivilege(), null, $entries);
+		self::assertEquals(
+			[
+				new AccessEntry('Message'),
+				new AccessEntry(new TranslatableMessage('message.id')),
+			],
+			$entries,
+		);
 	}
 
 	public function testPolicyResourceOwner(): void

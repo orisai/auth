@@ -7,11 +7,12 @@ use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
+use Orisai\TranslationContracts\TranslatableMessage;
 
 /**
  * @phpstan-implements Policy<NoRequirements>
  */
-final class AddAccessEntryPolicy implements Policy
+final class AddAccessEntriesPolicy implements Policy
 {
 
 	public static function getPrivilege(): string
@@ -26,7 +27,8 @@ final class AddAccessEntryPolicy implements Policy
 
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
-		$context->setAccessEntry(new AccessEntry('Message'));
+		$context->addAccessEntry(new AccessEntry('Message'));
+		$context->addAccessEntry(new AccessEntry(new TranslatableMessage('message.id')));
 
 		return true;
 	}

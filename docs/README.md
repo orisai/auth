@@ -30,7 +30,7 @@ Authentication and authorization
 		- [Policy with default-like privilege check](#policy-with-default-like-privilege-check)
 	- [Root - bypass all checks](#root---bypass-all-checks)
 	- [Check authorization of not current user](#check-authorization-of-not-current-user)
-	- [Access entry](#access-entry)
+	- [Access entries](#access-entries)
 	- [Access data](#access-authorization-data)
 - [Passwords](#passwords)
 	- [Argon2](#argon2-hasher)
@@ -1024,9 +1024,9 @@ if (!$firewall->getAuthorizer()->isAllowed($identity, 'administration.entry')) {
 $firewall->login($identity);
 ```
 
-### Access entry
+### Access entries
 
-Reason why user has or does not have permission can be described by a policy by adding an access entry:
+Reasons why user has or does not have permission can be described by a policy by adding access entries:
 
 ```php
 use Orisai\Auth\Authentication\Identity;
@@ -1045,7 +1045,7 @@ final class WillTellYouWhyPolicy implements Policy
 			return true;
 		}
 
-		$context->setAccessEntry(new AccessEntry('You just don\'t understand their personality.'));
+		$context->addAccessEntry(new AccessEntry('You just don\'t understand their personality.'));
 
 		return false;
 	}

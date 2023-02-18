@@ -13,14 +13,15 @@ interface Authorizer
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 
 	/**
+	 * @param array{}|null           $entries
 	 * @phpstan-param literal-string $privilege
-	 * @param-out AccessEntry|null $entry
+	 * @param-out list<AccessEntry>  $entries
 	 */
 	public function isAllowed(
 		?Identity $identity,
 		string $privilege,
 		?object $requirements = null,
-		?AccessEntry &$entry = null,
+		?array &$entries = null,
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool;
 
