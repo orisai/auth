@@ -10,6 +10,7 @@ use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\LogoutCode;
 use Orisai\Auth\Authentication\StringIdentity;
+use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
@@ -18,7 +19,7 @@ use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Clock\FrozenClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
-use Tests\Orisai\Auth\Doubles\AddDecisionReasonPolicy;
+use Tests\Orisai\Auth\Doubles\AddAccessEntryPolicy;
 use Tests\Orisai\Auth\Doubles\AlwaysPassIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NeverPassIdentityRefresher;
 use Tests\Orisai\Auth\Doubles\NewIdentityIdentityRefresher;
@@ -129,15 +130,15 @@ final class BaseFirewallTest extends TestCase
 		self::assertSame($identity, $firewall2->getIdentity());
 	}
 
-	public function testPolicyDecisionReason(): void
+	public function testPolicyAccessEntry(): void
 	{
 		$policyManager = $this->policies();
 		$policyManager->add(new NoRequirementsPolicy());
-		$policyManager->add(new AddDecisionReasonPolicy());
+		$policyManager->add(new AddAccessEntryPolicy());
 
 		$builder = new AuthorizationDataBuilder();
 		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
-		$builder->addPrivilege(AddDecisionReasonPolicy::getPrivilege());
+		$builder->addPrivilege(AddAccessEntryPolicy::getPrivilege());
 
 		$authorizer = $this->authorizer($policyManager, $builder);
 
@@ -145,11 +146,11 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->login(new IntIdentity(1, []));
 
-		$firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), null, $reason);
-		self::assertNull($reason);
+		$firewall->isAllowed(NoRequirementsPolicy::getPrivilege(), null, $entry);
+		self::assertNull($entry);
 
-		$firewall->isAllowed(AddDecisionReasonPolicy::getPrivilege(), null, $reason);
-		self::assertInstanceOf(DecisionReason::class, $reason);
+		$firewall->isAllowed(AddAccessEntryPolicy::getPrivilege(), null, $entry);
+		self::assertInstanceOf(AccessEntry::class, $entry);
 	}
 
 	public function testIdentityClassUpdate(): void

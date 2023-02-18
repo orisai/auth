@@ -3,7 +3,6 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
-use Orisai\Auth\Authentication\DecisionReason;
 
 interface PolicyContext
 {
@@ -12,9 +11,9 @@ interface PolicyContext
 
 	public function getAuthorizer(): Authorizer;
 
-	public function setDecisionReason(DecisionReason $reason): void;
+	public function setAccessEntry(AccessEntry $entry): void;
 
-	public function getDecisionReason(): ?DecisionReason;
+	public function getAccessEntry(): ?AccessEntry;
 
 	/**
 	 * @return array<ExpiredLogin>

@@ -6,6 +6,7 @@ use Closure;
 use DateTimeImmutable;
 use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
+use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\Authorizer;
 
 /**
@@ -51,9 +52,9 @@ interface Firewall
 
 	/**
 	 * @phpstan-param literal-string $privilege
-	 * @param-out DecisionReason|null $reason
+	 * @param-out AccessEntry|null $entry
 	 */
-	public function isAllowed(string $privilege, ?object $requirements = null, ?DecisionReason &$reason = null): bool;
+	public function isAllowed(string $privilege, ?object $requirements = null, ?AccessEntry &$entry = null): bool;
 
 	public function isRoot(): bool;
 
