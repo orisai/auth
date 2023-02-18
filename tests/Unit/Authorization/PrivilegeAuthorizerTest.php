@@ -2,8 +2,8 @@
 
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\IntIdentity;
+use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
@@ -14,7 +14,7 @@ use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use Tests\Orisai\Auth\Doubles\AddDecisionReasonPolicy;
+use Tests\Orisai\Auth\Doubles\AddAccessEntryPolicy;
 use Tests\Orisai\Auth\Doubles\Article;
 use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
@@ -727,25 +727,25 @@ MSG);
 		);
 	}
 
-	public function testPolicyDecisionReason(): void
+	public function testPolicyAccessEntry(): void
 	{
 		$policyManager = $this->policies();
 		$policyManager->add(new NoRequirementsPolicy());
-		$policyManager->add(new AddDecisionReasonPolicy());
+		$policyManager->add(new AddAccessEntryPolicy());
 
 		$builder = new AuthorizationDataBuilder();
 		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
-		$builder->addPrivilege(AddDecisionReasonPolicy::getPrivilege());
+		$builder->addPrivilege(AddAccessEntryPolicy::getPrivilege());
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
 
 		$identity = new IntIdentity(1, []);
 
-		$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $reason);
-		self::assertNull($reason);
+		$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entry);
+		self::assertNull($entry);
 
-		$authorizer->isAllowed($identity, AddDecisionReasonPolicy::getPrivilege(), null, $reason);
-		self::assertInstanceOf(DecisionReason::class, $reason);
+		$authorizer->isAllowed($identity, AddAccessEntryPolicy::getPrivilege(), null, $entry);
+		self::assertInstanceOf(AccessEntry::class, $entry);
 	}
 
 	public function testPolicyResourceOwner(): void

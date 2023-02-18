@@ -2,7 +2,6 @@
 
 namespace Orisai\Auth\Authorization;
 
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Utils\Arrays;
@@ -106,7 +105,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		?Identity $identity,
 		string $privilege,
 		?object $requirements = null,
-		?DecisionReason &$reason = null,
+		?AccessEntry &$entry = null,
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool
 	{
@@ -122,7 +121,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$policy,
 			$requirements,
 			$creator !== null ? $creator->create() : new AnyUserPolicyContext($this),
-			$reason,
+			$entry,
 			__FUNCTION__,
 		);
 	}
@@ -176,7 +175,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		Policy $policy,
 		?object $requirements,
 		PolicyContext $context,
-		?DecisionReason &$reason,
+		?AccessEntry &$entry,
 		string $function
 	): bool
 	{
@@ -231,7 +230,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 		$isAllowed = $policy->isAllowed($identity, $requirements, $context);
 
-		$reason = $context->getDecisionReason();
+		$entry = $context->getAccessEntry();
 
 		return $isAllowed;
 	}

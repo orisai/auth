@@ -30,7 +30,7 @@ Authentication and authorization
 		- [Policy with default-like privilege check](#policy-with-default-like-privilege-check)
 	- [Root - bypass all checks](#root---bypass-all-checks)
 	- [Check authorization of not current user](#check-authorization-of-not-current-user)
-	- [Decision reason](#decision-reason)
+	- [Access entry](#access-entry)
 	- [Access data](#access-authorization-data)
 - [Passwords](#passwords)
 	- [Argon2](#argon2-hasher)
@@ -311,6 +311,9 @@ After user is logged out you may still access all data about this login. This wa
 into their account.
 
 ```php
+use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\Translator;
+
 $expiredLogin = $firewall->getLastExpiredLogin();
 
 if ($expiredLogin !== null) {
@@ -324,9 +327,11 @@ if ($expiredLogin !== null) {
 	$logoutReason = $expiredLogin->getLogoutReason(); // DecisionReason|null
 
 	if ($logoutReason !== null) {
-		$message = $logoutReason->isTranslatable()
-			? $translator->translate($logoutReason->getMessage(), $logoutReason->getParameters())
-			: $logoutReason->getMessage();
+		$message = $logoutReason->getMessage();
+		if ($message instanceof Translatable) {
+			assert($translator instanceof Translator); // Create translator or get message id and parameters from Translatable
+			$message = $translator->translateMessage($message);
+		}
 	}
 }
 ```
@@ -1019,13 +1024,13 @@ if (!$firewall->getAuthorizer()->isAllowed($identity, 'administration.entry')) {
 $firewall->login($identity);
 ```
 
-### Decision reason
+### Access entry
 
-Reason why user has or does not have permission can be described by a policy:
+Reason why user has or does not have permission can be described by a policy by adding an access entry:
 
 ```php
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
@@ -1040,7 +1045,7 @@ final class WillTellYouWhyPolicy implements Policy
 			return true;
 		}
 
-		$context->setDecisionReason(new DecisionReason('You just don\'t understand their personality.'));
+		$context->setAccessEntry(new AccessEntry('You just don\'t understand their personality.'));
 
 		return false;
 	}
@@ -1048,16 +1053,22 @@ final class WillTellYouWhyPolicy implements Policy
 }
 ```
 
-Both authorizer and firewall return reason via reference:
+Both authorizer and firewall return access entry via reference:
 
 ```php
-$firewall->isAllowed(DefaultCheckPolicy::getPrivilege(), $requirements, $reason);
-$authorizer->isAllowed($identity, DefaultCheckPolicy::getPrivilege(), $requirements, $reason);
+use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\Translator;
 
-if ($reason !== null) {
-	$message = $reason->isTranslatable()
-		? $translator->translate($reason->getMessage(), $reason->getParameters())
-		: $reason->getMessage();
+assert($translator instanceof Translator); // Create translator or get message id and parameters from Translatable
+
+$firewall->isAllowed(DefaultCheckPolicy::getPrivilege(), $requirements, $entry);
+$authorizer->isAllowed($identity, DefaultCheckPolicy::getPrivilege(), $requirements, $entry);
+
+if ($entry !== null) {
+	$message = $entry->getMessage();
+	if ($message instanceof Translatable) {
+		$message = $translator->translateMessage($message);
+	}
 }
 ```
 

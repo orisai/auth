@@ -2,8 +2,8 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
@@ -11,12 +11,12 @@ use Orisai\Auth\Authorization\PolicyContext;
 /**
  * @phpstan-implements Policy<NoRequirements>
  */
-final class AddDecisionReasonPolicy implements Policy
+final class AddAccessEntryPolicy implements Policy
 {
 
 	public static function getPrivilege(): string
 	{
-		return 'add-decision-reason';
+		return 'add-access-entry';
 	}
 
 	public static function getRequirementsClass(): string
@@ -26,7 +26,7 @@ final class AddDecisionReasonPolicy implements Policy
 
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
-		$context->setDecisionReason(new DecisionReason('Message'));
+		$context->setAccessEntry(new AccessEntry('Message'));
 
 		return true;
 	}

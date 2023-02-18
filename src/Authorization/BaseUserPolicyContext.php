@@ -2,8 +2,6 @@
 
 namespace Orisai\Auth\Authorization;
 
-use Orisai\Auth\Authentication\DecisionReason;
-
 /**
  * @internal
  */
@@ -12,7 +10,7 @@ abstract class BaseUserPolicyContext implements PolicyContext
 
 	private Authorizer $authorizer;
 
-	private ?DecisionReason $decisionReason = null;
+	private ?AccessEntry $accessEntry = null;
 
 	public function __construct(Authorizer $authorizer)
 	{
@@ -24,14 +22,14 @@ abstract class BaseUserPolicyContext implements PolicyContext
 		return $this->authorizer;
 	}
 
-	public function setDecisionReason(DecisionReason $reason): void
+	public function setAccessEntry(AccessEntry $entry): void
 	{
-		$this->decisionReason = $reason;
+		$this->accessEntry = $entry;
 	}
 
-	public function getDecisionReason(): ?DecisionReason
+	public function getAccessEntry(): ?AccessEntry
 	{
-		return $this->decisionReason;
+		return $this->accessEntry;
 	}
 
 }

@@ -13,3 +13,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	- replaced static ctors with standard ctor
     - removed `getParameters()` and `isTranslatable()`
     - `getMessage()` returns `string|Translatable`
+- `Policy`
+  - uses `AccessEntry` instead of `DecisionReason` (also replaced in `Firewall` and `Authorizer` `isAllowed()` methods)

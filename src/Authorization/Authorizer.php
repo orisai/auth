@@ -2,7 +2,6 @@
 
 namespace Orisai\Auth\Authorization;
 
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
 
 interface Authorizer
@@ -15,13 +14,13 @@ interface Authorizer
 
 	/**
 	 * @phpstan-param literal-string $privilege
-	 * @param-out DecisionReason|null $reason
+	 * @param-out AccessEntry|null $entry
 	 */
 	public function isAllowed(
 		?Identity $identity,
 		string $privilege,
 		?object $requirements = null,
-		?DecisionReason &$reason = null,
+		?AccessEntry &$entry = null,
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool;
 

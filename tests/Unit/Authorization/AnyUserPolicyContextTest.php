@@ -2,7 +2,7 @@
 
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
-use Orisai\Auth\Authentication\DecisionReason;
+use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AnyUserPolicyContext;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
@@ -25,9 +25,9 @@ final class AnyUserPolicyContextTest extends TestCase
 		self::assertFalse($context->isCurrentUser());
 		self::assertSame([], $context->getExpiredLogins());
 
-		self::assertNull($context->getDecisionReason());
-		$context->setDecisionReason($reason = new DecisionReason('Message'));
-		self::assertSame($reason, $context->getDecisionReason());
+		self::assertNull($context->getAccessEntry());
+		$context->setAccessEntry($entry = new AccessEntry('Message'));
+		self::assertSame($entry, $context->getAccessEntry());
 	}
 
 }
