@@ -2,62 +2,29 @@
 
 namespace Orisai\Auth\Authentication;
 
-use Orisai\Exceptions\Logic\InvalidState;
+use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 
 final class DecisionReason
 {
 
-	private string $message;
-
-	/** @var array<int|string, mixed> */
-	private array $parameters;
-
-	private bool $translatable;
+	/** @var string|Translatable */
+	private $message;
 
 	/**
-	 * @param array<int|string, mixed> $parameters
+	 * @param string|Translatable $message
 	 */
-	private function __construct(string $message, array $parameters, bool $translatable)
+	public function __construct($message)
 	{
 		$this->message = $message;
-		$this->parameters = $parameters;
-		$this->translatable = $translatable;
-	}
-
-	public static function create(string $message): self
-	{
-		return new self($message, [], false);
 	}
 
 	/**
-	 * @param array<int|string, mixed> $parameters
+	 * @return string|Translatable
 	 */
-	public static function createTranslatable(string $message, array $parameters): self
-	{
-		return new self($message, $parameters, true);
-	}
-
-	public function getMessage(): string
+	public function getMessage()
 	{
 		return $this->message;
-	}
-
-	/**
-	 * @return array<int|string, mixed>
-	 */
-	public function getParameters(): array
-	{
-		if (!$this->isTranslatable()) {
-			throw InvalidState::create()
-				->withMessage('Only translatable reason has parameters.');
-		}
-
-		return $this->parameters;
-	}
-
-	public function isTranslatable(): bool
-	{
-		return $this->translatable;
 	}
 
 	/**
@@ -67,8 +34,6 @@ final class DecisionReason
 	{
 		return [
 			'message' => $this->message,
-			'parameters' => $this->parameters,
-			'translatable' => $this->translatable,
 		];
 	}
 
@@ -77,9 +42,16 @@ final class DecisionReason
 	 */
 	public function __unserialize(array $data): void
 	{
-		$this->message = $data['message'];
-		$this->parameters = $data['parameters'];
-		$this->translatable = $data['translatable'];
+		// Compatibility
+		if (isset($data['parameters'], $data['translatable'])) {
+			$message = $data['translatable'] === true
+				? new TranslatableMessage($data['message'], $data['parameters'])
+				: $data['message'];
+		} else {
+			$message = $data['message'];
+		}
+
+		$this->message = $message;
 	}
 
 }

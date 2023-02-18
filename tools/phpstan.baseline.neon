@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Parameter \\#1 \\$id of class Orisai\\\\TranslationContracts\\\\TranslatableMessage constructor expects literal\\-string, mixed given\\.$#"
+			count: 1
+			path: ../src/Authentication/DecisionReason.php
+
+		-
 			message: "#^Cannot call method getIdentity\\(\\) on Orisai\\\\Auth\\\\Authentication\\\\Data\\\\CurrentLogin\\|null\\.$#"
 			count: 1
 			path: ../tests/Unit/Authentication/BaseFirewallTest.php
@@ -17,10 +22,5 @@ parameters:
 
 		-
 			message: "#^Cannot call method getMessage\\(\\) on Orisai\\\\Auth\\\\Authentication\\\\DecisionReason\\|null\\.$#"
-			count: 2
-			path: ../tests/Unit/Authentication/Data/ExpiredLoginTest.php
-
-		-
-			message: "#^Cannot call method isTranslatable\\(\\) on Orisai\\\\Auth\\\\Authentication\\\\DecisionReason\\|null\\.$#"
 			count: 2
 			path: ../tests/Unit/Authentication/Data/ExpiredLoginTest.php

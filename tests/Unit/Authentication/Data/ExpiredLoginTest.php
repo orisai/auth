@@ -10,6 +10,7 @@ use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\LogoutCode;
+use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
 use function assert;
 use function serialize;
@@ -33,7 +34,7 @@ final class ExpiredLoginTest extends TestCase
 
 		self::assertEquals($login, unserialize(serialize($login)));
 
-		$reason = DecisionReason::create('description');
+		$reason = new DecisionReason('description');
 		$login = new ExpiredLogin($currentLogin, LogoutCode::manual(), $reason);
 		self::assertSame($reason, $login->getLogoutReason());
 		self::assertEquals($login, unserialize(serialize($login)));
@@ -91,7 +92,6 @@ final class ExpiredLoginTest extends TestCase
 		self::assertSame(456, $expiration->getDelta());
 		$description = $login->getLogoutReason();
 		self::assertSame('reason', $description->getMessage());
-		self::assertFalse($description->isTranslatable());
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
 		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}"string(403) "O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}';
@@ -99,8 +99,7 @@ final class ExpiredLoginTest extends TestCase
 
 		self::assertInstanceOf(ExpiredLogin::class, $login);
 		$description = $login->getLogoutReason();
-		self::assertSame('message', $description->getMessage());
-		self::assertTrue($description->isTranslatable());
+		self::assertEquals(new TranslatableMessage('message'), $description->getMessage());
 	}
 
 }

@@ -26,7 +26,7 @@ final class AddDecisionReasonPolicy implements Policy
 
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool
 	{
-		$context->setDecisionReason(DecisionReason::create('Message'));
+		$context->setDecisionReason(new DecisionReason('Message'));
 
 		return true;
 	}

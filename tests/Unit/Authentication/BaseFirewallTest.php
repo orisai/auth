@@ -346,7 +346,7 @@ MSG);
 	public function provideRefresherRemovedIdentity(): Generator
 	{
 		yield [null];
-		yield [DecisionReason::create('reason description')];
+		yield [new DecisionReason('reason description')];
 	}
 
 	public function testSecurityTokenRegenerates(): void

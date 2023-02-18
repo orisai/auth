@@ -210,13 +210,11 @@ accessible through [expired login](#expired-logins):
 ```php
 use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
+use Orisai\TranslationContracts\TranslatableMessage;
 
-throw IdentityExpired::create(DecisionReason::create('decision reason'));
+throw IdentityExpired::create(new DecisionReason('decision reason'));
 // or
-throw IdentityExpired::create(DecisionReason::createTranslatable(
-	'logout.reason.key',
-	[/* message parameters */],
-));
+throw IdentityExpired::create(new DecisionReason(new TranslatableMessage('decision.reason.key')));
 ```
 
 Identity can be refreshed also manually on current request. Unlike `$firewall->login()` it keeps the previous
@@ -1042,7 +1040,7 @@ final class WillTellYouWhyPolicy implements Policy
 			return true;
 		}
 
-		$context->setDecisionReason(DecisionReason::create('You just don\'t understand their personality.'));
+		$context->setDecisionReason(new DecisionReason('You just don\'t understand their personality.'));
 
 		return false;
 	}
