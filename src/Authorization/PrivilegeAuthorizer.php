@@ -105,7 +105,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		?Identity $identity,
 		string $privilege,
 		?object $requirements = null,
-		?AccessEntry &$entry = null,
+		?array &$entries = null,
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool
 	{
@@ -121,7 +121,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$policy,
 			$requirements,
 			$creator !== null ? $creator->create() : new AnyUserPolicyContext($this),
-			$entry,
+			$entries,
 			__FUNCTION__,
 		);
 	}
@@ -168,6 +168,7 @@ final class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
+	 * @param array{}|null           $entries
 	 * @phpstan-param Policy<object> $policy
 	 */
 	private function isAllowedByPolicy(
@@ -175,7 +176,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		Policy $policy,
 		?object $requirements,
 		PolicyContext $context,
-		?AccessEntry &$entry,
+		?array &$entries,
 		string $function
 	): bool
 	{
@@ -230,7 +231,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 		$isAllowed = $policy->isAllowed($identity, $requirements, $context);
 
-		$entry = $context->getAccessEntry();
+		$entries = $context->getAccessEntries();
 
 		return $isAllowed;
 	}

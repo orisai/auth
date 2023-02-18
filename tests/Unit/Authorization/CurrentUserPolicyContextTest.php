@@ -29,9 +29,9 @@ final class CurrentUserPolicyContextTest extends TestCase
 		self::assertTrue($context->isCurrentUser());
 		self::assertSame([], $context->getExpiredLogins());
 
-		self::assertNull($context->getAccessEntry());
-		$context->setAccessEntry($entry = new AccessEntry('Message'));
-		self::assertSame($entry, $context->getAccessEntry());
+		self::assertSame([], $context->getAccessEntries());
+		$context->addAccessEntry($entry = new AccessEntry('Message'));
+		self::assertSame([$entry], $context->getAccessEntries());
 	}
 
 }

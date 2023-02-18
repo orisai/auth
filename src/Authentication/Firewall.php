@@ -51,10 +51,11 @@ interface Firewall
 	public function hasRole(string $role): bool;
 
 	/**
+	 * @param array{}|null           $entries
 	 * @phpstan-param literal-string $privilege
-	 * @param-out AccessEntry|null $entry
+	 * @param-out list<AccessEntry>  $entries
 	 */
-	public function isAllowed(string $privilege, ?object $requirements = null, ?AccessEntry &$entry = null): bool;
+	public function isAllowed(string $privilege, ?object $requirements = null, ?array &$entries = null): bool;
 
 	public function isRoot(): bool;
 
