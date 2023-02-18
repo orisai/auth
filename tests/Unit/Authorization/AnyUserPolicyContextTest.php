@@ -26,7 +26,7 @@ final class AnyUserPolicyContextTest extends TestCase
 		self::assertSame([], $context->getExpiredLogins());
 
 		self::assertNull($context->getDecisionReason());
-		$context->setDecisionReason($reason = DecisionReason::create('Message'));
+		$context->setDecisionReason($reason = new DecisionReason('Message'));
 		self::assertSame($reason, $context->getDecisionReason());
 	}
 

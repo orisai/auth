@@ -68,7 +68,7 @@ final class ExpiredLogin extends BaseLogin
 		parent::__unserialize($data);
 		$this->logoutCode = LogoutCode::from($data['logoutReason']);
 		$description = $data['logoutReasonDescription'] ?? null;
-		$this->logoutReason = !is_string($description) ? $description : DecisionReason::create($description);
+		$this->logoutReason = !is_string($description) ? $description : new DecisionReason($description);
 		$this->expiration = $data['expiration'];
 	}
 
