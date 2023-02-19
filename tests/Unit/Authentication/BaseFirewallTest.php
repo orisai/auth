@@ -5,7 +5,6 @@ namespace Tests\Orisai\Auth\Unit\Authentication;
 use DateTimeImmutable;
 use Generator;
 use Orisai\Auth\Authentication\ArrayLoginStorage;
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\LogoutCode;
@@ -367,10 +366,7 @@ MSG,
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame(LogoutCode::invalidIdentity(), $expired->getLogoutCode());
-		self::assertEquals(
-			$reasonDescription === null ? null : new DecisionReason($reasonDescription),
-			$expired->getLogoutReason(),
-		);
+		self::assertEquals($reasonDescription, $expired->getLogoutReason());
 	}
 
 	/**

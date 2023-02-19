@@ -15,6 +15,7 @@ use Orisai\Auth\Authorization\CurrentUserPolicyContextCreator;
 use Orisai\Clock\SystemClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
+use Orisai\TranslationContracts\Translatable;
 use Psr\Clock\ClockInterface;
 
 /**
@@ -114,7 +115,10 @@ abstract class BaseFirewall implements Firewall
 		$this->onLogout[] = $callback;
 	}
 
-	private function unauthenticate(Logins $logins, LogoutCode $logoutCode, ?DecisionReason $logoutReason): void
+	/**
+	 * @param string|Translatable|null $logoutReason
+	 */
+	private function unauthenticate(Logins $logins, LogoutCode $logoutCode, $logoutReason): void
 	{
 		$login = $logins->getCurrentLogin();
 
@@ -288,11 +292,10 @@ abstract class BaseFirewall implements Firewall
 		try {
 			$identity = $this->refresher->refresh($login->getIdentity());
 		} catch (IdentityExpired $exception) {
-			$reason = $exception->getLogoutReason();
 			$this->unauthenticate(
 				$logins,
 				LogoutCode::invalidIdentity(),
-				$reason === null ? null : new DecisionReason($reason),
+				$exception->getLogoutReason(),
 			);
 
 			return;
