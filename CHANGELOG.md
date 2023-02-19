@@ -29,3 +29,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	- `DecisionReason` removed from context (uses `AccessEntry` yielding instead)
 - `Firewall`, `Authorizer`
 	- `isAllowed()` reason (`DecisionReason`) replaced by entries (`list<AccessEntry>`)
+- `IdentityExpired`
+	- uses `string|Translatable` directly instead of `DecisionReason`

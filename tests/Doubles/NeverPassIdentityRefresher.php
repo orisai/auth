@@ -2,10 +2,10 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRefresher;
+use Orisai\TranslationContracts\Translatable;
 
 /**
  * @phpstan-implements IdentityRefresher<Identity>
@@ -13,9 +13,13 @@ use Orisai\Auth\Authentication\IdentityRefresher;
 final class NeverPassIdentityRefresher implements IdentityRefresher
 {
 
-	private ?DecisionReason $reason;
+	/** @var string|Translatable|null */
+	private $reason;
 
-	public function __construct(?DecisionReason $reason = null)
+	/**
+	 * @param string|Translatable|null $reason
+	 */
+	public function __construct($reason = null)
 	{
 		$this->reason = $reason;
 	}

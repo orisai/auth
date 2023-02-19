@@ -19,6 +19,7 @@ use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Clock\FrozenClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
+use Orisai\TranslationContracts\Translatable;
 use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AddAccessEntriesPolicy;
@@ -295,12 +296,14 @@ final class BaseFirewallTest extends TestCase
 		$identity = new IntIdentity(123, []);
 
 		$this->expectException(NotLoggedIn::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->refreshIdentity().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
-MSG);
+MSG,
+		);
 
 		$firewall->refreshIdentity($identity);
 	}
@@ -343,9 +346,11 @@ MSG);
 	}
 
 	/**
+	 * @param string|Translatable|null $reasonDescription
+	 *
 	 * @dataProvider provideRefresherRemovedIdentity
 	 */
-	public function testRefresherRemovedIdentity(?DecisionReason $reasonDescription): void
+	public function testRefresherRemovedIdentity($reasonDescription): void
 	{
 		$identity = new IntIdentity(123, []);
 
@@ -362,7 +367,7 @@ MSG);
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame(LogoutCode::invalidIdentity(), $expired->getLogoutCode());
-		self::assertSame($reasonDescription, $expired->getLogoutReason());
+		self::assertEquals($reasonDescription === null ? null : new DecisionReason($reasonDescription), $expired->getLogoutReason());
 	}
 
 	/**
@@ -371,7 +376,8 @@ MSG);
 	public function provideRefresherRemovedIdentity(): Generator
 	{
 		yield [null];
-		yield [new DecisionReason('reason description')];
+		yield ['reason description'];
+		yield [new TranslatableMessage('reason description')];
 	}
 
 	public function testSecurityTokenRegenerates(): void
@@ -482,11 +488,13 @@ MSG);
 		$firewall->login($identity);
 
 		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Setting login expiration time.
 Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
-MSG);
+MSG,
+		);
 
 		$firewall->setExpirationTime((new DateTimeImmutable())->modify('-10 seconds'));
 	}
@@ -506,11 +514,13 @@ MSG);
 		$firewall->login($identity);
 
 		$this->expectException(InvalidArgument::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Setting login expiration time.
 Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
-MSG);
+MSG,
+		);
 
 		$firewall->setExpirationTime($clock->now());
 	}
@@ -521,12 +531,14 @@ MSG);
 		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->setExpirationTime().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
-MSG);
+MSG,
+		);
 
 		$firewall->setExpirationTime((new DateTimeImmutable())->modify('-10 seconds'));
 	}
@@ -561,12 +573,14 @@ MSG);
 		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->getExpirationTime().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
-MSG);
+MSG,
+		);
 
 		$firewall->getExpirationTime();
 	}
@@ -577,12 +591,14 @@ MSG);
 		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Calling Tests\Orisai\Auth\Doubles\TestingFirewall->getIdentity().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
-MSG);
+MSG,
+		);
 
 		$firewall->getIdentity();
 	}
@@ -608,13 +624,15 @@ MSG);
 		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
 
 		$this->expectException(NotLoggedIn::class);
-		$this->expectExceptionMessage(<<<'MSG'
+		$this->expectExceptionMessage(
+			<<<'MSG'
 Context: Calling
          Tests\Orisai\Auth\Doubles\TestingFirewall->getAuthenticationTime().
 Problem: User is not logged in firewall.
 Solution: Login with TestingFirewall->login($identity) or check with
           TestingFirewall->isLoggedIn().
-MSG);
+MSG,
+		);
 
 		$firewall->getAuthenticationTime();
 	}
