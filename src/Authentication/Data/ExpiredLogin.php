@@ -2,9 +2,10 @@
 
 namespace Orisai\Auth\Authentication\Data;
 
-use Orisai\Auth\Authentication\DecisionReason;
+use __PHP_Incomplete_Class;
 use Orisai\Auth\Authentication\LogoutCode;
-use function is_string;
+use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 
 final class ExpiredLogin extends BaseLogin
 {
@@ -13,12 +14,16 @@ final class ExpiredLogin extends BaseLogin
 
 	private LogoutCode $logoutCode;
 
-	private ?DecisionReason $logoutReason;
+	/** @var string|Translatable|null */
+	private $logoutReason;
 
+	/**
+	 * @param string|Translatable|null $logoutReason
+	 */
 	public function __construct(
 		CurrentLogin $currentLogin,
 		LogoutCode $logoutCode,
-		?DecisionReason $logoutReason = null
+		$logoutReason = null
 	)
 	{
 		parent::__construct($currentLogin->getIdentity(), $currentLogin->getAuthenticationTime());
@@ -42,9 +47,36 @@ final class ExpiredLogin extends BaseLogin
 		return $this->logoutCode;
 	}
 
-	public function getLogoutReason(): ?DecisionReason
+	/**
+	 * @return string|Translatable|null
+	 */
+	public function getLogoutReason()
 	{
 		return $this->logoutReason;
+	}
+
+	/**
+	 * For compatibility
+	 *
+	 * @param array<mixed> $data
+	 * @return string|Translatable|null
+	 */
+	private function getUnserializedLogoutReason(array $data)
+	{
+		// Reason haven't always existed
+		$reason = $data['logoutReasonDescription'] ?? null;
+
+		if (!$reason instanceof __PHP_Incomplete_Class) {
+			return $reason;
+		}
+
+		// Reason was of type DecisionReason, which was removed
+		$reason = (array) $reason;
+		if ($reason['translatable'] === true) {
+			return new TranslatableMessage($reason['message'], $reason['parameters']);
+		}
+
+		return $reason['message'];
 	}
 
 	/**
@@ -67,8 +99,7 @@ final class ExpiredLogin extends BaseLogin
 	{
 		parent::__unserialize($data);
 		$this->logoutCode = LogoutCode::from($data['logoutReason']);
-		$description = $data['logoutReasonDescription'] ?? null;
-		$this->logoutReason = !is_string($description) ? $description : new DecisionReason($description);
+		$this->logoutReason = $this->getUnserializedLogoutReason($data);
 		$this->expiration = $data['expiration'];
 	}
 
