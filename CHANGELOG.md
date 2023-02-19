@@ -26,9 +26,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Firewall`, `Authorizer`
 	- `isAllowed()` reason (`DecisionReason`) replaced by entries (`list<AccessEntry>`)
 - `IdentityExpired`
-	- `create()` uses `string|Translatable` directly instead of `DecisionReason`
+	- `create()` uses `string|TranslatableMessage` directly instead of `DecisionReason`
 - `ExpiredLogin`
-	- `getLogoutReason()` returns `string|Translatable` directly instead of `DecisionReason`
+	- `getLogoutReason()` returns `string|TranslatableMessage` directly instead of `DecisionReason`
 - root has exact same `hasPrivilege()` and `isAllowed()` checks as other users
 	- but always returns true (behavior remains unchanged)
 	- policies are executed to ensure their validity

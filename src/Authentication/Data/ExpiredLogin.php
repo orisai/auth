@@ -4,7 +4,6 @@ namespace Orisai\Auth\Authentication\Data;
 
 use __PHP_Incomplete_Class;
 use Orisai\Auth\Authentication\LogoutCode;
-use Orisai\TranslationContracts\Translatable;
 use Orisai\TranslationContracts\TranslatableMessage;
 
 final class ExpiredLogin extends BaseLogin
@@ -14,11 +13,11 @@ final class ExpiredLogin extends BaseLogin
 
 	private LogoutCode $logoutCode;
 
-	/** @var string|Translatable|null */
+	/** @var string|TranslatableMessage|null */
 	private $logoutReason;
 
 	/**
-	 * @param string|Translatable|null $logoutReason
+	 * @param string|TranslatableMessage|null $logoutReason
 	 */
 	public function __construct(
 		CurrentLogin $currentLogin,
@@ -48,7 +47,7 @@ final class ExpiredLogin extends BaseLogin
 	}
 
 	/**
-	 * @return string|Translatable|null
+	 * @return string|TranslatableMessage|null
 	 */
 	public function getLogoutReason()
 	{
@@ -59,7 +58,7 @@ final class ExpiredLogin extends BaseLogin
 	 * For compatibility
 	 *
 	 * @param array<mixed> $data
-	 * @return string|Translatable|null
+	 * @return string|TranslatableMessage|null
 	 */
 	private function getUnserializedLogoutReason(array $data)
 	{

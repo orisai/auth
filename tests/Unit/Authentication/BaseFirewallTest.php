@@ -18,7 +18,6 @@ use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
 use Orisai\Auth\Authorization\SimplePolicyManager;
 use Orisai\Clock\FrozenClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
-use Orisai\TranslationContracts\Translatable;
 use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
 use Tests\Orisai\Auth\Doubles\AddAccessEntriesPolicy;
@@ -345,7 +344,7 @@ MSG,
 	}
 
 	/**
-	 * @param string|Translatable|null $reasonDescription
+	 * @param string|TranslatableMessage|null $reasonDescription
 	 *
 	 * @dataProvider provideRefresherRemovedIdentity
 	 */

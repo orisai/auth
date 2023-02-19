@@ -5,7 +5,7 @@ namespace Tests\Orisai\Auth\Doubles;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRefresher;
-use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 
 /**
  * @phpstan-implements IdentityRefresher<Identity>
@@ -13,11 +13,11 @@ use Orisai\TranslationContracts\Translatable;
 final class NeverPassIdentityRefresher implements IdentityRefresher
 {
 
-	/** @var string|Translatable|null */
+	/** @var string|TranslatableMessage|null */
 	private $reason;
 
 	/**
-	 * @param string|Translatable|null $reason
+	 * @param string|TranslatableMessage|null $reason
 	 */
 	public function __construct($reason = null)
 	{
