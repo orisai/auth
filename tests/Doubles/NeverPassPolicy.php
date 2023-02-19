@@ -5,7 +5,7 @@ namespace Tests\Orisai\Auth\Doubles;
 use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
@@ -29,12 +29,12 @@ final class NeverPassPolicy implements Policy
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
 		yield new AccessEntry(
-			AccessEntryType::forbidden(),
+			AccessEntryResult::forbidden(),
 			'',
 		);
 
 		yield new AccessEntry(
-			AccessEntryType::forbidden(),
+			AccessEntryResult::forbidden(),
 			'',
 		);
 	}

@@ -7,7 +7,7 @@ use Orisai\TranslationContracts\Translatable;
 final class AccessEntry
 {
 
-	private AccessEntryType $type;
+	private AccessEntryResult $result;
 
 	/** @var string|Translatable */
 	private $message;
@@ -15,15 +15,15 @@ final class AccessEntry
 	/**
 	 * @param string|Translatable $message
 	 */
-	public function __construct(AccessEntryType $type, $message)
+	public function __construct(AccessEntryResult $result, $message)
 	{
-		$this->type = $type;
+		$this->result = $result;
 		$this->message = $message;
 	}
 
-	public function getType(): AccessEntryType
+	public function getResult(): AccessEntryResult
 	{
-		return $this->type;
+		return $this->result;
 	}
 
 	/**

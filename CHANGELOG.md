@@ -10,9 +10,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 - `AccessEntry` - represents a single check in a policy
-	- `getType(): AccessEntryType` - result of the check
+	- `getType(): AccessEntryResult` - result of the check
 	- `getMessage(): string|Translatable` - text description of what was checked
-- `AccessEntryType`
+- `AccessEntryResult`
 	- `allowed()`, `forbidden()`, `skipped()`
 	- `fromBool()` - shortcut for `allowed()` or `forbidden()`
 

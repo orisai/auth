@@ -751,7 +751,7 @@ use Generator;
 use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
@@ -782,7 +782,7 @@ final class ArticleEditOwnedPolicy implements Policy
 			&& $identity->getId() === $requirements->getAuthor()->getId();
 
 		yield new AccessEntry(
-			AccessEntryType::fromBool($res),
+			AccessEntryResult::fromBool($res),
 			'',
 		);
 	}
@@ -824,7 +824,7 @@ use Generator;
 use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
@@ -847,7 +847,7 @@ final class ContextAwarePolicy implements Policy
 			&& $authorizer->isAllowed('contextAware.subprivilege2');
 
 		yield new AccessEntry(
-			AccessEntryType::fromBool($res),
+			AccessEntryResult::fromBool($res),
 			'',
 		);
 	}
@@ -870,7 +870,7 @@ $authorizer->isAllowed(null, OnlyLoggedOutUserPolicy::getPrivilege(), new stdCla
 use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\OptionalRequirementsPolicy;
 use Orisai\Auth\Authorization\PolicyContext;
@@ -891,7 +891,7 @@ final class OnlyLoggedOutUserPolicy implements OptionalIdentityPolicy
 		// Only logged-out user is allowed
 
 		yield new AccessEntry(
-			AccessEntryType::fromBool($identity === null),
+			AccessEntryResult::fromBool($identity === null),
 			'',
 		);
 	}
@@ -954,7 +954,7 @@ $authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege());
 use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
@@ -975,7 +975,7 @@ final class NoRequirementsPolicy implements Policy
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
 		yield new AccessEntry(
-			AccessEntryType::allowed(),
+			AccessEntryResult::allowed(),
 			'',
 		);
 	}
@@ -997,7 +997,7 @@ $authorizer->isAllowed($identity, DefaultCheckPolicy::getPrivilege());
 use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
@@ -1017,7 +1017,7 @@ final class DefaultCheckPolicy implements Policy
 		$authorizer = $context->getAuthorizer();
 
 		yield new AccessEntry(
-			AccessEntryType::fromBool($authorizer->hasPrivilege($identity, self::getPrivilege())),
+			AccessEntryResult::fromBool($authorizer->hasPrivilege($identity, self::getPrivilege())),
 			'',
 		);
 	}
@@ -1067,7 +1067,7 @@ Reasons why user has or does not have permission can be described by a policy by
 use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
@@ -1079,7 +1079,7 @@ final class WillTellYouWhyPolicy implements Policy
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
 		yield new AccessEntry(
-			AccessEntryType::fromBool(/* true|false */),
+			AccessEntryResult::fromBool(/* true|false */),
 			'access requirement',
 		);
 	}

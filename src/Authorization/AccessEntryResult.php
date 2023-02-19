@@ -4,7 +4,7 @@ namespace Orisai\Auth\Authorization;
 
 use ValueError;
 
-final class AccessEntryType
+final class AccessEntryResult
 {
 
 	private const Allowed = 'allowed',
