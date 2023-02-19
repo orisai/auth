@@ -288,7 +288,12 @@ abstract class BaseFirewall implements Firewall
 		try {
 			$identity = $this->refresher->refresh($login->getIdentity());
 		} catch (IdentityExpired $exception) {
-			$this->unauthenticate($logins, LogoutCode::invalidIdentity(), $exception->getLogoutReason());
+			$reason = $exception->getLogoutReason();
+			$this->unauthenticate(
+				$logins,
+				LogoutCode::invalidIdentity(),
+				$reason === null ? null : new DecisionReason($reason),
+			);
 
 			return;
 		}

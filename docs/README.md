@@ -208,13 +208,12 @@ final class AdminIdentityRefresher implements IdentityRefresher
 accessible through [expired login](#expired-logins):
 
 ```php
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\TranslationContracts\TranslatableMessage;
 
-throw IdentityExpired::create(new DecisionReason('decision reason'));
+throw IdentityExpired::create('decision reason');
 // or
-throw IdentityExpired::create(new DecisionReason(new TranslatableMessage('decision.reason.key')));
+throw IdentityExpired::create(new TranslatableMessage('decision.reason.key'));
 ```
 
 Identity can be refreshed also manually on current request. Unlike `$firewall->login()` it keeps the previous

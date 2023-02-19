@@ -2,15 +2,19 @@
 
 namespace Orisai\Auth\Authentication\Exception;
 
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Exceptions\DomainException;
+use Orisai\TranslationContracts\Translatable;
 
 final class IdentityExpired extends DomainException
 {
 
-	private ?DecisionReason $logoutReason;
+	/** @var string|Translatable|null */
+	private $logoutReason;
 
-	public static function create(?DecisionReason $logoutReason = null): self
+	/**
+	 * @param string|Translatable|null $logoutReason
+	 */
+	public static function create($logoutReason = null): self
 	{
 		$self = new self();
 		$self->logoutReason = $logoutReason;
@@ -18,7 +22,10 @@ final class IdentityExpired extends DomainException
 		return $self;
 	}
 
-	public function getLogoutReason(): ?DecisionReason
+	/**
+	 * @return string|Translatable|null
+	 */
+	public function getLogoutReason()
 	{
 		return $this->logoutReason;
 	}
