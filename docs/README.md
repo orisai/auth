@@ -170,7 +170,6 @@ up-to-date.
 
 ```php
 use Example\Core\User\UserRepository;
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Exception\IdentityExpired;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRefresher;
@@ -323,7 +322,7 @@ if ($expiredLogin !== null) {
 	$expirationTime = $expiration !== null ? $expiration->getTime() : null; // DateTimeImmutable|null
 
 	$logoutCode = $expiredLogin->getLogoutCode(); // LogoutCode
-	$logoutReason = $expiredLogin->getLogoutReason(); // DecisionReason|null
+	$logoutReason = $expiredLogin->getLogoutReason(); // string|TranslatableMessage|null
 
 	if ($logoutReason !== null) {
 		$message = $logoutReason->getMessage();
@@ -821,7 +820,6 @@ Policy provides a context to make authorizer calls to subsequent policies, acces
 
 ```php
 use Generator;
-use Orisai\Auth\Authentication\DecisionReason;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AccessEntryResult;
