@@ -31,3 +31,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	- `isAllowed()` reason (`DecisionReason`) replaced by entries (`list<AccessEntry>`)
 - `IdentityExpired`
 	- uses `string|Translatable` directly instead of `DecisionReason`
+- root has exact same `hasPrivilege()` and `isAllowed()` checks as other users
+	- but always returns true (behavior remains unchanged)
+	- policies are executed to ensure their validity
+	- access entries are returned for root (to verify which entries would fail or be skipped without root)
