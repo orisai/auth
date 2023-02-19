@@ -28,7 +28,13 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	public function hasPrivilege(Identity $identity, string $privilege): bool
 	{
-		return $this->hasPrivilegeInternal($identity, $privilege, __FUNCTION__);
+		$hasPrivilege = $this->hasPrivilegeInternal($identity, $privilege, __FUNCTION__);
+
+		if ($this->isRoot($identity)) {
+			return true;
+		}
+
+		return $hasPrivilege;
 	}
 
 	private function hasPrivilegeInternal(Identity $identity, string $privilege, string $function): bool
@@ -40,10 +46,6 @@ final class PrivilegeAuthorizer implements Authorizer
 
 		if ($requiredPrivileges === null) {
 			throw UnknownPrivilege::forFunction($privilege, self::class, $function);
-		}
-
-		if ($this->isRoot($identity)) {
-			return true;
 		}
 
 		$identityAuthData = $identity->getAuthorizationData();
@@ -109,11 +111,41 @@ final class PrivilegeAuthorizer implements Authorizer
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool
 	{
+		$allowed = $this->isAllowedInternal(
+			__FUNCTION__,
+			$identity,
+			$privilege,
+			$requirements,
+			$entries,
+			$creator,
+		);
+
+		if ($identity !== null && $this->isRoot($identity)) {
+			return true;
+		}
+
+		return $allowed;
+	}
+
+	/**
+	 * @param array{}|null           $entries
+	 * @phpstan-param literal-string $privilege
+	 * @param-out list<AccessEntry>  $entries
+	 */
+	private function isAllowedInternal(
+		string $function,
+		?Identity $identity,
+		string $privilege,
+		?object $requirements = null,
+		?array &$entries = null,
+		?CurrentUserPolicyContextCreator $creator = null
+	): bool
+	{
 		$policy = $this->policyManager->get($privilege);
 
 		if ($policy === null) {
 			return $identity !== null
-				&& $this->isAllowedByPrivilege($identity, $privilege, $requirements, __FUNCTION__);
+				&& $this->isAllowedByPrivilege($identity, $privilege, $requirements, $function);
 		}
 
 		return $this->isAllowedByPolicy(
@@ -122,7 +154,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$requirements,
 			$creator !== null ? $creator->create() : new AnyUserPolicyContext($this),
 			$entries,
-			__FUNCTION__,
+			$function,
 		);
 	}
 
@@ -223,10 +255,6 @@ final class PrivilegeAuthorizer implements Authorizer
 
 		if ($identity === null && !$policy instanceof OptionalIdentityPolicy) {
 			return false;
-		}
-
-		if ($identity !== null && $this->isRoot($identity)) {
-			return true;
 		}
 
 		$isAllowed = true;
