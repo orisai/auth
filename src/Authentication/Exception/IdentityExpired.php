@@ -3,16 +3,16 @@
 namespace Orisai\Auth\Authentication\Exception;
 
 use Orisai\Exceptions\DomainException;
-use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 
 final class IdentityExpired extends DomainException
 {
 
-	/** @var string|Translatable|null */
+	/** @var string|TranslatableMessage|null */
 	private $logoutReason;
 
 	/**
-	 * @param string|Translatable|null $logoutReason
+	 * @param string|TranslatableMessage|null $logoutReason
 	 */
 	public static function create($logoutReason = null): self
 	{
@@ -23,7 +23,7 @@ final class IdentityExpired extends DomainException
 	}
 
 	/**
-	 * @return string|Translatable|null
+	 * @return string|TranslatableMessage|null
 	 */
 	public function getLogoutReason()
 	{

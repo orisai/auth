@@ -15,7 +15,7 @@ use Orisai\Auth\Authorization\CurrentUserPolicyContextCreator;
 use Orisai\Clock\SystemClock;
 use Orisai\Exceptions\Logic\InvalidArgument;
 use Orisai\Exceptions\Message;
-use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 use Psr\Clock\ClockInterface;
 
 /**
@@ -116,7 +116,7 @@ abstract class BaseFirewall implements Firewall
 	}
 
 	/**
-	 * @param string|Translatable|null $logoutReason
+	 * @param string|TranslatableMessage|null $logoutReason
 	 */
 	private function unauthenticate(Logins $logins, LogoutCode $logoutCode, $logoutReason): void
 	{

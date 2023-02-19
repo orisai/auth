@@ -310,7 +310,7 @@ After user is logged out you may still access all data about this login. This wa
 into their account.
 
 ```php
-use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 use Orisai\TranslationContracts\Translator;
 
 $expiredLogin = $firewall->getLastExpiredLogin();
@@ -327,8 +327,8 @@ if ($expiredLogin !== null) {
 
 	if ($logoutReason !== null) {
 		$message = $logoutReason->getMessage();
-		if ($message instanceof Translatable) {
-			assert($translator instanceof Translator); // Create translator or get message id and parameters from Translatable
+		if ($message instanceof TranslatableMessage) {
+			assert($translator instanceof Translator); // Create translator or get message id and parameters from TranslatableMessage
 			$message = $translator->translateMessage($message);
 		}
 	}
