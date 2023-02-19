@@ -43,6 +43,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$builder->addPrivilege('test');
 		$authorizer = new PrivilegeAuthorizer($this->policies(), new SimpleAuthorizationDataCreator($builder));
 
+		self::assertSame($authorizer->getData(), $authorizer->getData());
 		self::assertSame(['test'], $authorizer->getData()->getPrivileges());
 	}
 
@@ -86,16 +87,20 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 	public function testAllAllowedForRoot(): void
 	{
+		$policyManager = $this->policies();
+		$policyManager->add(new NeverPassPolicy());
+
 		$builder = new AuthorizationDataBuilder();
 
 		$builder->addPrivilege('foo.bar.baz');
 		$builder->addPrivilege('something.else');
+		$builder->addPrivilege(NeverPassPolicy::getPrivilege());
 
 		$builder->addRole('leeroy');
 
 		$builder->addRoot('leeroy');
 
-		$authorizer = new PrivilegeAuthorizer($this->policies(), new SimpleAuthorizationDataCreator($builder));
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
 		$identity = new IntIdentity(1, ['leeroy']);
 
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo'));
@@ -106,6 +111,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
+		self::assertTrue($authorizer->isAllowed($identity, NeverPassPolicy::getPrivilege()));
 		self::assertTrue($authorizer->isRoot($identity));
 
 		// Can't remove part of root privilege
@@ -120,6 +126,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
+		self::assertTrue($authorizer->isAllowed($identity, NeverPassPolicy::getPrivilege()));
 		self::assertTrue($authorizer->isRoot($identity));
 
 		// Removing root is allowed
@@ -134,6 +141,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something.else'));
+		self::assertFalse($authorizer->isAllowed($identity, NeverPassPolicy::getPrivilege()));
 		self::assertFalse($authorizer->isRoot($identity));
 	}
 
