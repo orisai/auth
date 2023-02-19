@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Generator;
 use Orisai\Auth\Authentication\Identity;
 
 /**
@@ -11,6 +12,6 @@ use Orisai\Auth\Authentication\Identity;
 interface OptionalRequirementsPolicy extends Policy
 {
 
-	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): bool;
+	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): Generator;
 
 }

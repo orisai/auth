@@ -2,7 +2,10 @@
 
 namespace Tests\Orisai\Auth\Doubles;
 
+use Generator;
 use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryType;
 use Orisai\Auth\Authorization\OptionalRequirementsPolicy;
 use Orisai\Auth\Authorization\PolicyContext;
 
@@ -22,9 +25,12 @@ final class PassWithNoRequirementsPolicy implements OptionalRequirementsPolicy
 		return Article::class;
 	}
 
-	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): bool
+	public function isAllowed(Identity $identity, ?object $requirements, PolicyContext $context): Generator
 	{
-		return $requirements === null;
+		yield new AccessEntry(
+			AccessEntryType::fromBool($requirements === null),
+			'',
+		);
 	}
 
 }

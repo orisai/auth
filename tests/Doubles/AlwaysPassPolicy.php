@@ -6,39 +6,35 @@ use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements Policy<Article>
+ * @phpstan-implements Policy<NoRequirements>
  */
-final class ArticleEditPolicy implements Policy
+final class AlwaysPassPolicy implements Policy
 {
-
-	public const EditAll = 'article.edit.all';
 
 	public static function getPrivilege(): string
 	{
-		return 'article.edit';
+		return 'always-pass';
 	}
 
 	public static function getRequirementsClass(): string
 	{
-		return Article::class;
+		return NoRequirements::class;
 	}
 
-	/**
-	 * @param Article $requirements
-	 */
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
-		$authorizer = $context->getAuthorizer();
-
-		$res = $authorizer->isAllowed($identity, self::EditAll)
-			|| $authorizer->isAllowed($identity, ArticleEditOwnedPolicy::getPrivilege(), $requirements);
+		yield new AccessEntry(
+			AccessEntryType::allowed(),
+			'',
+		);
 
 		yield new AccessEntry(
-			AccessEntryType::fromBool($res),
+			AccessEntryType::allowed(),
 			'',
 		);
 	}

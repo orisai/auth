@@ -4,6 +4,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryType;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
@@ -16,11 +17,14 @@ use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 use Tests\Orisai\Auth\Doubles\AddAccessEntriesPolicy;
+use Tests\Orisai\Auth\Doubles\AlwaysPassPolicy;
 use Tests\Orisai\Auth\Doubles\Article;
 use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
+use Tests\Orisai\Auth\Doubles\InconclusivePolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
+use Tests\Orisai\Auth\Doubles\NoYieldPolicy;
 use Tests\Orisai\Auth\Doubles\PassWithNoIdentityPolicy;
 use Tests\Orisai\Auth\Doubles\PassWithNoRequirementsPolicy;
 use Tests\Orisai\Auth\Doubles\User;
@@ -742,17 +746,144 @@ MSG);
 
 		$identity = new IntIdentity(1, []);
 
-		$authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entries);
-		self::assertSame([], $entries);
-
-		$authorizer->isAllowed($identity, AddAccessEntriesPolicy::getPrivilege(), null, $entries);
+		$allowed = $authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entries);
+		self::assertTrue($allowed);
 		self::assertEquals(
 			[
-				new AccessEntry('Message'),
-				new AccessEntry(new TranslatableMessage('message.id')),
+				new AccessEntry(
+					AccessEntryType::allowed(),
+					'',
+				),
 			],
 			$entries,
 		);
+
+		$allowed = $authorizer->isAllowed($identity, AddAccessEntriesPolicy::getPrivilege(), null, $entries);
+		self::assertTrue($allowed);
+		self::assertEquals(
+			[
+				new AccessEntry(
+					AccessEntryType::allowed(),
+					'Message',
+				),
+				new AccessEntry(
+					AccessEntryType::allowed(),
+					new TranslatableMessage('message.id'),
+				),
+			],
+			$entries,
+		);
+	}
+
+	public function testNeverPassPolicy(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new NeverPassPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(NeverPassPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
+
+		$identity = new IntIdentity(1, []);
+
+		$allowed = $authorizer->isAllowed($identity, NeverPassPolicy::getPrivilege(), null, $entries);
+		self::assertFalse($allowed);
+		self::assertEquals(
+			[
+				new AccessEntry(
+					AccessEntryType::forbidden(),
+					'',
+				),
+				new AccessEntry(
+					AccessEntryType::forbidden(),
+					'',
+				),
+			],
+			$entries,
+		);
+	}
+
+	public function testAlwaysPassPolicy(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new AlwaysPassPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(AlwaysPassPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
+
+		$identity = new IntIdentity(1, []);
+
+		$allowed = $authorizer->isAllowed($identity, AlwaysPassPolicy::getPrivilege(), null, $entries);
+		self::assertTrue($allowed);
+		self::assertEquals(
+			[
+				new AccessEntry(
+					AccessEntryType::allowed(),
+					'',
+				),
+				new AccessEntry(
+					AccessEntryType::allowed(),
+					'',
+				),
+			],
+			$entries,
+		);
+	}
+
+	public function testInconclusivePolicy(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new InconclusivePolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(InconclusivePolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
+
+		$identity = new IntIdentity(1, []);
+
+		$allowed = $authorizer->isAllowed($identity, InconclusivePolicy::getPrivilege(), null, $entries);
+		self::assertFalse($allowed);
+		self::assertEquals(
+			[
+				new AccessEntry(
+					AccessEntryType::skipped(),
+					'',
+				),
+				new AccessEntry(
+					AccessEntryType::allowed(),
+					'',
+				),
+			],
+			$entries,
+		);
+	}
+
+	public function testNoYieldPolicy(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new NoYieldPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(NoYieldPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
+
+		$identity = new IntIdentity(1, []);
+
+		$this->expectException(InvalidArgument::class);
+		$this->expectExceptionMessage(
+			<<<'MSG'
+Context: Checking policy 'Tests\Orisai\Auth\Doubles\NoYieldPolicy'.
+Problem: Policy yielded no 'Orisai\Auth\Authorization\AccessEntry'.
+Solution: Yield at least one entry.
+MSG,
+		);
+
+		$authorizer->isAllowed($identity, NoYieldPolicy::getPrivilege());
 	}
 
 	public function testPolicyResourceOwner(): void

@@ -4,7 +4,6 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\ArrayLoginStorage;
 use Orisai\Auth\Authentication\SimpleFirewall;
-use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\CurrentUserPolicyContext;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
@@ -28,10 +27,6 @@ final class CurrentUserPolicyContextTest extends TestCase
 		self::assertSame($authorizer, $context->getAuthorizer());
 		self::assertTrue($context->isCurrentUser());
 		self::assertSame([], $context->getExpiredLogins());
-
-		self::assertSame([], $context->getAccessEntries());
-		$context->addAccessEntry($entry = new AccessEntry('Message'));
-		self::assertSame([$entry], $context->getAccessEntries());
 	}
 
 }

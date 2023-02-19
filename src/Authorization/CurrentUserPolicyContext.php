@@ -5,6 +5,9 @@ namespace Orisai\Auth\Authorization;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authentication\Identity;
 
+/**
+ * @readonly
+ */
 final class CurrentUserPolicyContext extends BaseUserPolicyContext
 {
 

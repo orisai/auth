@@ -2,6 +2,9 @@
 
 namespace Orisai\Auth\Authorization;
 
+/**
+ * @readonly
+ */
 final class AnyUserPolicyContext extends BaseUserPolicyContext
 {
 

@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Generator;
 use Orisai\Auth\Authentication\Identity;
 
 /**
@@ -28,7 +29,8 @@ interface Policy
 
 	/**
 	 * @phpstan-param R $requirements
+	 * @return Generator<int, AccessEntry, null, void>
 	 */
-	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): bool;
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator;
 
 }
