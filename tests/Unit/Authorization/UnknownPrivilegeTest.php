@@ -15,7 +15,7 @@ final class UnknownPrivilegeTest extends TestCase
 
 		self::assertSame(
 			<<<'MSG'
-Context: Trying to call stdClass->function().
+Context: Calling stdClass->function().
 Problem: Privilege 'article.edit' is unknown.
 Solution: Add privilege to data builder first via addPrivilege().
 MSG,

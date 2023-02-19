@@ -154,7 +154,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$class = self::class;
 			$requirementsType = get_class($requirements);
 			$message = Message::create()
-				->withContext("Trying to check privilege $privilege via $class->$function().")
+				->withContext("Checking privilege $privilege via $class->$function().")
 				->withProblem(
 					"Passed requirement object (type of $requirementsType) which is not allowed by privilege without policy.",
 				)
@@ -192,7 +192,7 @@ final class PrivilegeAuthorizer implements Authorizer
 				$policyClass = get_class($policy);
 				$passedRequirementsClass = get_class($requirements);
 				$message = Message::create()
-					->withContext("Trying to check privilege $privilege via $class->$function().")
+					->withContext("Checking privilege $privilege via $class->$function().")
 					->withProblem(
 						"Passed requirements are of type $passedRequirementsClass, which is not supported by $policyClass.",
 					)
@@ -211,7 +211,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$noRequirementsClass = NoRequirements::class;
 			$optionalRequirementsClass = OptionalRequirementsPolicy::class;
 			$message = Message::create()
-				->withContext("Trying to check privilege $privilege via $class->$function().")
+				->withContext("Checking privilege $privilege via $class->$function().")
 				->withProblem("Policy requirements are missing, which is not supported by $policyClass.")
 				->withSolution(
 					"Pass requirements of type $requirementsClass or implement $optionalRequirementsClass or change them to $noRequirementsClass.",

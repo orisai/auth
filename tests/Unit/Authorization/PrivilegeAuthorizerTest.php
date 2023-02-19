@@ -625,7 +625,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
+Context: Checking privilege article.edit via
          Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
 Problem: Passed requirement object (type of stdClass) which is not allowed by
          privilege without policy.
@@ -648,7 +648,7 @@ MSG);
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
+Context: Checking privilege article.edit via
          Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
 Problem: Passed requirements are of type stdClass, which is not supported by
          Tests\Orisai\Auth\Doubles\ArticleEditPolicy.
@@ -702,7 +702,7 @@ MSG);
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to check privilege article.edit via
+Context: Checking privilege article.edit via
          Orisai\Auth\Authorization\PrivilegeAuthorizer->isAllowed().
 Problem: Policy requirements are missing, which is not supported by
          Tests\Orisai\Auth\Doubles\ArticleEditPolicy.

@@ -483,7 +483,7 @@ MSG);
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to set login expiration time.
+Context: Setting login expiration time.
 Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
 MSG);
@@ -507,7 +507,7 @@ MSG);
 
 		$this->expectException(InvalidArgument::class);
 		$this->expectExceptionMessage(<<<'MSG'
-Context: Trying to set login expiration time.
+Context: Setting login expiration time.
 Problem: Expiration time is lower than current time.
 Solution: Choose expiration time which is in future.
 MSG);

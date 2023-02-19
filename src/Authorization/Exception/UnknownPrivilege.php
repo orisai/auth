@@ -25,7 +25,7 @@ final class UnknownPrivilege extends LogicalException
 		$self = new self($privilege);
 
 		$message = Message::create()
-			->withContext("Trying to call $class->$function().")
+			->withContext("Calling $class->$function().")
 			->withProblem("Privilege '$privilege' is unknown.")
 			->withSolution('Add privilege to data builder first via addPrivilege().');
 		$self->withMessage($message);
