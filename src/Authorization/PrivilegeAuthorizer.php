@@ -229,9 +229,27 @@ final class PrivilegeAuthorizer implements Authorizer
 			return true;
 		}
 
-		$isAllowed = $policy->isAllowed($identity, $requirements, $context);
+		$isAllowed = true;
+		$entries = [];
+		foreach ($policy->isAllowed($identity, $requirements, $context) as $entry) {
+			$entries[] = $entry;
 
-		$entries = $context->getAccessEntries();
+			// If any entry is not allowed, policy forbids access
+			if ($isAllowed && $entry->getType() !== AccessEntryType::allowed()) {
+				$isAllowed = false;
+			}
+		}
+
+		if ($entries === []) {
+			$policyClass = get_class($policy);
+			$entryClass = AccessEntry::class;
+			$message = Message::create()
+				->withContext("Checking policy '$policyClass'.")
+				->withProblem("Policy yielded no '$entryClass'.")
+				->withSolution('Yield at least one entry.');
+
+			throw InvalidArgument::create()->withMessage($message);
+		}
 
 		return $isAllowed;
 	}

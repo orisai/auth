@@ -3,15 +3,14 @@
 namespace Orisai\Auth\Authorization;
 
 /**
+ * @readonly
+ *
  * @internal
  */
 abstract class BaseUserPolicyContext implements PolicyContext
 {
 
 	private Authorizer $authorizer;
-
-	/** @var list<AccessEntry> */
-	private array $accessEntries = [];
 
 	public function __construct(Authorizer $authorizer)
 	{
@@ -21,16 +20,6 @@ abstract class BaseUserPolicyContext implements PolicyContext
 	public function getAuthorizer(): Authorizer
 	{
 		return $this->authorizer;
-	}
-
-	public function addAccessEntry(AccessEntry $entry): void
-	{
-		$this->accessEntries[] = $entry;
-	}
-
-	public function getAccessEntries(): array
-	{
-		return $this->accessEntries;
 	}
 
 }

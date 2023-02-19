@@ -3,10 +3,9 @@
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryType;
 use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
-use function serialize;
-use function unserialize;
 
 final class AccessEntryTest extends TestCase
 {
@@ -14,19 +13,19 @@ final class AccessEntryTest extends TestCase
 	public function test(): void
 	{
 		$message = 'Message';
-		$reason = new AccessEntry($message);
+		$entry = new AccessEntry(AccessEntryType::allowed(), $message);
 
-		self::assertSame($message, $reason->getMessage());
-		self::assertEquals($reason, unserialize(serialize($reason)));
+		self::assertSame(AccessEntryType::allowed(), $entry->getType());
+		self::assertSame($message, $entry->getMessage());
 	}
 
 	public function testTranslatable(): void
 	{
 		$message = new TranslatableMessage('translatable.message', ['a' => 'b']);
-		$reason = new AccessEntry($message);
+		$entry = new AccessEntry(AccessEntryType::forbidden(), $message);
 
-		self::assertSame($message, $reason->getMessage());
-		self::assertEquals($reason, unserialize(serialize($reason)));
+		self::assertSame(AccessEntryType::forbidden(), $entry->getType());
+		self::assertSame($message, $entry->getMessage());
 	}
 
 }

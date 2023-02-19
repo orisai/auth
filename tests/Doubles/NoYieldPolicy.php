@@ -4,22 +4,19 @@ namespace Tests\Orisai\Auth\Doubles;
 
 use Generator;
 use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
-use Orisai\TranslationContracts\TranslatableMessage;
 
 /**
- * @phpstan-implements Policy<NoRequirements>
+ * @implements Policy<NoRequirements>
  */
-final class AddAccessEntriesPolicy implements Policy
+final class NoYieldPolicy implements Policy
 {
 
 	public static function getPrivilege(): string
 	{
-		return 'add-access-entry';
+		return 'no-yield';
 	}
 
 	public static function getRequirementsClass(): string
@@ -29,15 +26,7 @@ final class AddAccessEntriesPolicy implements Policy
 
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
-		yield new AccessEntry(
-			AccessEntryType::allowed(),
-			'Message',
-		);
-
-		yield new AccessEntry(
-			AccessEntryType::allowed(),
-			new TranslatableMessage('message.id'),
-		);
+		yield from [];
 	}
 
 }
