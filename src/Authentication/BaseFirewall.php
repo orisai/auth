@@ -234,7 +234,7 @@ abstract class BaseFirewall implements Firewall
 
 		if ($delta <= 0) {
 			$message = Message::create()
-				->withContext('Trying to set login expiration time.')
+				->withContext('Setting login expiration time.')
 				->withProblem('Expiration time is lower than current time.')
 				->withSolution('Choose expiration time which is in future.');
 
