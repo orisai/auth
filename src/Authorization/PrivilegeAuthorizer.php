@@ -263,7 +263,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$entries[] = $entry;
 
 			// If any entry is not allowed, policy forbids access
-			if ($isAllowed && $entry->getType() !== AccessEntryType::allowed()) {
+			if ($isAllowed && $entry->getResult() !== AccessEntryResult::allowed()) {
 				$isAllowed = false;
 			}
 		}

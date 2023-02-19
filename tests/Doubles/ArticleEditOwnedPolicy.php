@@ -5,7 +5,7 @@ namespace Tests\Orisai\Auth\Doubles;
 use Generator;
 use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
@@ -36,7 +36,7 @@ final class ArticleEditOwnedPolicy implements Policy
 			&& $identity->getId() === $requirements->getAuthor()->getId();
 
 		yield new AccessEntry(
-			AccessEntryType::fromBool($res),
+			AccessEntryResult::fromBool($res),
 			'',
 		);
 	}

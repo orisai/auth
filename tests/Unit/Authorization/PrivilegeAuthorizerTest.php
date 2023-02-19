@@ -4,7 +4,7 @@ namespace Tests\Orisai\Auth\Unit\Authorization;
 
 use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
@@ -105,11 +105,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		$expectedEntries = [
 			new AccessEntry(
-				AccessEntryType::forbidden(),
+				AccessEntryResult::forbidden(),
 				'',
 			),
 			new AccessEntry(
-				AccessEntryType::forbidden(),
+				AccessEntryResult::forbidden(),
 				'',
 			),
 		];
@@ -773,7 +773,7 @@ MSG);
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'',
 				),
 			],
@@ -785,11 +785,11 @@ MSG);
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'Message',
 				),
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					new TranslatableMessage('message.id'),
 				),
 			],
@@ -814,11 +814,11 @@ MSG);
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::forbidden(),
+					AccessEntryResult::forbidden(),
 					'',
 				),
 				new AccessEntry(
-					AccessEntryType::forbidden(),
+					AccessEntryResult::forbidden(),
 					'',
 				),
 			],
@@ -843,11 +843,11 @@ MSG);
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'',
 				),
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'',
 				),
 			],
@@ -872,11 +872,11 @@ MSG);
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::skipped(),
+					AccessEntryResult::skipped(),
 					'',
 				),
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'',
 				),
 			],

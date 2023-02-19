@@ -11,7 +11,7 @@ use Orisai\Auth\Authentication\IntIdentity;
 use Orisai\Auth\Authentication\LogoutCode;
 use Orisai\Auth\Authentication\StringIdentity;
 use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryType;
+use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\PolicyManager;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
@@ -154,7 +154,7 @@ final class BaseFirewallTest extends TestCase
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'',
 				),
 			],
@@ -166,11 +166,11 @@ final class BaseFirewallTest extends TestCase
 		self::assertEquals(
 			[
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					'Message',
 				),
 				new AccessEntry(
-					AccessEntryType::allowed(),
+					AccessEntryResult::allowed(),
 					new TranslatableMessage('message.id'),
 				),
 			],
