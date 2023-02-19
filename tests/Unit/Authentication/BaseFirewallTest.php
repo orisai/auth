@@ -367,7 +367,10 @@ MSG,
 		$expired = $firewall->getExpiredLogins()[123];
 		self::assertSame($identity, $expired->getIdentity());
 		self::assertSame(LogoutCode::invalidIdentity(), $expired->getLogoutCode());
-		self::assertEquals($reasonDescription === null ? null : new DecisionReason($reasonDescription), $expired->getLogoutReason());
+		self::assertEquals(
+			$reasonDescription === null ? null : new DecisionReason($reasonDescription),
+			$expired->getLogoutReason(),
+		);
 	}
 
 	/**
@@ -446,16 +449,19 @@ MSG,
 
 	public function testNotTimeExpiredIdentity(): void
 	{
+		$clock = new FrozenClock(time());
 		$storage = new ArrayLoginStorage();
-		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer());
+		$firewall = new TestingFirewall($storage, $this->refresher(), $this->authorizer(), $clock);
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpirationTime((new DateTimeImmutable())->modify('+10 minutes'));
+		$firewall->setExpirationTime((new DateTimeImmutable())->modify('+1 second'));
 		self::assertSame($identity, $firewall->getIdentity());
 
+		$clock->move(1);
 		$firewall->resetLoginsChecks();
 
+		self::assertTrue($firewall->isLoggedIn());
 		self::assertSame($identity, $firewall->getIdentity());
 		self::assertSame([], $firewall->getExpiredLogins());
 	}
