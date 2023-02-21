@@ -450,7 +450,7 @@ MSG,
 		$identity = new IntIdentity(123, []);
 
 		$firewall->login($identity);
-		$firewall->setExpirationTime((new DateTimeImmutable())->modify('+1 second'));
+		$firewall->setExpirationTime($clock->now()->modify('+1 second'));
 		self::assertSame($identity, $firewall->getIdentity());
 
 		$clock->move(1);
