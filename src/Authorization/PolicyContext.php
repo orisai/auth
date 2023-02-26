@@ -19,4 +19,6 @@ interface PolicyContext
 	 */
 	public function getExpiredLogins(): array;
 
+	public function getLastExpiredLogin(): ?ExpiredLogin;
+
 }

@@ -23,6 +23,7 @@ final class AnyUserPolicyContextTest extends TestCase
 		self::assertSame($authorizer, $context->getAuthorizer());
 		self::assertFalse($context->isCurrentUser());
 		self::assertSame([], $context->getExpiredLogins());
+		self::assertNull($context->getLastExpiredLogin());
 	}
 
 }

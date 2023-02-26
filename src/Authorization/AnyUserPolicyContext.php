@@ -2,6 +2,8 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Orisai\Auth\Authentication\Data\ExpiredLogin;
+
 /**
  * @readonly
  */
@@ -16,6 +18,11 @@ final class AnyUserPolicyContext extends BaseUserPolicyContext
 	public function getExpiredLogins(): array
 	{
 		return [];
+	}
+
+	public function getLastExpiredLogin(): ?ExpiredLogin
+	{
+		return null;
 	}
 
 }
