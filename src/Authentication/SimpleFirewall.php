@@ -6,7 +6,7 @@ use Orisai\Auth\Authorization\Authorizer;
 use Psr\Clock\ClockInterface;
 
 /**
- * @phpstan-extends BaseFirewall<Identity>
+ * @extends BaseFirewall<Identity>
  */
 final class SimpleFirewall extends BaseFirewall
 {

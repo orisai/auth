@@ -10,7 +10,7 @@ use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\Authorizer;
 
 /**
- * @phpstan-template I of Identity
+ * @template I of Identity
  */
 interface Firewall
 {
@@ -20,7 +20,7 @@ interface Firewall
 	public function isLoggedIn(): bool;
 
 	/**
-	 * @phpstan-param I $identity
+	 * @param I $identity
 	 */
 	public function login(Identity $identity): void;
 
@@ -30,7 +30,7 @@ interface Firewall
 	public function addLoginCallback(Closure $callback): void;
 
 	/**
-	 * @phpstan-param I $identity
+	 * @param I $identity
 	 * @throws NotLoggedIn
 	 */
 	public function refreshIdentity(Identity $identity): void;
@@ -43,7 +43,7 @@ interface Firewall
 	public function addLogoutCallback(Closure $callback): void;
 
 	/**
-	 * @phpstan-return I
+	 * @return I
 	 * @throws NotLoggedIn
 	 */
 	public function getIdentity(): Identity;
@@ -52,7 +52,7 @@ interface Firewall
 
 	/**
 	 * @param array{}|null           $entries
-	 * @phpstan-param literal-string $privilege
+	 * @param literal-string $privilege
 	 * @param-out list<AccessEntry>  $entries
 	 */
 	public function isAllowed(string $privilege, ?object $requirements = null, ?array &$entries = null): bool;

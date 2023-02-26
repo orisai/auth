@@ -6,7 +6,7 @@ use Generator;
 use Orisai\Auth\Authentication\Identity;
 
 /**
- * @phpstan-template R of object
+ * @template R of object
  *
  * @see OptionalIdentityPolicy
  * @see OptionalRequirementsPolicy
@@ -15,20 +15,19 @@ interface Policy
 {
 
 	/**
-	 * @phpstan-return literal-string
+	 * @return literal-string
 	 */
 	public static function getPrivilege(): string;
 
 	/**
-	 * @return class-string
-	 * @phpstan-return class-string<R>
+	 * @return class-string<R>
 	 *
 	 * @see NoRequirements
 	 */
 	public static function getRequirementsClass(): string;
 
 	/**
-	 * @phpstan-param R $requirements
+	 * @param R $requirements
 	 * @return Generator<int, AccessEntry, null, void>
 	 */
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator;

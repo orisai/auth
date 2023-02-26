@@ -6,7 +6,7 @@ use Orisai\Auth\Authentication\Identity;
 use Orisai\Auth\Authentication\IdentityRefresher;
 
 /**
- * @phpstan-implements IdentityRefresher<Identity>
+ * @implements IdentityRefresher<Identity>
  */
 final class AlwaysPassIdentityRefresher implements IdentityRefresher
 {

@@ -12,7 +12,7 @@ use Orisai\Auth\Authorization\PolicyContext;
 use Orisai\TranslationContracts\TranslatableMessage;
 
 /**
- * @phpstan-implements Policy<NoRequirements>
+ * @implements Policy<NoRequirements>
  */
 final class AddAccessEntriesPolicy implements Policy
 {

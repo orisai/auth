@@ -11,7 +11,7 @@ use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements Policy<NoRequirements>
+ * @implements Policy<NoRequirements>
  */
 final class NeverPassPolicy implements Policy
 {

@@ -8,7 +8,7 @@ use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\TranslationContracts\TranslatableMessage;
 
 /**
- * @phpstan-implements IdentityRefresher<Identity>
+ * @implements IdentityRefresher<Identity>
  */
 final class NeverPassIdentityRefresher implements IdentityRefresher
 {

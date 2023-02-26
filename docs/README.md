@@ -177,7 +177,7 @@ use Orisai\Auth\Authentication\IdentityRefresher;
 use Orisai\Auth\Authentication\IntIdentity;
 
 /**
- * @phpstan-implements IdentityRefresher<IntIdentity>
+ * @implements IdentityRefresher<IntIdentity>
  */
 final class AdminIdentityRefresher implements IdentityRefresher
 {
@@ -392,7 +392,7 @@ differentiate each firewall by class name.
 use Orisai\Auth\Authentication\BaseFirewall;
 
 /**
- * @phpstan-extends BaseFirewall<IntIdentity>
+ * @extends BaseFirewall<IntIdentity>
  */
 final class AdminFirewall extends BaseFirewall
 {
@@ -759,7 +759,7 @@ use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements Policy<Article>
+ * @implements Policy<Article>
  */
 final class ArticleEditPolicy implements Policy
 {
