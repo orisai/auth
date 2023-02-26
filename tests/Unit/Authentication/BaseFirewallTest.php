@@ -153,7 +153,7 @@ final class BaseFirewallTest extends TestCase
 			[
 				new AccessEntry(
 					AccessEntryResult::allowed(),
-					'',
+					'[internal behavior] No requirements',
 				),
 			],
 			$entries,

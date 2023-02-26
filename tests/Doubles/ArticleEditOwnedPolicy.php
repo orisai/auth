@@ -31,13 +31,16 @@ final class ArticleEditOwnedPolicy implements Policy
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
 		$authorizer = $context->getAuthorizer();
-
-		$res = $authorizer->hasPrivilege($identity, self::getPrivilege())
-			&& $identity->getId() === $requirements->getAuthor()->getId();
+		$privilege = self::getPrivilege();
 
 		yield new AccessEntry(
-			AccessEntryResult::fromBool($res),
-			'',
+			AccessEntryResult::fromBool($authorizer->hasPrivilege($identity, $privilege)),
+			"Has privilege $privilege",
+		);
+
+		yield new AccessEntry(
+			AccessEntryResult::fromBool($identity->getId() === $requirements->getAuthor()->getId()),
+			'Is author of the article',
 		);
 	}
 

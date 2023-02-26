@@ -30,12 +30,12 @@ final class InconclusivePolicy implements Policy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::skipped(),
-			'',
+			'[internal behavior] Skipped',
 		);
 
 		yield new AccessEntry(
 			AccessEntryResult::allowed(),
-			'',
+			'[internal behavior] Allowed',
 		);
 	}
 

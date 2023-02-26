@@ -39,7 +39,7 @@ final class ArticleEditPolicy implements Policy
 
 		yield new AccessEntry(
 			AccessEntryResult::fromBool($res),
-			'',
+			'Is article author or can edit all articles',
 		);
 	}
 
