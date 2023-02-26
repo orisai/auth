@@ -129,7 +129,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	/**
 	 * @param array{}|null           $entries
-	 * @phpstan-param literal-string $privilege
+	 * @param literal-string $privilege
 	 * @param-out list<AccessEntry>  $entries
 	 */
 	private function isAllowedInternal(
@@ -201,7 +201,7 @@ final class PrivilegeAuthorizer implements Authorizer
 
 	/**
 	 * @param array{}|null           $entries
-	 * @phpstan-param Policy<object> $policy
+	 * @param Policy<object> $policy
 	 */
 	private function isAllowedByPolicy(
 		?Identity $identity,

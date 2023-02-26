@@ -11,7 +11,7 @@ final class NotLoggedIn extends LogicalException
 {
 
 	/**
-	 * @phpstan-template F of Firewall
+	 * @template F of Firewall
 	 * @param class-string<F> $class
 	 */
 	public static function create(string $class, string $function): self

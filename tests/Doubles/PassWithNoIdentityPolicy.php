@@ -11,7 +11,7 @@ use Orisai\Auth\Authorization\OptionalIdentityPolicy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements OptionalIdentityPolicy<NoRequirements>
+ * @implements OptionalIdentityPolicy<NoRequirements>
  */
 final class PassWithNoIdentityPolicy implements OptionalIdentityPolicy
 {

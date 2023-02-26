@@ -6,8 +6,8 @@ use Generator;
 use Orisai\Auth\Authentication\Identity;
 
 /**
- * @phpstan-template R of object
- * @phpstan-extends Policy<R>
+ * @template R of object
+ * @extends Policy<R>
  */
 interface OptionalIdentityPolicy extends Policy
 {

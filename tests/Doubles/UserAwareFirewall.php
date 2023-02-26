@@ -11,7 +11,7 @@ use Orisai\Auth\Authorization\Authorizer;
 use Orisai\Clock\Clock;
 
 /**
- * @phpstan-extends BaseFirewall<Identity>
+ * @extends BaseFirewall<Identity>
  */
 final class UserAwareFirewall extends BaseFirewall
 {

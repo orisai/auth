@@ -10,7 +10,7 @@ use Orisai\Auth\Authorization\OptionalRequirementsPolicy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements OptionalRequirementsPolicy<Article>
+ * @implements OptionalRequirementsPolicy<Article>
  */
 final class PassWithNoRequirementsPolicy implements OptionalRequirementsPolicy
 {

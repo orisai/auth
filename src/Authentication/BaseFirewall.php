@@ -19,15 +19,15 @@ use Orisai\TranslationContracts\TranslatableMessage;
 use Psr\Clock\ClockInterface;
 
 /**
- * @phpstan-template I of Identity
- * @phpstan-implements Firewall<I>
+ * @template I of Identity
+ * @implements Firewall<I>
  */
 abstract class BaseFirewall implements Firewall
 {
 
 	private LoginStorage $storage;
 
-	/** @phpstan-var IdentityRefresher<I> */
+	/** @var IdentityRefresher<I> */
 	private IdentityRefresher $refresher;
 
 	private Authorizer $authorizer;
@@ -48,7 +48,7 @@ abstract class BaseFirewall implements Firewall
 	private CurrentUserPolicyContextCreator $contextCreator;
 
 	/**
-	 * @phpstan-param IdentityRefresher<I> $refresher
+	 * @param IdentityRefresher<I> $refresher
 	 */
 	public function __construct(
 		LoginStorage $storage,

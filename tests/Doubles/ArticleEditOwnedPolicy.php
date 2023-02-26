@@ -10,7 +10,7 @@ use Orisai\Auth\Authorization\Policy;
 use Orisai\Auth\Authorization\PolicyContext;
 
 /**
- * @phpstan-implements Policy<Article>
+ * @implements Policy<Article>
  */
 final class ArticleEditOwnedPolicy implements Policy
 {

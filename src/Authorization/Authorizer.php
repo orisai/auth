@@ -8,13 +8,13 @@ interface Authorizer
 {
 
 	/**
-	 * @phpstan-param literal-string $privilege
+	 * @param literal-string $privilege
 	 */
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 
 	/**
 	 * @param array{}|null           $entries
-	 * @phpstan-param literal-string $privilege
+	 * @param literal-string $privilege
 	 * @param-out list<AccessEntry>  $entries
 	 */
 	public function isAllowed(
