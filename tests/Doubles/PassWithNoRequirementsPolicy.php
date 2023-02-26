@@ -29,7 +29,7 @@ final class PassWithNoRequirementsPolicy implements OptionalRequirementsPolicy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::fromBool($requirements === null),
-			'',
+			'[internal behavior] Don\'t pass any requirements',
 		);
 	}
 

@@ -30,7 +30,7 @@ final class NoRequirementsPolicy implements Policy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::fromBool($requirements instanceof NoRequirements),
-			'',
+			'[internal behavior] No requirements',
 		);
 	}
 

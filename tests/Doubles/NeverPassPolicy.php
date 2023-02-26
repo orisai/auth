@@ -30,12 +30,12 @@ final class NeverPassPolicy implements Policy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::forbidden(),
-			'',
+			'[internal behavior] Never pass',
 		);
 
 		yield new AccessEntry(
 			AccessEntryResult::forbidden(),
-			'',
+			'[internal behavior] Never pass',
 		);
 	}
 

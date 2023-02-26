@@ -106,11 +106,11 @@ final class PrivilegeAuthorizerTest extends TestCase
 		$expectedEntries = [
 			new AccessEntry(
 				AccessEntryResult::forbidden(),
-				'',
+				'[internal behavior] Never pass',
 			),
 			new AccessEntry(
 				AccessEntryResult::forbidden(),
-				'',
+				'[internal behavior] Never pass',
 			),
 		];
 
@@ -774,7 +774,7 @@ MSG);
 			[
 				new AccessEntry(
 					AccessEntryResult::allowed(),
-					'',
+					'[internal behavior] No requirements',
 				),
 			],
 			$entries,
@@ -815,11 +815,11 @@ MSG);
 			[
 				new AccessEntry(
 					AccessEntryResult::forbidden(),
-					'',
+					'[internal behavior] Never pass',
 				),
 				new AccessEntry(
 					AccessEntryResult::forbidden(),
-					'',
+					'[internal behavior] Never pass',
 				),
 			],
 			$entries,
@@ -844,11 +844,11 @@ MSG);
 			[
 				new AccessEntry(
 					AccessEntryResult::allowed(),
-					'',
+					'[internal behavior] Always pass',
 				),
 				new AccessEntry(
 					AccessEntryResult::allowed(),
-					'',
+					'[internal behavior] Always pass',
 				),
 			],
 			$entries,
@@ -873,11 +873,11 @@ MSG);
 			[
 				new AccessEntry(
 					AccessEntryResult::skipped(),
-					'',
+					'[internal behavior] Skipped',
 				),
 				new AccessEntry(
 					AccessEntryResult::allowed(),
-					'',
+					'[internal behavior] Allowed',
 				),
 			],
 			$entries,

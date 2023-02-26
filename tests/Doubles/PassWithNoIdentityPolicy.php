@@ -30,7 +30,7 @@ final class PassWithNoIdentityPolicy implements OptionalIdentityPolicy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::fromBool($identity === null),
-			'',
+			'Not logged in',
 		);
 	}
 

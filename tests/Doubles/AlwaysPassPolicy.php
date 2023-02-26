@@ -30,12 +30,12 @@ final class AlwaysPassPolicy implements Policy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::allowed(),
-			'',
+			'[internal behavior] Always pass',
 		);
 
 		yield new AccessEntry(
 			AccessEntryResult::allowed(),
-			'',
+			'[internal behavior] Always pass',
 		);
 	}
 
