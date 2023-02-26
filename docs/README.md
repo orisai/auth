@@ -1046,6 +1046,8 @@ final class LoginAwarePolicy implements Policy
 		// true = Firewall->isAllowed() - user is the current user
 		// false = Authorizer->isAllowed() - user may not be current user and no expired logins will be available
 
+		$context->getLastExpiredLogin(); // ExpiredLogin|null
+
 		foreach ($context->getExpiredLogins() as $expiredLogin) {
 			// ...
 		}

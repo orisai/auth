@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Authorization;
 
+use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Firewall;
 use Orisai\Auth\Authentication\Identity;
 
@@ -33,6 +34,11 @@ final class CurrentUserPolicyContext extends BaseUserPolicyContext
 	public function getExpiredLogins(): array
 	{
 		return $this->firewall->getExpiredLogins();
+	}
+
+	public function getLastExpiredLogin(): ?ExpiredLogin
+	{
+		return $this->firewall->getLastExpiredLogin();
 	}
 
 }
