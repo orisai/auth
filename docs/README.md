@@ -23,14 +23,15 @@ Authentication and authorization
 	- [Privileges](#privileges)
 		- [Identity privileges](#identity-privileges)
 	- [Policies - customized authorization](#policies---customized-authorization)
-		- [Policy context](#policy-context)
 		- [Policy with optional log-in check](#policy-with-optional-log-in-check)
 		- [Policy with optional requirements](#policy-with-optional-requirements)
 		- [Policy with no requirements](#policy-with-no-requirements)
 		- [Policy with default-like privilege check](#policy-with-default-like-privilege-check)
+		- [Composed policy](#composed-policy)
+		- [Login aware policy](#login-aware-policy)
 	- [Root - bypass all checks](#root---bypass-all-checks)
 	- [Check authorization of not current user](#check-authorization-of-not-current-user)
-	- [Access entries](#access-entries)
+	- [Accessing entries](#accessing-entries)
 	- [Access data](#access-authorization-data)
 - [Passwords](#passwords)
 	- [Argon2](#argon2-hasher)
@@ -739,11 +740,14 @@ It may request an object from `isAllowed()` call and services via constructor to
 > `hasPrivilege()` checks only privilege, without calling policy
 
 ```php
-$policyManager->add(new ArticleEditOwnedPolicy());
+$policyManager->add(new ArticleEditPolicy());
 // ...
-$authorizer->isAllowed($identity, 'article.edit.owned', $article); // bool
-$firewall->isAllowed('article.edit.owned', $article); // bool
+$authorizer->isAllowed($identity, 'article.edit', $article); // bool
+$firewall->isAllowed('article.edit', $article); // bool
 ```
+
+Policy has to yield at least one `AccessEntry`. Only if all entries contain `AccessEntryResult::allowed()`, policy
+passes.
 
 ```php
 use Generator;
@@ -757,12 +761,12 @@ use Orisai\Auth\Authorization\PolicyContext;
 /**
  * @phpstan-implements Policy<Article>
  */
-final class ArticleEditOwnedPolicy implements Policy
+final class ArticleEditPolicy implements Policy
 {
 
 	public static function getPrivilege(): string
 	{
-		return 'article.edit.owned';
+		return 'article.edit';
 	}
 
 	public static function getRequirementsClass(): string
@@ -776,13 +780,18 @@ final class ArticleEditOwnedPolicy implements Policy
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
 		$authorizer = $context->getAuthorizer();
-
-		$res = $authorizer->hasPrivilege($identity, self::getPrivilege())
-			&& $identity->getId() === $requirements->getAuthor()->getId();
+		$privilege = self::getPrivilege();
 
 		yield new AccessEntry(
-			AccessEntryResult::fromBool($res),
-			'',
+			// true -> AccessEntryResult::allowed()
+			// false -> AccessEntryResult::forbidden()
+			AccessEntryResult::fromBool($authorizer->hasPrivilege($identity, $privilege)),
+			"Has privilege $privilege",
+		);
+
+		yield new AccessEntry(
+			AccessEntryResult::fromBool($identity->getId() === $requirements->getAuthor()->getId()),
+			'Is author of the article',
 		);
 	}
 
@@ -799,10 +808,6 @@ $policyManager->add(new ArticleEditPolicy());
 $policyManager->add(new ArticleEditOwnedPolicy());
 ```
 
-Alternative, lazy implementations available are in:
-
-- [orisai/nette-auth](https://github.com/orisai/nette-auth) - for [nette/di](https://github.com/nette/di)
-
 Requirements can be made [optional](#policy-with-optional-requirements) or even [none](#policy-with-no-requirements) at
 all.
 
@@ -813,45 +818,6 @@ For privileges with registered policy, privilege itself **is not checked**. Poli
 to [do the check itself](#policy-with-default-like-privilege-check).
 
 Policy is always skipped by [root](#root---bypass-all-checks).
-
-#### Policy context
-
-Policy provides a context to make authorizer calls to subsequent policies, access current users expired logins, ...:
-
-```php
-use Generator;
-use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryResult;
-use Orisai\Auth\Authorization\Policy;
-use Orisai\Auth\Authorization\PolicyContext;
-
-final class ContextAwarePolicy implements Policy
-{
-
-	// ...
-
-	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
-	{
-		$context->isCurrentUser(); // bool
-
-		foreach ($context->getExpiredLogins() as $expiredLogin) {
-			// ...
-		}
-
-		$authorizer = $context->getAuthorizer();
-
-		$res = $authorizer->isAllowed('contextAware.subprivilege1')
-			&& $authorizer->isAllowed('contextAware.subprivilege2');
-
-		yield new AccessEntry(
-			AccessEntryResult::fromBool($res),
-			'',
-		);
-	}
-
-}
-```
 
 #### Policy with optional log-in check
 
@@ -886,11 +852,10 @@ final class OnlyLoggedOutUserPolicy implements OptionalIdentityPolicy
 
 	public function isAllowed(?Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
-		// Only logged-out user is allowed
-
 		yield new AccessEntry(
+			// Only logged-out user is allowed
 			AccessEntryResult::fromBool($identity === null),
-			'',
+			'Not logged in',
 		);
 	}
 
@@ -974,7 +939,7 @@ final class NoRequirementsPolicy implements Policy
 	{
 		yield new AccessEntry(
 			AccessEntryResult::allowed(),
-			'',
+			'No requirements',
 		);
 	}
 
@@ -1013,11 +978,77 @@ final class DefaultCheckPolicy implements Policy
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
 	{
 		$authorizer = $context->getAuthorizer();
+		$privilege = self::getPrivilege();
 
 		yield new AccessEntry(
-			AccessEntryResult::fromBool($authorizer->hasPrivilege($identity, self::getPrivilege())),
-			'',
+			AccessEntryResult::fromBool($authorizer->hasPrivilege($identity, $privilege)),
+			"Has privilege $privilege",
 		);
+	}
+
+}
+```
+
+#### Composed policy
+
+Policies can call other policies internally and combine their results
+
+```php
+use Generator;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryResult;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
+
+final class ComposedPolicy implements Policy
+{
+
+	// ...
+
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
+	{
+		$authorizer = $context->getAuthorizer();
+
+		// We don't care about returned value, because it is determined from entries
+		// We use entries directly instead
+		$authorizer->isAllowed($identity, 'composed.subprivilege1', null, $entries);
+		yield from $entries;
+
+		$authorizer->isAllowed($identity, 'composed.subprivilege2', null, $entries);
+		yield from $entries;
+	}
+
+}
+```
+
+#### Login aware policy
+
+Policy can access information about current login to e.g. make an action available only if user already has an expired
+login
+
+```php
+use Generator;
+use Orisai\Auth\Authentication\Identity;
+use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryResult;
+use Orisai\Auth\Authorization\Policy;
+use Orisai\Auth\Authorization\PolicyContext;
+
+final class LoginAwarePolicy implements Policy
+{
+
+	// ...
+
+	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
+	{
+		$context->isCurrentUser(); // bool
+		// true = Firewall->isAllowed() - user is the current user
+		// false = Authorizer->isAllowed() - user may not be current user and no expired logins will be available
+
+		foreach ($context->getExpiredLogins() as $expiredLogin) {
+			// ...
+		}
 	}
 
 }
@@ -1057,35 +1088,12 @@ if (!$firewall->getAuthorizer()->isAllowed($identity, 'administration.entry')) {
 $firewall->login($identity);
 ```
 
-### Access entries
+### Accessing entries
 
-Reasons why user has or does not have permission can be described by a policy by adding access entries:
+`AccessEntry` yielded by [policies](#policies---customized-authorization) are not used just to allow or forbid
+policy-protected privilege. You can also use them to show user why exactly they were (not) given access.
 
-```php
-use Generator;
-use Orisai\Auth\Authentication\Identity;
-use Orisai\Auth\Authorization\AccessEntry;
-use Orisai\Auth\Authorization\AccessEntryResult;
-use Orisai\Auth\Authorization\Policy;
-use Orisai\Auth\Authorization\PolicyContext;
-
-final class WillTellYouWhyPolicy implements Policy
-{
-
-	// ...
-
-	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator
-	{
-		yield new AccessEntry(
-			AccessEntryResult::fromBool(/* true|false */),
-			'access requirement',
-		);
-	}
-
-}
-```
-
-Both authorizer and firewall return access entry via reference:
+Entries are propagated to you via `isAllowed()` parameter `entries` reference:
 
 ```php
 use Orisai\TranslationContracts\Translatable;
@@ -1093,14 +1101,17 @@ use Orisai\TranslationContracts\Translator;
 
 assert($translator instanceof Translator); // Create translator or get message id and parameters from Translatable
 
-$firewall->isAllowed(DefaultCheckPolicy::getPrivilege(), $requirements, $entry);
-$authorizer->isAllowed($identity, DefaultCheckPolicy::getPrivilege(), $requirements, $entry);
+$firewall->isAllowed($privilege, $requirements, $entries); // $entries === list<AccessEntry>
+$authorizer->isAllowed($identity, $privilege, $requirements, $entries); // $entries === list<AccessEntry>
 
-if ($entry !== null) {
-	$message = $entry->getMessage();
+foreach ($entries as $entry) {
+	$result = $entry->getResult(); // AccessEntryResult
+	$message = $entry->getMessage(); // string|Translatable
 	if ($message instanceof Translatable) {
 		$message = $translator->translateMessage($message);
 	}
+
+	echo "$result->value: $message"; // e.g. allowed: Author of the article
 }
 ```
 
