@@ -51,9 +51,9 @@ interface Firewall
 	public function hasRole(string $role): bool;
 
 	/**
-	 * @param array{}|null           $entries
+	 * @param array{}|null   $entries
 	 * @param literal-string $privilege
-	 * @param-out list<AccessEntry>  $entries
+	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
 	 */
 	public function isAllowed(string $privilege, ?object $requirements = null, ?array &$entries = null): bool;
 

@@ -28,7 +28,7 @@ interface Policy
 
 	/**
 	 * @param R $requirements
-	 * @return Generator<int, AccessEntry, null, void>
+	 * @return Generator<int, AccessEntry|MatchAllOfEntries|MatchAnyOfEntries, null, void>
 	 */
 	public function isAllowed(Identity $identity, object $requirements, PolicyContext $context): Generator;
 

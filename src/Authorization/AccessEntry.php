@@ -34,4 +34,25 @@ final class AccessEntry
 		return $this->message;
 	}
 
+	/**
+	 * @param list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
+	 */
+	public static function matchAny(array $entries): MatchAnyOfEntries
+	{
+		return new MatchAnyOfEntries($entries);
+	}
+
+	/**
+	 * @param list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
+	 */
+	public static function matchAll(array $entries): MatchAllOfEntries
+	{
+		return new MatchAllOfEntries($entries);
+	}
+
+	public function match(): bool
+	{
+		return $this->result === AccessEntryResult::allowed();
+	}
+
 }

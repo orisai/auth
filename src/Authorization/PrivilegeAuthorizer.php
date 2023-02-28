@@ -128,9 +128,9 @@ final class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
-	 * @param array{}|null           $entries
+	 * @param array{}|null   $entries
 	 * @param literal-string $privilege
-	 * @param-out list<AccessEntry>  $entries
+	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
 	 */
 	private function isAllowedInternal(
 		string $function,
@@ -200,8 +200,9 @@ final class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
-	 * @param array{}|null           $entries
+	 * @param array{}|null   $entries
 	 * @param Policy<object> $policy
+	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
 	 */
 	private function isAllowedByPolicy(
 		?Identity $identity,
@@ -263,7 +264,7 @@ final class PrivilegeAuthorizer implements Authorizer
 			$entries[] = $entry;
 
 			// If any entry is not allowed, policy forbids access
-			if ($isAllowed && $entry->getResult() !== AccessEntryResult::allowed()) {
+			if ($isAllowed && !$entry->match()) {
 				$isAllowed = false;
 			}
 		}

@@ -12,9 +12,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `AccessEntry` - represents a single check in a policy
 	- `getType(): AccessEntryResult` - result of the check
 	- `getMessage(): string|Translatable` - text description of what was checked
+	- `matchAny(): MatchAnyOfEntries`, `matchAll(): MatchAllOfEntries` shortcuts to construct && and || conditions
 - `AccessEntryResult`
 	- `allowed()`, `forbidden()`, `skipped()`
 	- `fromBool()` - shortcut for `allowed()` or `forbidden()`
+- `MatchAllOfEntries` - for explicit && condition (implicit is default)
+- `MatchAnyOfEntries` - for || condition
 - `PolicyContext`
 	- `getLastExpiredLogin()`
 
@@ -23,10 +26,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `Policy`
   - uses `AccessEntry` instead of `DecisionReason` (also replaced in `Firewall` and `Authorizer` `isAllowed()` methods)
   - allows to add multiple `AccessEntry` (`Firewall` and `Authorizer` `isAllowed()` methods return an array)
-	- instead of returning `bool` uses `Generator` which yields 1 or more `AccessEntry`
+	- instead of returning `bool` uses `Generator` which yields 1 or more `AccessEntry|MatchAllOfEntries|MatchAnyOfEntries`
 	- `DecisionReason` removed from context (uses `AccessEntry` yielding instead)
 - `Firewall`, `Authorizer`
-	- `isAllowed()` reason (`DecisionReason`) replaced by entries (`list<AccessEntry>`)
+	- `isAllowed()` reason (`DecisionReason`) replaced by entries (`list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries>`)
 - `IdentityExpired`
 	- `create()` uses `string|TranslatableMessage` directly instead of `DecisionReason`
 - `ExpiredLogin`
