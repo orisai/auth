@@ -39,10 +39,10 @@ abstract class BaseFirewall implements Firewall
 	/** @var int<0, max> */
 	private int $expiredIdentitiesLimit = 3;
 
-	/** @var array<Closure(): void> */
+	/** @var list<Closure(): void> */
 	private array $onLogin = [];
 
-	/** @var array<Closure(): void> */
+	/** @var list<Closure(): void> */
 	private array $onLogout = [];
 
 	private CurrentUserPolicyContextCreator $contextCreator;
@@ -304,9 +304,6 @@ abstract class BaseFirewall implements Firewall
 		$login->setIdentity($identity);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function getExpiredLogins(): array
 	{
 		if (!$this->doesStorageAlreadyExist()) {
@@ -334,9 +331,6 @@ abstract class BaseFirewall implements Firewall
 		$this->getLogins()->removeExpiredLogins();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public function removeExpiredLogin($id): void
 	{
 		if (!$this->doesStorageAlreadyExist()) {

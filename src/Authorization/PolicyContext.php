@@ -15,7 +15,7 @@ interface PolicyContext
 	public function getAuthorizer(): Authorizer;
 
 	/**
-	 * @return array<ExpiredLogin>
+	 * @return array<int|string, ExpiredLogin>
 	 */
 	public function getExpiredLogins(): array;
 

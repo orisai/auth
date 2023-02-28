@@ -8,7 +8,7 @@ class IntIdentity extends BaseIdentity
 	private int $id;
 
 	/**
-	 * @param array<int, string> $roles
+	 * @param list<string> $roles
 	 */
 	public function __construct(int $id, array $roles)
 	{

@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	- but always returns true (behavior remains unchanged)
 	- policies are executed to ensure their validity
 	- access entries are returned for root (to verify which entries would fail or be skipped without root)
+- more accurate typehints (mostly changed `array` to `list`)
 
 ### Removed
 
