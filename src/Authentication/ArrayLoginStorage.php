@@ -7,7 +7,7 @@ use Orisai\Auth\Authentication\Data\Logins;
 final class ArrayLoginStorage implements LoginStorage
 {
 
-	/** @var array<Logins> */
+	/** @var array<int|string, Logins> */
 	private array $logins = [];
 
 	public function getLogins(string $namespace): Logins

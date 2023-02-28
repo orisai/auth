@@ -8,7 +8,7 @@ class StringIdentity extends BaseIdentity
 	private string $id;
 
 	/**
-	 * @param array<int, string> $roles
+	 * @param list<string> $roles
 	 */
 	public function __construct(string $id, array $roles)
 	{

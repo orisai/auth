@@ -77,7 +77,7 @@ interface Firewall
 	public function removeExpirationTime(): void;
 
 	/**
-	 * @return array<ExpiredLogin>
+	 * @return array<int|string, ExpiredLogin>
 	 */
 	public function getExpiredLogins(): array;
 

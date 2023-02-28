@@ -13,7 +13,7 @@ interface Identity
 	public function getId();
 
 	/**
-	 * @return array<string>
+	 * @return list<string>
 	 */
 	public function getRoles(): array;
 

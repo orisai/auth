@@ -9,13 +9,13 @@ use function in_array;
 abstract class BaseIdentity implements Identity
 {
 
-	/** @var array<int, string> */
+	/** @var list<string> */
 	private array $roles;
 
 	private ?IdentityAuthorizationData $authorizationData = null;
 
 	/**
-	 * @param array<int, string> $roles
+	 * @param list<string> $roles
 	 */
 	public function __construct(array $roles)
 	{
@@ -23,7 +23,7 @@ abstract class BaseIdentity implements Identity
 	}
 
 	/**
-	 * @return array<int, string>
+	 * @return list<string>
 	 */
 	public function getRoles(): array
 	{

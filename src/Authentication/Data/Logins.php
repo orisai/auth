@@ -11,7 +11,7 @@ final class Logins
 
 	private ?CurrentLogin $currentLogin = null;
 
-	/** @var array<ExpiredLogin> */
+	/** @var array<int|string, ExpiredLogin> */
 	private array $expiredLogins = [];
 
 	public function getCurrentLogin(): ?CurrentLogin
@@ -38,7 +38,7 @@ final class Logins
 	}
 
 	/**
-	 * @return array<ExpiredLogin>
+	 * @return array<int|string, ExpiredLogin>
 	 */
 	public function getExpiredLogins(): array
 	{
