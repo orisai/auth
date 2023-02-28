@@ -2,8 +2,11 @@
 
 namespace Tests\Orisai\Auth\Unit\Authorization;
 
+use Generator;
 use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\AccessEntryResult;
+use Orisai\Auth\Authorization\MatchAllOfEntries;
+use Orisai\Auth\Authorization\MatchAnyOfEntries;
 use Orisai\TranslationContracts\TranslatableMessage;
 use PHPUnit\Framework\TestCase;
 
@@ -26,6 +29,47 @@ final class AccessEntryTest extends TestCase
 
 		self::assertSame(AccessEntryResult::forbidden(), $entry->getResult());
 		self::assertSame($message, $entry->getMessage());
+	}
+
+	/**
+	 * @dataProvider provideMatch
+	 */
+	public function testMatch(bool $match, AccessEntry $entry): void
+	{
+		self::assertSame($match, $entry->match());
+	}
+
+	public function provideMatch(): Generator
+	{
+		yield [
+			true,
+			new AccessEntry(AccessEntryResult::allowed(), ''),
+		];
+
+		yield [
+			false,
+			new AccessEntry(AccessEntryResult::forbidden(), ''),
+		];
+
+		yield [
+			false,
+			new AccessEntry(AccessEntryResult::skipped(), ''),
+		];
+	}
+
+	public function testConstructors(): void
+	{
+		$entries = [
+			new AccessEntry(AccessEntryResult::allowed(), ''),
+			new AccessEntry(AccessEntryResult::forbidden(), ''),
+			new AccessEntry(AccessEntryResult::skipped(), ''),
+		];
+
+		$all = AccessEntry::matchAll($entries);
+		self::assertEquals(new MatchAllOfEntries($entries), $all);
+
+		$any = AccessEntry::matchAny($entries);
+		self::assertEquals(new MatchAnyOfEntries($entries), $any);
 	}
 
 }

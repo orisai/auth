@@ -27,6 +27,7 @@ Authentication and authorization
 		- [Policy with optional requirements](#policy-with-optional-requirements)
 		- [Policy with no requirements](#policy-with-no-requirements)
 		- [Policy with default-like privilege check](#policy-with-default-like-privilege-check)
+        - [Conditional entries](#conditional-entries)
 		- [Composed policy](#composed-policy)
 		- [Login aware policy](#login-aware-policy)
 	- [Root - bypass all checks](#root---bypass-all-checks)
@@ -808,16 +809,18 @@ $policyManager->add(new ArticleEditPolicy());
 $policyManager->add(new ArticleEditOwnedPolicy());
 ```
 
-Requirements can be made [optional](#policy-with-optional-requirements) or even [none](#policy-with-no-requirements) at
-all.
+Check following chapters to learn more about policies:
 
-Policy is called only when user is logged-in. For logged-out
-users, [make Identity optional](#policy-with-optional-log-in-check).
-
-For privileges with registered policy, privilege itself **is not checked**. Policy has
-to [do the check itself](#policy-with-default-like-privilege-check).
-
-Policy is always skipped by [root](#root---bypass-all-checks).
+- Requirements can be made [optional](#policy-with-optional-requirements) or even [none](#policy-with-no-requirements)
+  at all.
+- Policy is called only when user is logged-in. For logged-out
+  users, [make Identity optional](#policy-with-optional-log-in-check).
+- Privilege **is not checked**, when policy is used. Policy has
+  to [do the check itself](#policy-with-default-like-privilege-check).
+- Create || and && conditions via [conditional entries](#conditional-entries)
+- [Compose policies](#composed-policy) from other policies
+- Check whether [user previously logged in](#login-aware-policy)
+- Policy is always skipped by [root](#root---bypass-all-checks).
 
 #### Policy with optional log-in check
 
@@ -989,6 +992,39 @@ final class DefaultCheckPolicy implements Policy
 }
 ```
 
+#### Conditional entries
+
+Entries yielded by policy are combined with an && operator by default.
+
+You can also combine them with || operator:
+
+```php
+use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryResult;
+
+yield AccessEntry::matchAny([
+	// first || second
+	new AccessEntry(AccessEntryResult::allowed(), /* ... */),
+	new AccessEntry(AccessEntryResult::forbidden(), /* ... */),
+]);
+```
+
+Or explicitly use (the default) && operator:
+
+```php
+use Orisai\Auth\Authorization\AccessEntry;
+use Orisai\Auth\Authorization\AccessEntryResult;
+
+yield AccessEntry::matchAll([
+	// first && second
+	new AccessEntry(AccessEntryResult::allowed(), /* ... */),
+	new AccessEntry(AccessEntryResult::allowed(), /* ... */),
+]);
+```
+
+Why not just regular || or && operator? With `matchAll()` and `matchAny()` you
+can [show the required checks](#accessing-entries) to user.
+
 #### Composed policy
 
 Policies can call other policies internally and combine their results
@@ -1092,28 +1128,52 @@ $firewall->login($identity);
 
 ### Accessing entries
 
-`AccessEntry` yielded by [policies](#policies---customized-authorization) are not used just to allow or forbid
-policy-protected privilege. You can also use them to show user why exactly they were (not) given access.
+`AccessEntry|MatchAllOfEntries|MatchAnyOfEntries` yielded by [policies](#policies---customized-authorization) are not
+used just to allow or forbid policy-protected privilege. You can also use them to show user why exactly they were (not)
+given access.
 
 Entries are propagated to you via `isAllowed()` parameter `entries` reference:
 
 ```php
+use Orisai\Auth\Authorization\MatchAllOfEntries;
+use Orisai\Auth\Authorization\MatchAnyOfEntries;
 use Orisai\TranslationContracts\Translatable;
 use Orisai\TranslationContracts\Translator;
 
 assert($translator instanceof Translator); // Create translator or get message id and parameters from Translatable
 
-$firewall->isAllowed($privilege, $requirements, $entries); // $entries === list<AccessEntry>
-$authorizer->isAllowed($identity, $privilege, $requirements, $entries); // $entries === list<AccessEntry>
+$firewall->isAllowed($privilege, $requirements, $entries); // $entries === list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries>
+$authorizer->isAllowed($identity, $privilege, $requirements, $entries); // $entries === list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries>
 
-foreach ($entries as $entry) {
-	$result = $entry->getResult(); // AccessEntryResult
-	$message = $entry->getMessage(); // string|Translatable
-	if ($message instanceof Translatable) {
-		$message = $translator->translateMessage($message);
+printEntries($entries);
+
+function printEntries(array $entries): void
+{
+	foreach ($entries as $entry) {
+		if ($entry instanceof MatchAllOfEntries) {
+			echo "\n";
+			echo "All of:\n";
+			printEntries($entry->getEntries());
+
+			continue;
+		}
+
+		if ($entry instanceof MatchAnyOfEntries) {
+			echo "\n";
+			echo "Any of:\n";
+			printEntries($entry->getEntries());
+
+			continue;
+		}
+
+		$result = $entry->getResult(); // AccessEntryResult
+		$message = $entry->getMessage(); // string|Translatable
+		if ($message instanceof Translatable) {
+			$message = $translator->translateMessage($message);
+		}
+
+		echo "$result->value: $message\n"; // e.g. allowed: Author of the article
 	}
-
-	echo "$result->value: $message"; // e.g. allowed: Author of the article
 }
 ```
 

@@ -13,9 +13,9 @@ interface Authorizer
 	public function hasPrivilege(Identity $identity, string $privilege): bool;
 
 	/**
-	 * @param array{}|null           $entries
+	 * @param array{}|null   $entries
 	 * @param literal-string $privilege
-	 * @param-out list<AccessEntry>  $entries
+	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
 	 */
 	public function isAllowed(
 		?Identity $identity,

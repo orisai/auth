@@ -8,6 +8,8 @@ use Orisai\Auth\Authorization\AccessEntryResult;
 use Orisai\Auth\Authorization\AuthorizationDataBuilder;
 use Orisai\Auth\Authorization\Exception\UnknownPrivilege;
 use Orisai\Auth\Authorization\IdentityAuthorizationDataBuilder;
+use Orisai\Auth\Authorization\MatchAllOfEntries;
+use Orisai\Auth\Authorization\MatchAnyOfEntries;
 use Orisai\Auth\Authorization\NoRequirements;
 use Orisai\Auth\Authorization\PrivilegeAuthorizer;
 use Orisai\Auth\Authorization\SimpleAuthorizationDataCreator;
@@ -21,6 +23,8 @@ use Tests\Orisai\Auth\Doubles\AlwaysPassPolicy;
 use Tests\Orisai\Auth\Doubles\Article;
 use Tests\Orisai\Auth\Doubles\ArticleEditOwnedPolicy;
 use Tests\Orisai\Auth\Doubles\ArticleEditPolicy;
+use Tests\Orisai\Auth\Doubles\EntriesFromContext;
+use Tests\Orisai\Auth\Doubles\EntriesFromContextPolicy;
 use Tests\Orisai\Auth\Doubles\InconclusivePolicy;
 use Tests\Orisai\Auth\Doubles\NeverPassPolicy;
 use Tests\Orisai\Auth\Doubles\NoRequirementsPolicy;
@@ -795,6 +799,71 @@ MSG);
 			],
 			$entries,
 		);
+	}
+
+	public function testPolicyMatching(): void
+	{
+		$policyManager = $this->policies();
+		$policyManager->add(new EntriesFromContextPolicy());
+
+		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege(EntriesFromContextPolicy::getPrivilege());
+
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
+
+		$identity = new IntIdentity(1, []);
+
+		self::assertTrue($authorizer->isAllowed(
+			$identity,
+			EntriesFromContextPolicy::getPrivilege(),
+			new EntriesFromContext([
+				new AccessEntry(AccessEntryResult::allowed(), ''),
+			]),
+		));
+
+		self::assertTrue($authorizer->isAllowed(
+			$identity,
+			EntriesFromContextPolicy::getPrivilege(),
+			new EntriesFromContext([
+				new MatchAllOfEntries([
+					new AccessEntry(AccessEntryResult::allowed(), ''),
+					new AccessEntry(AccessEntryResult::allowed(), ''),
+				]),
+			]),
+		));
+
+		self::assertFalse($authorizer->isAllowed(
+			$identity,
+			EntriesFromContextPolicy::getPrivilege(),
+			new EntriesFromContext([
+				new MatchAllOfEntries([
+					new AccessEntry(AccessEntryResult::allowed(), ''),
+					new AccessEntry(AccessEntryResult::forbidden(), ''),
+				]),
+			]),
+		));
+
+		self::assertTrue($authorizer->isAllowed(
+			$identity,
+			EntriesFromContextPolicy::getPrivilege(),
+			new EntriesFromContext([
+				new MatchAnyOfEntries([
+					new AccessEntry(AccessEntryResult::allowed(), ''),
+					new AccessEntry(AccessEntryResult::forbidden(), ''),
+				]),
+			]),
+		));
+
+		self::assertFalse($authorizer->isAllowed(
+			$identity,
+			EntriesFromContextPolicy::getPrivilege(),
+			new EntriesFromContext([
+				new MatchAnyOfEntries([
+					new AccessEntry(AccessEntryResult::forbidden(), ''),
+					new AccessEntry(AccessEntryResult::forbidden(), ''),
+				]),
+			]),
+		));
 	}
 
 	public function testNeverPassPolicy(): void
