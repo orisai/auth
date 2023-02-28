@@ -190,7 +190,10 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->login($originalIdentity);
 		$firewall->resetLoginsChecks();
-		self::assertSame($refreshedIdentity, $firewall->getLogins()->getCurrentLogin()->getIdentity());
+
+		$login = $firewall->getLogins()->getCurrentLogin();
+		self::assertNotNull($login);
+		self::assertSame($refreshedIdentity, $login->getIdentity());
 	}
 
 	public function testHasRole(): void
@@ -219,7 +222,9 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->logout();
 		self::assertSame([1], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity1, $login->getIdentity());
 
 		$firewall->login($identity1);
 		self::assertSame([], $firewall->getExpiredLogins());
@@ -231,38 +236,50 @@ final class BaseFirewallTest extends TestCase
 
 		$firewall->logout();
 		self::assertSame([1, 'second'], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity2, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity2, $login->getIdentity());
 
 		$identity3 = new IntIdentity(3, []);
 		$firewall->login($identity3);
 		$firewall->login($identity2);
 		$firewall->logout();
 		self::assertSame([1, 3, 'second'], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity2, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity2, $login->getIdentity());
 
 		// logout removes logins above limit
 		$identity4 = new IntIdentity(4, []);
 		$firewall->login($identity4);
 		$firewall->logout();
 		self::assertSame([3, 'second', 4], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity4, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity4, $login->getIdentity());
 
 		// new login also removes logins above limit
 		$firewall->login($identity1);
 		$identity5 = new StringIdentity('fifth', []);
 		$firewall->login($identity5);
 		self::assertSame(['second', 4, 1], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity1, $login->getIdentity());
 
 		// Remove expired login with specific ID
 		$firewall->removeExpiredLogin(4);
 		self::assertSame(['second', 1], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity1, $login->getIdentity());
 
 		// Remove expired logins above limit
 		$firewall->setExpiredIdentitiesLimit(1);
 		self::assertSame([1], array_keys($firewall->getExpiredLogins()));
-		self::assertSame($identity1, $firewall->getLastExpiredLogin()->getIdentity());
+		$login = $firewall->getLastExpiredLogin();
+		self::assertNotNull($login);
+		self::assertSame($identity1, $login->getIdentity());
 
 		// Remove all expired logins
 		$firewall->removeExpiredLogins();
@@ -561,11 +578,15 @@ MSG,
 		self::assertNull($firewall->getExpirationTime());
 
 		$firewall->setExpirationTime($clock->now()->modify('+4 seconds'));
-		self::assertSame(5, $firewall->getExpirationTime()->getTimestamp());
+		$expirationTime = $firewall->getExpirationTime();
+		self::assertNotNull($expirationTime);
+		self::assertSame(5, $expirationTime->getTimestamp());
 
 		$firewall->resetLoginsChecks();
 		$clock->move(1);
-		self::assertSame(6, $firewall->getExpirationTime()->getTimestamp());
+		$expirationTime = $firewall->getExpirationTime();
+		self::assertNotNull($expirationTime);
+		self::assertSame(6, $expirationTime->getTimestamp());
 	}
 
 	public function testNotLoggedInGetExpirationTime(): void

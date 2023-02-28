@@ -4,18 +4,3 @@ parameters:
 			message: "#^Parameter \\#1 \\$id of class Orisai\\\\TranslationContracts\\\\TranslatableMessage constructor expects literal\\-string, mixed given\\.$#"
 			count: 1
 			path: ../src/Authentication/Data/ExpiredLogin.php
-
-		-
-			message: "#^Cannot call method getIdentity\\(\\) on Orisai\\\\Auth\\\\Authentication\\\\Data\\\\CurrentLogin\\|null\\.$#"
-			count: 1
-			path: ../tests/Unit/Authentication/BaseFirewallTest.php
-
-		-
-			message: "#^Cannot call method getIdentity\\(\\) on Orisai\\\\Auth\\\\Authentication\\\\Data\\\\ExpiredLogin\\|null\\.$#"
-			count: 7
-			path: ../tests/Unit/Authentication/BaseFirewallTest.php
-
-		-
-			message: "#^Cannot call method getTimestamp\\(\\) on DateTimeImmutable\\|null\\.$#"
-			count: 2
-			path: ../tests/Unit/Authentication/BaseFirewallTest.php
