@@ -2,15 +2,22 @@
 	"name": "orisai/auth",
 	"description": "Authentication and authorization",
 	"keywords": [
+		"access-control",
+		"abac",
 		"acl",
 		"auth",
 		"authentication",
 		"authorization",
+		"login",
 		"orisai",
 		"password",
 		"passwords",
 		"permissions",
-		"security"
+		"policy",
+		"rbac",
+		"role",
+		"security",
+		"users"
 	],
 	"type": "library",
 	"license": "MPL-2.0",
