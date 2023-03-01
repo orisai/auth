@@ -132,7 +132,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		// Can't remove part of root privilege
 		$builder->removeAllow('leeroy', 'foo.bar');
-		$authorizer = new PrivilegeAuthorizer($this->policies(), new SimpleAuthorizationDataCreator($builder));
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
 
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo'));
 		self::assertTrue($authorizer->hasPrivilege($identity, 'foo.bar'));
@@ -148,7 +148,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 
 		// Removing root is allowed
 		$builder->removeRoot('leeroy');
-		$authorizer = new PrivilegeAuthorizer($this->policies(), new SimpleAuthorizationDataCreator($builder));
+		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
 
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo'));
 		self::assertFalse($authorizer->hasPrivilege($identity, 'foo.bar'));
@@ -765,12 +765,25 @@ MSG);
 		$policyManager->add(new AddAccessEntriesPolicy());
 
 		$builder = new AuthorizationDataBuilder();
+		$builder->addPrivilege('no-policy');
 		$builder->addPrivilege(NoRequirementsPolicy::getPrivilege());
 		$builder->addPrivilege(AddAccessEntriesPolicy::getPrivilege());
 
 		$authorizer = new PrivilegeAuthorizer($policyManager, new SimpleAuthorizationDataCreator($builder));
 
 		$identity = new IntIdentity(1, []);
+
+		$allowed = $authorizer->isAllowed($identity, 'no-policy', null, $entries);
+		self::assertFalse($allowed);
+		self::assertEquals(
+			[
+				AccessEntry::forRequiredPrivilege(
+					AccessEntryResult::forbidden(),
+					'no-policy',
+				),
+			],
+			$entries,
+		);
 
 		$allowed = $authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entries);
 		self::assertTrue($allowed);
@@ -779,6 +792,18 @@ MSG);
 				new AccessEntry(
 					AccessEntryResult::allowed(),
 					'[internal behavior] No requirements',
+				),
+			],
+			$entries,
+		);
+
+		$allowed = $authorizer->isAllowed($identity, 'no-policy', null, $entries);
+		self::assertFalse($allowed);
+		self::assertEquals(
+			[
+				AccessEntry::forRequiredPrivilege(
+					AccessEntryResult::forbidden(),
+					'no-policy',
 				),
 			],
 			$entries,

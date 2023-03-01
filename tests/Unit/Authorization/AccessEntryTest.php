@@ -72,4 +72,19 @@ final class AccessEntryTest extends TestCase
 		self::assertEquals(new MatchAnyOfEntries($entries), $any);
 	}
 
+	public function testForRequiredPrivilege(): void
+	{
+		$result = AccessEntryResult::allowed();
+		$privilege = 'privilege';
+		$entry = AccessEntry::forRequiredPrivilege($result, $privilege);
+
+		self::assertSame($result, $entry->getResult());
+		self::assertEquals(
+			new TranslatableMessage('orisai.auth.entry.requiredPrivilege', [
+				'privilege' => $privilege,
+			]),
+			$entry->getMessage(),
+		);
+	}
+
 }

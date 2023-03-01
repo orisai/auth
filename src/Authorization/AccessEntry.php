@@ -3,6 +3,7 @@
 namespace Orisai\Auth\Authorization;
 
 use Orisai\TranslationContracts\Translatable;
+use Orisai\TranslationContracts\TranslatableMessage;
 
 final class AccessEntry
 {
@@ -19,6 +20,16 @@ final class AccessEntry
 	{
 		$this->result = $result;
 		$this->message = $message;
+	}
+
+	public static function forRequiredPrivilege(AccessEntryResult $result, string $privilege): self
+	{
+		return new self(
+			$result,
+			new TranslatableMessage('orisai.auth.entry.requiredPrivilege', [
+				'privilege' => $privilege,
+			]),
+		);
 	}
 
 	public function getResult(): AccessEntryResult

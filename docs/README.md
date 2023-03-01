@@ -983,9 +983,9 @@ final class DefaultCheckPolicy implements Policy
 		$authorizer = $context->getAuthorizer();
 		$privilege = self::getPrivilege();
 
-		yield new AccessEntry(
+		yield AccessEntry::forRequiredPrivilege(
 			AccessEntryResult::fromBool($authorizer->hasPrivilege($identity, $privilege)),
-			"Has privilege $privilege",
+			$privilege,
 		);
 	}
 
@@ -1176,6 +1176,12 @@ function printEntries(array $entries): void
 	}
 }
 ```
+
+Authorizer has a predefined message for a required privilege. You can either:
+
+- translate it yourself (see `AccessEntry::forRequiredPrivilege()`)
+- or load translations from `src/Locale/<locale>.json` and format it via
+  an [ICU MessageFormat](https://unicode-org.github.io/icu/userguide/format_parse/messages/) formatter
 
 ### Access authorization data
 
