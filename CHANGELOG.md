@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	- `getType(): AccessEntryResult` - result of the check
 	- `getMessage(): string|Translatable` - text description of what was checked
 	- `matchAny(): MatchAnyOfEntries`, `matchAll(): MatchAllOfEntries` shortcuts to construct && and || conditions
+	- `forRequiredPrivilege()` shortcut for (translated) required privilege entry
 - `AccessEntryResult`
 	- `allowed()`, `forbidden()`, `skipped()`
 	- `fromBool()` - shortcut for `allowed()` or `forbidden()`
@@ -30,6 +31,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 	- `DecisionReason` removed from context (uses `AccessEntry` yielding instead)
 - `Firewall`, `Authorizer`
 	- `isAllowed()` reason (`DecisionReason`) replaced by entries (`list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries>`)
+- `Authorizer`
+	- adds an entry for privilege when no policy is used
 - `IdentityExpired`
 	- `create()` uses `string|TranslatableMessage` directly instead of `DecisionReason`
 - `ExpiredLogin`

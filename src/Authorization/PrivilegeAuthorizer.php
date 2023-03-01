@@ -111,12 +111,13 @@ final class PrivilegeAuthorizer implements Authorizer
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool
 	{
+		$entries = [];
 		$allowed = $this->isAllowedInternal(
 			__FUNCTION__,
 			$identity,
 			$privilege,
-			$requirements,
 			$entries,
+			$requirements,
 			$creator,
 		);
 
@@ -128,7 +129,7 @@ final class PrivilegeAuthorizer implements Authorizer
 	}
 
 	/**
-	 * @param array{}|null   $entries
+	 * @param array{}        $entries
 	 * @param literal-string $privilege
 	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
 	 */
@@ -136,8 +137,8 @@ final class PrivilegeAuthorizer implements Authorizer
 		string $function,
 		?Identity $identity,
 		string $privilege,
+		array &$entries,
 		?object $requirements = null,
-		?array &$entries = null,
 		?CurrentUserPolicyContextCreator $creator = null
 	): bool
 	{
@@ -145,7 +146,13 @@ final class PrivilegeAuthorizer implements Authorizer
 
 		if ($policy === null) {
 			return $identity !== null
-				&& $this->isAllowedByPrivilege($identity, $privilege, $requirements, $function);
+				&& $this->isAllowedByPrivilege(
+					$identity,
+					$privilege,
+					$requirements,
+					$function,
+					$entries,
+				);
 		}
 
 		return $this->isAllowedByPolicy(
@@ -175,11 +182,16 @@ final class PrivilegeAuthorizer implements Authorizer
 		return false;
 	}
 
+	/**
+	 * @param array{} $entries
+	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
+	 */
 	private function isAllowedByPrivilege(
 		Identity $identity,
 		string $privilege,
 		?object $requirements,
-		string $function
+		string $function,
+		array &$entries
 	): bool
 	{
 		if ($requirements !== null) {
@@ -196,11 +208,18 @@ final class PrivilegeAuthorizer implements Authorizer
 				->withMessage($message);
 		}
 
-		return $this->hasPrivilegeInternal($identity, $privilege, $function);
+		$hasPrivilege = $this->hasPrivilegeInternal($identity, $privilege, $function);
+
+		$entries[] = AccessEntry::forRequiredPrivilege(
+			AccessEntryResult::fromBool($hasPrivilege),
+			$privilege,
+		);
+
+		return $hasPrivilege;
 	}
 
 	/**
-	 * @param array{}|null   $entries
+	 * @param array{}        $entries
 	 * @param Policy<object> $policy
 	 * @param-out list<AccessEntry|MatchAllOfEntries|MatchAnyOfEntries> $entries
 	 */
@@ -209,7 +228,7 @@ final class PrivilegeAuthorizer implements Authorizer
 		Policy $policy,
 		?object $requirements,
 		PolicyContext $context,
-		?array &$entries,
+		array &$entries,
 		string $function
 	): bool
 	{
@@ -259,7 +278,6 @@ final class PrivilegeAuthorizer implements Authorizer
 		}
 
 		$isAllowed = true;
-		$entries = [];
 		foreach ($policy->isAllowed($identity, $requirements, $context) as $entry) {
 			$entries[] = $entry;
 
