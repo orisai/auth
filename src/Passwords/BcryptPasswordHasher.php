@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Passwords;
 
+use function assert;
 use function password_hash;
 use function password_needs_rehash;
 use function password_verify;
@@ -24,7 +25,11 @@ final class BcryptPasswordHasher implements PasswordHasher
 
 	public function hash(string $raw): string
 	{
-		return password_hash($raw, PASSWORD_BCRYPT, $this->getOptions());
+		$hash = password_hash($raw, PASSWORD_BCRYPT, $this->getOptions());
+		assert($hash !== false); // Since php 7.4 password_hash cannot return false
+		assert($hash !== null); // All failing conditions are handled
+
+		return $hash;
 	}
 
 	public function needsRehash(string $hashed): bool
@@ -46,7 +51,7 @@ final class BcryptPasswordHasher implements PasswordHasher
 	}
 
 	/**
-	 * @return array<mixed>
+	 * @return array{cost: int<4, 31>}
 	 */
 	private function getOptions(): array
 	{
