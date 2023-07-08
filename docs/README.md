@@ -39,6 +39,7 @@ Authentication and authorization
 	- [Bcrypt](#bcrypt-hasher)
 	- [Backward compatibility - upgrading when user logs in](#backward-compatibility---upgrading-when-user-logs-in)
 	- [Backward compatibility - migrating from an unsafe algorithm](#backward-compatibility---migrating-from-an-unsafe-algorithm)
+- [Integrations and extensions](#integrations-and-extensions)
 
 ## Setup
 
@@ -1356,3 +1357,7 @@ Instead, use the existing password hashes as inputs for a more secure algorithm.
 originally stored passwords as `md5($password)`, this could be easily upgraded to `bcrypt(md5($password))`. Layering the
 hashes avoids the need to know the original password; however, it can make the hashes easier to crack. These hashes
 should be replaced with direct hashes of the users' passwords next time the user logs in.
+
+## Integrations and extensions
+
+- [Nette](https://github.com/nette) integration - [orisai/nette-auth](https://github.com/orisai/nette-auth)
