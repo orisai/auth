@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Passwords;
 
+use SensitiveParameter;
 use function password_verify;
 
 final class UpgradingPasswordHasher implements PasswordHasher
@@ -21,7 +22,11 @@ final class UpgradingPasswordHasher implements PasswordHasher
 		$this->outdatedHashers = $outdatedHashers;
 	}
 
-	public function hash(string $raw): string
+	// phpcs:ignore SlevomatCodingStandard.Classes.RequireSingleLineMethodSignature
+	public function hash(
+		#[SensitiveParameter]
+		string $raw
+	): string
 	{
 		return $this->preferredHasher->hash($raw);
 	}
@@ -31,7 +36,11 @@ final class UpgradingPasswordHasher implements PasswordHasher
 		return $this->preferredHasher->needsRehash($hashed);
 	}
 
-	public function isValid(string $raw, string $hashed): bool
+	public function isValid(
+		#[SensitiveParameter]
+		string $raw,
+		string $hashed
+	): bool
 	{
 		if ($this->preferredHasher->isValid($raw, $hashed)) {
 			return true;

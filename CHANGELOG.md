@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/orisai/auth/compare/2.0.0...v2.x)
 
+### Changed
+
+- Password hashers - redact passwords
+
 ## [2.0.0](https://github.com/orisai/auth/compare/1.0.4...2.0.0) - 2023-03-01
 
 ### Added

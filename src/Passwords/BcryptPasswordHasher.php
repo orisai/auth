@@ -2,6 +2,7 @@
 
 namespace Orisai\Auth\Passwords;
 
+use SensitiveParameter;
 use function assert;
 use function password_hash;
 use function password_needs_rehash;
@@ -23,7 +24,11 @@ final class BcryptPasswordHasher implements PasswordHasher
 		$this->cost = $cost;
 	}
 
-	public function hash(string $raw): string
+	// phpcs:ignore SlevomatCodingStandard.Classes.RequireSingleLineMethodSignature
+	public function hash(
+		#[SensitiveParameter]
+		string $raw
+	): string
 	{
 		$hash = password_hash($raw, PASSWORD_BCRYPT, $this->getOptions());
 		assert($hash !== false); // Since php 7.4 password_hash cannot return false
@@ -41,7 +46,11 @@ final class BcryptPasswordHasher implements PasswordHasher
 		return password_needs_rehash($hashed, PASSWORD_BCRYPT, $this->getOptions());
 	}
 
-	public function isValid(string $raw, string $hashed): bool
+	public function isValid(
+		#[SensitiveParameter]
+		string $raw,
+		string $hashed
+	): bool
 	{
 		if (!$this->isBcryptHashed($hashed)) {
 			return false;

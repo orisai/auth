@@ -2,13 +2,23 @@
 
 namespace Orisai\Auth\Passwords;
 
+use SensitiveParameter;
+
 interface PasswordHasher
 {
 
-	public function hash(string $raw): string;
+	 // phpcs:ignore SlevomatCodingStandard.Classes.RequireSingleLineMethodSignature
+	public function hash(
+		#[SensitiveParameter]
+		string $raw
+	): string;
 
 	public function needsRehash(string $hashed): bool;
 
-	public function isValid(string $raw, string $hashed): bool;
+	public function isValid(
+		#[SensitiveParameter]
+		string $raw,
+		string $hashed
+	): bool;
 
 }
