@@ -444,7 +444,7 @@ MSG,
 		$firewall->setExpirationTime($clock->now()->modify('+1 second'));
 		self::assertSame($identity, $firewall->getIdentity());
 
-		$clock->move(2);
+		$clock->sleep(2);
 		$firewall->resetLoginsChecks();
 
 		self::assertFalse($firewall->isLoggedIn());
@@ -470,7 +470,7 @@ MSG,
 		$firewall->setExpirationTime($clock->now()->modify('+1 second'));
 		self::assertSame($identity, $firewall->getIdentity());
 
-		$clock->move(1);
+		$clock->sleep(1);
 		$firewall->resetLoginsChecks();
 
 		self::assertTrue($firewall->isLoggedIn());
@@ -490,7 +490,7 @@ MSG,
 		$firewall->removeExpirationTime();
 		self::assertSame($identity, $firewall->getIdentity());
 
-		$clock->move(2);
+		$clock->sleep(2);
 		$firewall->resetLoginsChecks();
 
 		self::assertSame($identity, $firewall->getIdentity());
@@ -583,7 +583,7 @@ MSG,
 		self::assertSame(5, $expirationTime->getTimestamp());
 
 		$firewall->resetLoginsChecks();
-		$clock->move(1);
+		$clock->sleep(1);
 		$expirationTime = $firewall->getExpirationTime();
 		self::assertNotNull($expirationTime);
 		self::assertSame(6, $expirationTime->getTimestamp());

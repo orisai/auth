@@ -4,3 +4,8 @@ parameters:
 			message: "#^Parameter \\#1 \\$id of class Orisai\\\\TranslationContracts\\\\TranslatableMessage constructor expects literal\\-string, mixed given\\.$#"
 			count: 1
 			path: ../src/Authentication/Data/ExpiredLogin.php
+
+		-
+			message: "#^Parameter \\#1 \\$timestamp of class Orisai\\\\Clock\\\\FrozenClock constructor expects DateTimeInterface\\|float, int\\<1, max\\> given\\.$#"
+			count: 3
+			path: ../tests/Unit/Authentication/BaseFirewallTest.php
