@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased](https://github.com/orisai/auth/compare/2.0.1...v2.x)
 
+### Fixed
+
+- `Firewall`
+	- `isAllowed()` - fix `param-out` of `$entries`
+
 ### Changed
 
 - Requires `orisai/clock:^1.2.0`

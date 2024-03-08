@@ -8,6 +8,8 @@ use Orisai\Auth\Authentication\Data\ExpiredLogin;
 use Orisai\Auth\Authentication\Exception\NotLoggedIn;
 use Orisai\Auth\Authorization\AccessEntry;
 use Orisai\Auth\Authorization\Authorizer;
+use Orisai\Auth\Authorization\MatchAllOfEntries;
+use Orisai\Auth\Authorization\MatchAnyOfEntries;
 
 /**
  * @template I of Identity
