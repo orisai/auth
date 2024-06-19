@@ -28,6 +28,7 @@ interface Firewall
 
 	/**
 	 * @param Closure(): void $callback
+	 * @param-later-invoked-callable $callback
 	 */
 	public function addLoginCallback(Closure $callback): void;
 
@@ -41,6 +42,7 @@ interface Firewall
 
 	/**
 	 * @param Closure(): void $callback
+	 * @param-later-invoked-callable $callback
 	 */
 	public function addLogoutCallback(Closure $callback): void;
 
