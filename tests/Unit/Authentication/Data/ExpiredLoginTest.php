@@ -85,7 +85,7 @@ final class ExpiredLoginTest extends TestCase
 		self::assertNull($login->getLogoutReason());
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";s:6:"reason";s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}"string(374) "O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";s:6:"reason";s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}';
+		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";s:6:"reason";s:10:"expiration";O:42:"Orisai\Auth\Authentication\Data\Expiration":2:{s:4:"time";i:123;s:5:"delta";i:456;}}';
 		$login = unserialize($serialized);
 
 		self::assertInstanceOf(ExpiredLogin::class, $login);
@@ -97,7 +97,7 @@ final class ExpiredLoginTest extends TestCase
 		self::assertSame('reason', $reason);
 
 		// phpcs:ignore SlevomatCodingStandard.Files.LineLength.LineTooLong
-		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}"string(403) "O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}';
+		$serialized = 'O:44:"Orisai\Auth\Authentication\Data\ExpiredLogin":5:{s:8:"identity";O:38:"Orisai\Auth\Authentication\IntIdentity":3:{s:5:"roles";a:0:{}s:8:"authData";N;s:2:"id";i:1;}s:18:"authenticationTime";i:2;s:12:"logoutReason";i:1;s:23:"logoutReasonDescription";O:41:"Orisai\Auth\Authentication\DecisionReason":3:{s:7:"message";s:7:"message";s:10:"parameters";a:0:{}s:12:"translatable";b:1;}s:10:"expiration";N;}';
 		$login = unserialize($serialized);
 
 		self::assertInstanceOf(ExpiredLogin::class, $login);
