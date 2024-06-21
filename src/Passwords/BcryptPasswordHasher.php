@@ -3,7 +3,6 @@
 namespace Orisai\Auth\Passwords;
 
 use SensitiveParameter;
-use function assert;
 use function password_hash;
 use function password_needs_rehash;
 use function password_verify;
@@ -30,11 +29,7 @@ final class BcryptPasswordHasher implements PasswordHasher
 		string $raw
 	): string
 	{
-		$hash = password_hash($raw, PASSWORD_BCRYPT, $this->getOptions());
-		assert($hash !== false); // Since php 7.4 password_hash cannot return false
-		assert($hash !== null); // All failing conditions are handled
-
-		return $hash;
+		return password_hash($raw, PASSWORD_BCRYPT, $this->getOptions());
 	}
 
 	public function needsRehash(string $hashed): bool
