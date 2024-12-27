@@ -13,10 +13,11 @@ abstract class BaseAuthorizationDataBuilder
 {
 
 	/**
-	 * @param int|string                      $ownerId
-	 * @param array<int|string, array<mixed>> $allowed
-	 * @param array<mixed>                    $allPrivileges
-	 * @param class-string                    $class
+	 * @template T_OWNER of int|string
+	 * @param T_OWNER $ownerId
+	 * @param array<T_OWNER, array<mixed>> $allowed
+	 * @param array<mixed> $allPrivileges
+	 * @param class-string $class
 	 */
 	protected static function addPrivilegeToList(
 		string $privilege,
@@ -49,10 +50,11 @@ abstract class BaseAuthorizationDataBuilder
 	}
 
 	/**
-	 * @param int|string                      $ownerId
-	 * @param array<int|string, array<mixed>> $denied
-	 * @param array<mixed>                    $allPrivileges
-	 * @param class-string                    $class
+	 * @template T_OWNER of int|string
+	 * @param T_OWNER $ownerId
+	 * @param array<T_OWNER, array<mixed>> $denied
+	 * @param array<mixed> $allPrivileges
+	 * @param class-string $class
 	 */
 	protected static function removePrivilegeFromList(
 		string $privilege,
