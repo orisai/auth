@@ -29,7 +29,7 @@
 		}
 	],
 	"require": {
-		"php": "7.4 - 8.3",
+		"php": "7.4 - 8.4",
 		"orisai/clock": "^1.2.0",
 		"orisai/exceptions": "^1.0.0",
 		"orisai/translation-contracts": "^1.1.0",
