@@ -142,6 +142,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertTrue($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertTrue($authorizer->isAllowed($identity, 'something.else'));
+		$entries = [];
 		self::assertTrue($authorizer->isAllowed($identity, NeverPassPolicy::getPrivilege(), null, $entries));
 		self::assertEquals($expectedEntries, $entries);
 		self::assertTrue($authorizer->isRoot($identity));
@@ -158,6 +159,7 @@ final class PrivilegeAuthorizerTest extends TestCase
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar'));
 		self::assertFalse($authorizer->isAllowed($identity, 'foo.bar.baz'));
 		self::assertFalse($authorizer->isAllowed($identity, 'something.else'));
+		$entries = [];
 		self::assertFalse($authorizer->isAllowed($identity, NeverPassPolicy::getPrivilege(), null, $entries));
 		self::assertEquals($expectedEntries, $entries);
 		self::assertFalse($authorizer->isRoot($identity));
@@ -785,6 +787,7 @@ MSG);
 			$entries,
 		);
 
+		$entries = [];
 		$allowed = $authorizer->isAllowed($identity, NoRequirementsPolicy::getPrivilege(), null, $entries);
 		self::assertTrue($allowed);
 		self::assertEquals(
@@ -797,6 +800,7 @@ MSG);
 			$entries,
 		);
 
+		$entries = [];
 		$allowed = $authorizer->isAllowed($identity, 'no-policy', null, $entries);
 		self::assertFalse($allowed);
 		self::assertEquals(
@@ -809,6 +813,7 @@ MSG);
 			$entries,
 		);
 
+		$entries = [];
 		$allowed = $authorizer->isAllowed($identity, AddAccessEntriesPolicy::getPrivilege(), null, $entries);
 		self::assertTrue($allowed);
 		self::assertEquals(

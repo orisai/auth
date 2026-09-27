@@ -1,6 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Parameter \\#1 \\$id of class Orisai\\\\TranslationContracts\\\\TranslatableMessage constructor expects literal\\-string, mixed given\\.$#"
+			rawMessage: 'Parameter #1 $id of class Orisai\TranslationContracts\TranslatableMessage constructor expects literal-string, mixed given.'
+			identifier: argument.type
 			count: 1
 			path: ../src/Authentication/Data/ExpiredLogin.php

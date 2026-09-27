@@ -159,6 +159,7 @@ final class BaseFirewallTest extends TestCase
 			$entries,
 		);
 
+		$entries = [];
 		$allowed = $firewall->isAllowed(AddAccessEntriesPolicy::getPrivilege(), null, $entries);
 		self::assertTrue($allowed);
 		self::assertEquals(
